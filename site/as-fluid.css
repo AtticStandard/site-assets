@@ -10,16 +10,19 @@
   4. The map grows with the width until it would be taller than about 60% of the screen.
   5. Paragraphs keep a readable line length however wide the section is.
   6. Index codes sit on the first line of their names; coverage counts sit above the map.
+  7. Primary buttons use the link blue; on hover they turn to a blue outline with no fill.
    ═══════════════════════════════════════════════════════════ */
 @media (min-width:1440px){:root{--gutter:clamp(40px,2.6vw,72px)}}
-body .as-hero{padding-left:0 !important;padding-right:0 !important}
-body .as-hero figure{max-width:none !important}
-body .as-sec{container-type:inline-size}
+body .as-hero:has(.as-vx){padding-left:0 !important;padding-right:0 !important}
+body .as-hero:has(.as-vx) figure{max-width:none !important}
+body #hpHeat{container-type:inline-size}
 body .as-ds-c{max-width:760px}
+body .as-btn-p:hover{background:transparent;color:var(--accent);border-color:var(--accent)}
+body .as-btn,.as-cd-go{transition:background .15s,color .15s,border-color .15s}
 body .as-hm-w{display:flex;flex-direction:column;gap:var(--s3)}
 @container (min-width:1360px){
-  body .as-hm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s7)}
-  body .as-hm-r{grid-template-columns:60px minmax(134px,190px) repeat(3,minmax(142px,1fr))}
+  body .as-hm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(64px,5vw,120px)}
+  body .as-hm-r{grid-template-columns:60px 134px repeat(3,minmax(142px,1fr))}
 }
 @container (max-width:1359.98px){
   body .as-hm-w{width:max-content;max-width:100%}
@@ -72,7 +75,7 @@ textarea.as-cd-i{display:block;resize:vertical;min-height:110px;line-height:var(
 .as-cd-e.show{display:block}
 .as-cd-act{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s3);margin-top:var(--s2)}
 .as-cd-go{font:600 var(--fs-body)/1 var(--font-sans);padding:var(--s3) var(--s6);border-radius:var(--radius);border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
-.as-cd-go:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.as-cd-go:hover{background:transparent;color:var(--accent);border-color:var(--accent)}
 .as-cd-go:disabled{opacity:.5;cursor:default}
 .as-cd-r.err{color:var(--error)}
 html.as-has-cd .atom-footer{padding-bottom:calc(var(--s5) + 52px)}
