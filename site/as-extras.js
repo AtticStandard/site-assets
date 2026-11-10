@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
    ATTIC STANDARD · SITE EXTRAS (loaded on every page, after the page)
-   1. Indexes in the navigation: the header, the menu and the footer.
+   1. Indexes in the navigation (header, menu, footer); Terminal replaces Pricing,
+      since the price ladder lives on the Terminal page.
    2. Links into the price index card go to the Indexes page: the ticker,
       and any older link that still points at the homepage card.
    3. The contact drawer.
@@ -25,10 +26,18 @@
       var g = document.createElement('a'); g.href = '/indexes'; g.textContent = 'Indexes';
       f.parentNode.insertBefore(g, f);
     }
-    if(/^\/indexes\/?$/.test(location.pathname)) document.querySelectorAll('a[href="/indexes"]').forEach(function(x){ x.setAttribute('aria-current', 'page'); });
+    /* Pricing lives on the Terminal page: the header link becomes Terminal,
+       the menu drops its Pricing entry (Terminal is already listed there). */
+    var pr = n && n.querySelector('a[href="/#pricing"]');
+    if(pr){ pr.href = '/terminal'; pr.textContent = 'Terminal'; }
+    var dp = d && d.querySelector('a[href="/#pricing"]'); if(dp) dp.remove();
+    [['/indexes', /^\/indexes\/?$/], ['/terminal', /^\/terminal\/?$/]].forEach(function(r){
+      if(r[1].test(location.pathname)) document.querySelectorAll('.as-nav a[href="' + r[0] + '"], #navDropdown a[href="' + r[0] + '"]').forEach(function(x){ x.setAttribute('aria-current', 'page'); });
+    });
   }
   function fixLinks(root){
     (root || document).querySelectorAll('a[href^="/?index="]').forEach(function(a){ a.setAttribute('href', '/indexes' + a.getAttribute('href').slice(1)); });
+    (root || document).querySelectorAll('a[href="/#pricing"]').forEach(function(a){ a.setAttribute('href', '/terminal'); });
     if(typeof window.atomSelectIndex !== 'function')
       (root || document).querySelectorAll('a.tk-grp[data-code]').forEach(function(a){ a.setAttribute('href', '/indexes?index=' + slug(a.getAttribute('data-code')) + '#atom-index-card'); });
   }
