@@ -5,6 +5,7 @@
    2. Links into the price index card go to the Indexes page: the ticker,
       and any older link that still points at the homepage card.
    2b. Chart months turn to initials where they would crowd; empty shares read 0.0%.
+   2c. Tab rows that overflow get arrows and a fade; sideways scrollers keep space above their bar.
    3. The contact drawer.
    These fold into as-site.js when the header and footer markup are next rebuilt.
    ═══════════════════════════════════════════════════════════ */
@@ -56,11 +57,51 @@
   }
   /* Composition tables: a country with no models shows 0.0%, not a blank. */
   function zeros(){ document.querySelectorAll('.colist-row .colist-v').forEach(function(c){ if(!c.textContent.trim()) c.textContent = '0.0%'; }); }
-  function tidy(){ fixLinks(); months(); zeros(); }
+  /* Tab rows that run past the screen get an arrow at each end (one tab per step) and a fade
+     on the side with more tabs; both appear only while the row overflows. */
+  var CHEV = { prev:'M7 1 L2 6.5 L7 12', next:'M2 1 L7 6.5 L2 12' };
+  function rails(){
+    document.querySelectorAll('.as-ds, .as-cl-t').forEach(function(row){
+      if(row._rail || !row.parentNode) return; row._rail = true;
+      var wrap = document.createElement('div'); wrap.className = 'as-rail';
+      row.parentNode.insertBefore(wrap, row);
+      function btn(dir){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'as-rail-b'; b.setAttribute('aria-label', dir === 'prev' ? 'Show earlier tabs' : 'Show more tabs');
+        b.innerHTML = '<svg width="9" height="13" viewBox="0 0 9 13" aria-hidden="true"><path d="' + CHEV[dir] + '" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        b.addEventListener('click', function(){
+          var kids = [].slice.call(row.children), x = row.scrollLeft, w = row.clientWidth, to = x;
+          if(dir === 'next'){ for(var i = 0; i < kids.length; i++){ var r = kids[i].offsetLeft + kids[i].offsetWidth; if(r > x + w + 2){ to = r - w; break; } } }
+          else { for(var j = kids.length - 1; j >= 0; j--){ if(kids[j].offsetLeft < x - 2){ to = kids[j].offsetLeft; break; } } }
+          row.scrollTo({ left:Math.max(0, to), behavior:'smooth' });
+        });
+        return b;
+      }
+      var prev = btn('prev'), next = btn('next');
+      wrap.appendChild(prev); wrap.appendChild(row); wrap.appendChild(next);
+      function upd(){
+        var m = row.scrollWidth - row.clientWidth, over = m > 2, s = row.scrollLeft;
+        wrap.classList.toggle('on', over); wrap.classList.toggle('fl', over && s > 2); wrap.classList.toggle('fr', over && s < m - 2);
+        prev.classList.toggle('off', !(over && s > 2)); next.classList.toggle('off', !(over && s < m - 2));
+      }
+      row.addEventListener('scroll', upd, { passive:true });
+      if(window.ResizeObserver) new ResizeObserver(upd).observe(row); else window.addEventListener('resize', upd);
+      upd();
+    });
+  }
+  /* Blocks that scroll sideways with a visible bar keep var(--s3) between content and bar. */
+  function scrollers(){
+    document.querySelectorAll('.as-sec *, #atomIC *, #atomMK *').forEach(function(el){
+      if(el.closest('.as-rail') || el.classList.contains('isel-rail')) return;
+      var o = getComputedStyle(el).overflowX, on = (o === 'auto' || o === 'scroll') && el.scrollWidth > el.clientWidth + 2;
+      if(on !== el.classList.contains('as-scroll-x')) el.classList.toggle('as-scroll-x', on);
+    });
+  }
+  function tidy(){ fixLinks(); months(); zeros(); rails(); }
   function start(){
     nav(); tidy();
     var t = 0; new MutationObserver(function(){ clearTimeout(t); t = setTimeout(tidy, 120); }).observe(document.body, { childList:true, subtree:true });
-    var rt = 0; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(months, 300); });
+    var rt = 0; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ months(); scrollers(); }, 300); });
+    setTimeout(scrollers, 1500); setTimeout(scrollers, 5000);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
