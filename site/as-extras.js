@@ -88,7 +88,7 @@
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && cd.classList.contains('up')){ set(false); tab.focus(); } });
     document.addEventListener('click', function(e){
       var a = e.target.closest && e.target.closest('a[href],[data-contact-open]');
-      if(a && (a.hasAttribute('data-contact-open') || /^(https?:\/\/(www\.)?atticstandard\.com)?\/contact\/?(#.*)?$/.test(a.getAttribute('href')))){
+      if(a && (a.hasAttribute('data-contact-open') || a.getAttribute('href') === '#atomContact' || /^(https?:\/\/(www\.)?atticstandard\.com)?\/contact\/?(#.*)?$/.test(a.getAttribute('href')))){
         e.preventDefault(); set(true, a.getAttribute('data-contact-topic')); return;
       }
       if(cd.classList.contains('up') && !cd.contains(e.target)) set(false);
