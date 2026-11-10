@@ -4,6 +4,7 @@
       since the price ladder lives on the Terminal page.
    2. Links into the price index card go to the Indexes page: the ticker,
       and any older link that still points at the homepage card.
+   2b. Chart months turn to initials where they would crowd; empty shares read 0.0%.
    3. The contact drawer.
    These fold into as-site.js when the header and footer markup are next rebuilt.
    ═══════════════════════════════════════════════════════════ */
@@ -41,9 +42,25 @@
     if(typeof window.atomSelectIndex !== 'function')
       (root || document).querySelectorAll('a.tk-grp[data-code]').forEach(function(a){ a.setAttribute('href', '/indexes?index=' + slug(a.getAttribute('data-code')) + '#atom-index-card'); });
   }
+  /* Chart timelines: where months sit closer than 28px apart, they are written as initials. */
+  var MONS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function months(){
+    document.querySelectorAll('svg').forEach(function(svg){
+      var ts = [].filter.call(svg.querySelectorAll('text'), function(t){ return MONS.indexOf(t.textContent.trim()) > -1; });
+      if(ts.length < 3) return;
+      var vb = svg.viewBox && svg.viewBox.baseVal, k = vb && vb.width ? svg.getBoundingClientRect().width / vb.width : 1;
+      var xs = ts.map(function(t){ return +t.getAttribute('x') * k; }).sort(function(a, b){ return a - b; }), gap = 1e9;
+      for(var i = 1; i < xs.length; i++) gap = Math.min(gap, xs[i] - xs[i - 1]);
+      if(gap < 28) ts.forEach(function(t){ t.textContent = t.textContent.trim().charAt(0); });
+    });
+  }
+  /* Composition tables: a country with no models shows 0.0%, not a blank. */
+  function zeros(){ document.querySelectorAll('.colist-row .colist-v').forEach(function(c){ if(!c.textContent.trim()) c.textContent = '0.0%'; }); }
+  function tidy(){ fixLinks(); months(); zeros(); }
   function start(){
-    nav(); fixLinks();
-    var t = 0; new MutationObserver(function(){ clearTimeout(t); t = setTimeout(function(){ fixLinks(); }, 120); }).observe(document.body, { childList:true, subtree:true });
+    nav(); tidy();
+    var t = 0; new MutationObserver(function(){ clearTimeout(t); t = setTimeout(tidy, 120); }).observe(document.body, { childList:true, subtree:true });
+    var rt = 0; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(months, 300); });
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

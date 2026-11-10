@@ -36,6 +36,26 @@ body #hpCov .as-cv-top{display:flex;justify-content:space-between;align-items:fl
 body #hpCov .as-cv-kg{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s6)}
 body #hpCov .as-cv-leg svg{width:44px;height:16px;flex-shrink:0}
 
+/* Scrollbars: thin and dark wherever a block scrolls sideways (the index table on phones);
+   tab rows that swipe hide theirs, since the cut-off tab already shows there is more. */
+body .as-sec *,body .as-hero *,body #atomIC *,body #atomMK *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.16) transparent}
+body .as-sec *::-webkit-scrollbar,body #atomIC *::-webkit-scrollbar,body #atomMK *::-webkit-scrollbar{width:6px;height:6px;background:transparent}
+body .as-sec *::-webkit-scrollbar-thumb,body #atomIC *::-webkit-scrollbar-thumb,body #atomMK *::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:3px}
+body .as-sec *::-webkit-scrollbar-button,body #atomIC *::-webkit-scrollbar-button,body #atomMK *::-webkit-scrollbar-button{display:none}
+body .as-ds,body .as-cl-t,body .as-vt,body #atomIC .isel-rail,body #atomMK [class*="tabs"]{scrollbar-width:none}
+body .as-ds::-webkit-scrollbar,body .as-cl-t::-webkit-scrollbar,body .as-vt::-webkit-scrollbar,body #atomIC .isel-rail::-webkit-scrollbar,body #atomMK [class*="tabs"]::-webkit-scrollbar{display:none}
+body .as-hm{overflow-y:hidden}
+/* The hero description runs as one paragraph at every width. */
+body .as-hero .as-prose br{display:none}
+/* Index table legend on phones: its title on one line, the five keys in even columns below. */
+@media (max-width:767px){
+  body .as-hm-k{display:grid;grid-template-columns:repeat(3,auto minmax(0,1fr));align-items:center;gap:var(--s2) var(--s2);width:100%}
+  body .as-hm-k>span:first-child{grid-column:1 / -1;margin:0}
+  body .as-hm-k .as-hm-sw{margin-left:0}
+}
+/* Indexes page selector: every label sits the same distance above its control. */
+body #atomIC .ix-rows .isel-dd{margin-top:0}
+
 /* ═══ CONTACT DRAWER ═══
   CONTACT DRAWER ("Talk to the team"), staged on the new homepage; folds into the shared files
   and then shows on every page except /contact, which holds the full form.
