@@ -7,7 +7,7 @@
   2. Charts are redrawn at their real width (as-fluid.js), so their text stays at its set size.
   3. The index table fills the width in two columns when both fit side by side; when they stack,
   the block shrinks to the table so the legend stays on the table's right edge.
-  4. The map grows with the width until it would be taller than about 60% of the screen.
+  4. The map runs the full width, like the charts; its labels keep their set size.
   5. Paragraphs keep a readable line length however wide the section is.
   6. Index codes sit on the first line of their names; coverage counts sit above the map.
   7. Primary buttons use the link blue; on hover they turn to a blue outline with no fill.
@@ -31,7 +31,7 @@ body .as-hm-w{display:flex;flex-direction:column;gap:var(--s3)}
 body .as-hm-r>.as-code,body .as-hm-r>.as-hm-n{align-self:start;padding-top:4px}
 body .as-hm-r>.as-code{line-height:15.6px}
 body .as-hm-r>.as-hm-n{line-height:1.2}
-body #hpCov .as-cv-top,body #hpCov .as-cv-map{max-width:min(100%,150vh)}
+body #hpCov .as-cv-top,body #hpCov .as-cv-map{max-width:none;width:100%}
 body #hpCov .as-cv-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:var(--s4) var(--s6);margin-bottom:var(--s3)}
 body #hpCov .as-cv-kg{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s6)}
 body #hpCov .as-cv-leg svg{width:44px;height:16px;flex-shrink:0}
