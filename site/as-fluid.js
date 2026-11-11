@@ -1,22 +1,64 @@
 /* FLUID CHARTS, staged on the new homepage; folds into the shared script (AS.chart).
    A chart is drawn on a frame as wide as its container, so the plot stretches
-   while labels keep their set size. Below 720px the frame stays 720 wide and
-   scales down as before. Charts redraw when their container changes width. */
+   while labels keep their set size. From 560px to 720px the frame stays 720
+   wide and scales down. On phones (under 560px) the chart is redrawn at the
+   real width: text keeps its set size, the right-hand label column moves under
+   the plot as a list, and axis values sit inside the plot at its right edge.
+   Charts redraw when their container changes width. */
 (function(){
   var AS = window.AS = window.AS || {}, C = AS.chart;
   if(!C || C.mount) return;
-  var BASE = C.W, MIN = 720;
+  var BASE = C.W, MIN = 720, PHONE = 560, text = C.text, cap = null;
+  var AXV = /^[\u2212+\-]?\$?\d[\d.,]*%?$/, MORE = /^([a-z0-9$+\u2212\-]|listings per week)/i;
   C.fit = function(w){
-    var W = Math.max(MIN, Math.round(w || BASE));
-    C.W = W; C.X1 = W - 170; C.LX = W - 146; C.AR = W - 156;
+    w = Math.round(w || BASE);
+    if(w < PHONE){ C.phone = true; C.W = w; C.X0 = 6; C.X1 = w - 10; C.AL = 0; C.AR = w; C.LX = w + 400; }
+    else { C.phone = false; var W = Math.max(MIN, w); C.W = W; C.X0 = 14; C.AL = 0; C.X1 = W - 170; C.LX = W - 146; C.AR = W - 156; }
     return C;
   };
+  /* On phones, text set in the label column is collected for the list;
+     axis values in that column are drawn inside the plot instead. */
+  C.text = function(x, y, s, o){
+    if(cap && x >= C.LX - 1){
+      o = o || {};
+      if(AXV.test(String(s).trim())) return text(C.W - 2, y - 8, s, { cls:o.cls, anchor:'end', size:o.size });
+      cap.push({ y:y, s:String(s), cls:o.cls || 'as-f-l4', w:o.weight });
+      return '';
+    }
+    return text.apply(this, arguments);
+  };
+  function un(s){ return String(s).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&'); }
+  function tone(cls){ var m = /l(\d)/.exec(cls || ''); return 'var(--l' + (m ? m[1] : 4) + ')'; }
+  function list(items){
+    if(!items.length) return '';
+    items.sort(function(a, b){ return a.y - b.y; });
+    var out = [], i, a, b;
+    for(i = 0; i < items.length; i++){
+      a = items[i]; b = items[i + 1];
+      if(b && b.y - a.y > 0 && b.y - a.y <= 16 && (/l5/.test(b.cls) || MORE.test(un(b.s)))){ a.v = b.s; i++; }
+      out.push(a);
+    }
+    return '<ul class="as-ch-list">' + out.map(function(it){
+      var hi = /l[12]/.test(it.cls) || it.w;
+      return '<li' + (hi ? ' class="on"' : '') + '><span style="color:' + tone(it.cls) + '">' + C.esc(un(it.s)) + '</span>' + (it.v ? '<span class="v">' + C.esc(un(it.v)) + '</span>' : '') + '</li>';
+    }).join('') + '</ul>';
+  }
   function render(el, force){
     var w = el.clientWidth;
     if(!w || (!force && w === el._asw) || !el._asdraw) return;
     el._asw = w; C.fit(w);
-    try { el.innerHTML = el._asdraw(); } catch(e){ console.error('Attic Standard chart:', e); }
-    finally { C.fit(BASE); }
+    try {
+      cap = C.phone ? [] : null;
+      var html = el._asdraw() || '';
+      if(C.phone){
+        /* Leader lines that ran out to the label column are dropped. */
+        html = html.replace(/<polyline[^>]*points="([^"]*)"[^>]*><\/polyline>/g, function(m, p){
+          return p.trim().split(/\s+/).some(function(q){ return +q.split(',')[0] > C.W + 1; }) ? '' : m; });
+        html += list(cap);
+      }
+      el.innerHTML = html;
+    } catch(e){ console.error('Attic Standard chart:', e); }
+    finally { cap = null; C.fit(BASE); }
   }
   /* Draw into el now, and again whenever el changes width. */
   C.mount = function(el, draw){
