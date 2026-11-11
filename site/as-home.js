@@ -37,3 +37,34 @@
   function init(){ var hm = document.getElementById('hpHm'); if(!hm) return; tidy(); new MutationObserver(tidy).observe(hm, { childList:true }); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+/* Cap and floor are agreed in negotiation, like discounts, so the homepage leaves them out:
+   the hero diagram loses its cap and floor lines, the Clause section its cap and floor copy,
+   and the simulated contract chart its CAP and FLOOR rules. Where a floor or cap actually
+   binds, the chart still notes it, since the flat payment needs explaining. */
+(function(){
+  var AS = window.AS;
+  if(AS && AS.hp && !AS._noCf){
+    AS._noCf = 1;
+    AS.hp = AS.hp.then(function(p){ (p && p.contracts || []).forEach(function(c){ c.cap = 100; c.floor = 100; }); return p; });
+    if(AS.chart){
+      var tx = AS.chart.text, sv = AS.chart.svg;
+      AS.chart.text = function(x, y, s){ if(s === 'CAP' || s === 'FLOOR') return ''; return tx.apply(this, arguments); };
+      if(sv) AS.chart.svg = function(inner, label){ return sv.call(this, inner, label == null ? label : String(label).replace(/,? with its cap and floor/, '')); };
+    }
+  }
+  function strip(){
+    document.querySelectorAll('svg.as-vx').forEach(function(s){
+      s.querySelectorAll('g.as-cf').forEach(function(g){ g.remove(); });
+      s.querySelectorAll('line[stroke-dasharray]').forEach(function(l){ if(l.getAttribute('x1') === '800' && l.getAttribute('x2') === '1140') l.remove(); });
+      var f = s.closest('figure') || s.parentNode;
+      f.querySelectorAll('.as-lg-m').forEach(function(d){ if(/cap and floor/i.test(d.textContent)) d.remove(); });
+      [s].concat([].slice.call(f.querySelectorAll('[aria-label]'))).forEach(function(e){ var a = e.getAttribute('aria-label'); if(a && /cap and a floor/.test(a)) e.setAttribute('aria-label', a.replace(/ between a cap and a floor/, '')); });
+    });
+    var cl = document.getElementById('hpClause'); if(!cl) return;
+    cl.querySelectorAll('p.as-ss').forEach(function(p){ if(/cap and a floor/i.test(p.textContent)) p.textContent = 'Your bill follows the index, month by month.'; });
+    cl.querySelectorAll('li').forEach(function(li){ if(/^\s*cap and floor/i.test(li.textContent)) li.textContent = 'Priced on a single, blended or custom index'; });
+  }
+  strip();
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', strip);
+})();
