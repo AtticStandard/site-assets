@@ -1,6 +1,6 @@
 /* CLAUSE PAGE (staging): every figure filled from the published Clause payload, the
    simulated contract selector and chart, the contents highlight, the model clause
-   wording and the print link. The markup carries the November 9, 2026 figures, so the
+   wording. The print link #clPrint is handled by as-clause-pdf.js. The markup carries the November 9, 2026 figures, so the
    page reads correctly even if the data cannot be loaded. */
 (function(){
   'use strict';
@@ -148,7 +148,6 @@
     }
     var more = $('clMore'), mc = more && more.parentNode.querySelector('.cla-mc');
     if(more && mc) more.addEventListener('click', function(e){ e.preventDefault(); var open = mc.classList.toggle('cla-open'); $('clMoreT').textContent = open ? 'Hide the full wording' : 'Read the full wording'; });
-    var pr = $('clPrint'); if(pr) pr.addEventListener('click', function(e){ e.preventDefault(); window.print(); });
     /* contents: mark the section in view */
     var links = [].slice.call(document.querySelectorAll('.cla-toc a, .cla-chips a')), chips = document.querySelector('.cla-chips');
     var ids = links.map(function(a){ return a.getAttribute('href').slice(1); }).filter(function(v, i, s){ return v && s.indexOf(v) === i; });
@@ -160,10 +159,11 @@
       els.forEach(function(el){ io.observe(el); });
     }
     var tm = 0; window.addEventListener('resize', function(){ clearTimeout(tm); tm = setTimeout(function(){ if(LIST[cur]) chart(LIST[cur]); }, 150); });
-    fetch(API, { method:'POST', headers:{ apikey:KEY, 'Content-Type':'application/json' }, body:'{}' })
-      .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(fill)
+    DATA.then(fill)
       .catch(function(e){ console.error('Attic Standard Clause data unavailable:', e); });
   }
+  /* One request, shared with the Clause document (as-clause-pdf.js), which prints from #clPrint. */
+  var DATA = window.ASClauseData = fetch(API, { method:'POST', headers:{ apikey:KEY, 'Content-Type':'application/json' }, body:'{}' })
+    .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
