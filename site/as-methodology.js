@@ -1,7 +1,14 @@
-/* METHODOLOGY PAGE: the contents highlight and the chips on phones. The page itself is static. */
+/* METHODOLOGY PAGE: the published date, the contents highlight and the chips on phones. The page
+   itself is static. */
 (function(){
   'use strict';
+  var MONTH = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function pub(){
+    var b = document.getElementById('mthPub'), d = window.AS && window.AS.activeDate; if(!b || !d || !d.then) return;
+    d.then(function(v){ var p = String(v).slice(0, 10).split('-'); b.textContent = MONTH[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; }).catch(function(){});
+  }
   function init(){
+    pub();
     var links = [].slice.call(document.querySelectorAll('.mth-toc a, .mth-chips a')), chips = document.querySelector('.mth-chips');
     var ids = links.map(function(a){ return a.getAttribute('href').slice(1); }).filter(function(v, i, s){ return v && s.indexOf(v) === i; });
     var els = ids.map(function(id){ return document.getElementById(id); }).filter(Boolean);
