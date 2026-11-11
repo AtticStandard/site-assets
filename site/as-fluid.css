@@ -143,3 +143,5 @@ a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"]{display:none !important}
 
 /* Publications: the paper link reads at the same size as every other section link. */
 .as-pb-go{font-size:var(--fs-ui,13px) !important}
+/* PDF download links read at the same size as every other text link. */
+a[data-ov-pdf]{font-size:var(--fs-ui,13px) !important}
