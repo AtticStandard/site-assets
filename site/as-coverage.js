@@ -58,8 +58,8 @@
     list = list.slice().sort(function(a, b){ return (CH[a.channel] || [0,0,0,0,9])[4] - (CH[b.channel] || [0,0,0,0,9])[4]; });
     var tot = list.reduce(function(a, c){ return a + +c.skus; }, 0), st = $('covStack'), box = $('covChn');
     if(st){ st.innerHTML = list.map(function(c){ var k = CH[c.channel] || [c.channel, c.channel, '', '#7D848F']; return '<div style="flex:' + c.skus + ';background:' + k[3] + '" title="' + esc(k[1]) + '">' + Math.round(c.skus / tot * 100) + '%</div>'; }).join('');
-      var lg = document.createElement('div'); lg.className = 'cov-stack-l'; lg.style.gridTemplateColumns = list.map(function(c){ return c.skus + 'fr'; }).join(' ');
-      lg.innerHTML = list.map(function(c){ return '<span>' + esc((CH[c.channel] || [0, c.channel])[1]) + '</span>'; }).join('');
+      var lg = document.createElement('div'); lg.className = 'cov-stack-l';
+      lg.innerHTML = list.map(function(c){ return '<span style="flex:' + c.skus + '">' + esc((CH[c.channel] || [0, c.channel])[1]) + '</span>'; }).join('');
       var old = st.parentNode.querySelector('.cov-stack-l'); if(old) old.remove(); st.parentNode.appendChild(lg); }
     if(box){ var h = '<div class="cov-h">Channel</div><div class="cov-h cov-x">What it sells</div><div class="cov-h cov-r">Vendors</div><div class="cov-h cov-r cov-x">Pricing services</div><div class="cov-h cov-r">SKUs</div>';
       list.forEach(function(c){ var k = CH[c.channel] || [c.channel, c.channel, '', '#7D848F'];

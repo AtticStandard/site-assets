@@ -373,7 +373,11 @@ select.cov-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
   .cov-crit{grid-template-columns:minmax(0,1fr)}
   .cov-frm{grid-template-columns:minmax(0,1fr)}
 }
-/* After the base rules: directory columns. */
+/* After the base rules: directory and channel columns, stack legend. */
+.cov-chn{grid-template-columns:190px minmax(0,1.8fr) 90px 150px 90px}
+.cov-stack-l{display:flex;gap:3px}
+.cov-stack-l span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px}
+@media (max-width:767px){.cov-chn{grid-template-columns:minmax(0,1fr) 60px 70px}.cov-stack-l span{font-size:11px}}
 .cov-vd{grid-template-columns:38px minmax(0,1.6fr) 150px 130px 70px 70px 80px 20px}
 .cov-vd .cov-chev{padding-right:0}
 @media (max-width:767px){.cov-vd{grid-template-columns:38px minmax(0,1fr) 60px 20px}}
