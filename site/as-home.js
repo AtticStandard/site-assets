@@ -89,7 +89,8 @@
     function later(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ lay(s); }); }); }
     lay(s); later();
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', later);
-    if(document.fonts && document.fonts.ready) document.fonts.ready.then(later);
+    if(document.fonts){ if(document.fonts.ready) document.fonts.ready.then(later); if(document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', later); }
+    window.addEventListener('load', later); setTimeout(later, 700); setTimeout(later, 2000);
     if(window.ResizeObserver) new ResizeObserver(later).observe(s);
     /* The hero type script rescales the label after load: lay the tag out again whenever it does. */
     if(window.MutationObserver) new MutationObserver(later).observe(t, { attributes:true, attributeFilter:['font-size'] });
