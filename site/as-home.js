@@ -53,20 +53,45 @@
       if(sv) AS.chart.svg = function(inner, label){ return sv.call(this, inner, label == null ? label : String(label).replace(/,? with its cap and floor/, '')); };
     }
   }
+  /* The gold line ends in the market-adjusted bill: a filled gold tag over the last dot, with a
+     ring around the dot, so the outcome reads apart from the contract price label. Sized from the
+     label's own font size, which the hero type script rescales with the width. */
+  var NS = 'http://www.w3.org/2000/svg';
+  function lay(s){
+    var g = s.querySelector('.as-mab'), dot = s.querySelector('circle[style*="fill: var(--gold)"]'); if(!g || !dot) return;
+    var t = g.querySelector('text'), r = g.querySelector('rect'), fs = +t.getAttribute('font-size') || 14.48;
+    var cx = +dot.getAttribute('cx'), cy = +dot.getAttribute('cy'), px = fs * .7, h = fs * 1.75, w;
+    try { w = t.getComputedTextLength(); } catch(e){ w = fs * 9.5; }
+    var right = Math.min(cx + 8, 1196), bottom = cy - 13;
+    r.setAttribute('x', (right - w - 2 * px).toFixed(1)); r.setAttribute('y', (bottom - h).toFixed(1));
+    r.setAttribute('width', (w + 2 * px).toFixed(1)); r.setAttribute('height', h.toFixed(1)); r.setAttribute('rx', (h / 2).toFixed(1));
+    t.setAttribute('x', (right - px).toFixed(1)); t.setAttribute('y', (bottom - h / 2 + fs * .36).toFixed(1));
+  }
+  function mab(s){
+    var dot = s.querySelector('circle[style*="fill: var(--gold)"]'); if(!dot || s.querySelector('.as-mab')) return;
+    var ln = s.querySelector('polyline[style*="gold"]'), p0 = ln ? ln.getAttribute('points').trim().split(/\s+/)[0].split(',') : null;
+    s.querySelectorAll('text').forEach(function(t){ if(t.textContent.trim() === 'Your contract price' && p0){ t.setAttribute('x', p0[0]); t.setAttribute('y', (+p0[1] - 12).toFixed(1)); } });
+    var ring = document.createElementNS(NS, 'circle');
+    ring.setAttribute('cx', dot.getAttribute('cx')); ring.setAttribute('cy', dot.getAttribute('cy')); ring.setAttribute('r', '9');
+    ring.setAttribute('fill', 'none'); ring.setAttribute('stroke-width', '1.5'); ring.setAttribute('style', 'stroke: var(--gold); opacity: .45');
+    dot.parentNode.insertBefore(ring, dot);
+    var g = document.createElementNS(NS, 'g'), r = document.createElementNS(NS, 'rect'), t = document.createElementNS(NS, 'text');
+    g.setAttribute('class', 'as-mab'); r.setAttribute('style', 'fill: var(--gold)');
+    t.setAttribute('font-family', 'Roboto, sans-serif'); t.setAttribute('font-size', '14.48'); t.setAttribute('font-weight', '600');
+    t.setAttribute('text-anchor', 'end'); t.setAttribute('style', 'fill: var(--bg, #15171B)'); t.textContent = 'Market-adjusted bill';
+    g.appendChild(r); g.appendChild(t); dot.parentNode.insertBefore(g, dot.nextSibling);
+    function later(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ lay(s); }); }); }
+    lay(s); later();
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', later);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(later);
+    if(window.ResizeObserver) new ResizeObserver(later).observe(s);
+  }
   function strip(){
     document.querySelectorAll('svg.as-vx').forEach(function(s){
       s.querySelectorAll('g.as-cf').forEach(function(g){ g.remove(); });
       s.querySelectorAll('line[stroke-dasharray]').forEach(function(l){ if(l.getAttribute('x1') === '800' && l.getAttribute('x2') === '1140') l.remove(); });
       s.querySelectorAll('rect').forEach(function(r){ if(r.getAttribute('x') === '800' && r.getAttribute('y') === '88') r.remove(); });
-      /* The gold line ends in the market-adjusted bill: label it under the last dot. */
-      var dot = s.querySelector('circle[style*="gold"]');
-      if(dot && !s.querySelector('.as-mab')){
-        var NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'), t = document.createElementNS(NS, 'text');
-        g.setAttribute('class', 'as-mab'); g.setAttribute('font-family', 'Roboto, sans-serif'); g.setAttribute('font-size', '14.48');
-        t.setAttribute('x', (+dot.getAttribute('cx') + 4.5).toFixed(1)); t.setAttribute('y', (+dot.getAttribute('cy') + 26).toFixed(1));
-        t.setAttribute('text-anchor', 'end'); t.setAttribute('style', 'fill: var(--gold)'); t.textContent = 'Market-adjusted bill';
-        g.appendChild(t); dot.parentNode.insertBefore(g, dot.nextSibling);
-      }
+      mab(s);
       var f = s.closest('figure') || s.parentNode;
       f.querySelectorAll('.as-lg-m').forEach(function(d){ if(/cap and floor/i.test(d.textContent)) d.remove(); });
       [s].concat([].slice.call(f.querySelectorAll('[aria-label]'))).forEach(function(e){ var a = e.getAttribute('aria-label'); if(a && /cap and a floor/.test(a)) e.setAttribute('aria-label', a.replace(/ between a cap and a floor/, '')); });
