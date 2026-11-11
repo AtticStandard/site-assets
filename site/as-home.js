@@ -59,6 +59,7 @@
   var NS = 'http://www.w3.org/2000/svg';
   function lay(s){
     var g = s.querySelector('.as-mab'), dot = s.querySelector('circle[style*="fill: var(--gold)"]'); if(!g || !dot) return;
+    var dl = s.querySelector('.as-dl'); g.style.display = dl && getComputedStyle(dl).display === 'none' ? 'none' : '';
     var t = g.querySelector('text'), r = g.querySelector('rect'), fs = +t.getAttribute('font-size') || 14.48;
     var cx = +dot.getAttribute('cx'), cy = +dot.getAttribute('cy'), px = fs * .7, h = fs * 1.75, w;
     try { w = t.getComputedTextLength(); } catch(e){ w = fs * 9.5; }
@@ -80,6 +81,10 @@
     t.setAttribute('font-family', 'Roboto, sans-serif'); t.setAttribute('font-size', '14.48'); t.setAttribute('font-weight', '600');
     t.setAttribute('text-anchor', 'end'); t.setAttribute('style', 'fill: var(--bg, #15171B)'); t.textContent = 'Market-adjusted bill';
     g.appendChild(r); g.appendChild(t); dot.parentNode.insertBefore(g, dot.nextSibling);
+    /* Phones show a legend instead of labels: add the bill to it. */
+    var lgr = (s.closest('figure') || s.parentNode).querySelector('.as-lgr');
+    if(lgr && !lgr.querySelector('.as-mab-lg')){ var it = document.createElement('div'); it.className = 'as-lg as-mab-lg';
+      it.innerHTML = '<span class="as-lg-k" style="width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.3)"></span><b style="font-weight:600;color:var(--gold)">Market-adjusted bill</b>'; lgr.appendChild(it); }
     function later(){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ lay(s); }); }); }
     lay(s); later();
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', later);
