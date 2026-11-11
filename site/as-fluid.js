@@ -8,7 +8,7 @@
 (function(){
   var AS = window.AS = window.AS || {}, C = AS.chart;
   if(!C || C.mount) return;
-  var BASE = C.W, MIN = 720, PHONE = 560, text = C.text, cap = null, boxes = [];
+  var BASE = C.W, MIN = 720, PHONE = 560, text = C.text, cap = null, boxes = [], tag = null;
   var AXV = /^[\u2212+\-]?\$?\d[\d.,]*%?$/, MORE = /^([a-z0-9$+\u2212\-]|Listings per week)/;
   C.fit = function(w){
     w = Math.round(w || BASE);
@@ -21,7 +21,13 @@
   C.text = function pt(x, y, s, o){
     if(cap && x >= C.LX - 1){
       o = o || {};
-      if(AXV.test(String(s).trim())) return pt(0, y - 8, s, { cls:o.cls, size:o.size });
+      var str = String(s).trim();
+      /* A line name in capitals (CAP, FLOOR) joins the value set under it as one tag on the line. */
+      if(/^[A-Z]{2,}$/.test(str)){ tag = { y:y, s:str, o:o }; return ''; }
+      if(AXV.test(str)){
+        if(tag && y - tag.y > 0 && y - tag.y <= 16){ var t = tag; tag = null; return pt(0, t.y - 4, t.s + ' ' + str, { cls:t.o.cls, size:t.o.size, weight:t.o.weight }); }
+        return pt(0, y - 8, s, { cls:o.cls, size:o.size });
+      }
       cap.push({ y:y, s:String(s), cls:o.cls || 'as-f-l4', w:o.weight });
       return '';
     }
@@ -60,7 +66,9 @@
     el._asw = w; C.fit(w);
     try {
       cap = C.phone ? [] : null; boxes = [];
+      tag = null;
       var html = el._asdraw() || '';
+      if(tag){ cap.push({ y:tag.y, s:tag.s, cls:tag.o.cls || 'as-f-l4' }); tag = null; }
       if(C.phone){
         /* Leader lines that ran out to the label column are dropped. */
         html = html.replace(/<polyline[^>]*points="([^"]*)"[^>]*><\/polyline>/g, function(m, p){
