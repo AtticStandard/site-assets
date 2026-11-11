@@ -4,6 +4,7 @@
 (function(){
   var RULES = [
     [/\bWoW\b/g, '1w'],
+    [/\bMoM\b/g, '1m'],
     [/ models priced this week/g, ' models priced'],
     [/Structure this week, behavior over the quarter/g, 'Structure now, behavior over 13 weeks'],
     [/ SKUs this week,/g, ' SKUs,'],
