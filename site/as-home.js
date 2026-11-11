@@ -160,7 +160,7 @@
     ['How has the market changed since you signed your AI contract?', 'The price of AI inference keeps moving after you sign.'],
     ['Your bill follows the index, month by month.', 'Your bill follows an Attic Standard index month by month, at a price neither side sets.'],
     ['Purpose-built indexes to protect your contract from price volatility.', 'Independent indexes for every segment of the inference market.'],
-    ['The international standard for the benchmarks that financial contracts settle against.', 'The global principles for financial benchmarks: every figure your contract settles on traces back to the published prices behind it.'],
+    ['The international standard for the benchmarks that financial contracts settle against.', 'The international standard for financial benchmarks. Every figure your contract settles on traces back to the published prices behind it.'],
     ['Independent research on the price of AI inference.', 'Objective research and analysis of the AI inference market.'],
     ['A 30 minute session compares the models you use with the benchmark and shows how the Clause would have priced your spend.', 'A 30-minute session compares the models you use with the benchmark and shows how the Clause would have priced your spend.'],
     ["Written from Attic Standard's own data.", 'Written by information economists for the professionals who negotiate and approve AI spend.']
