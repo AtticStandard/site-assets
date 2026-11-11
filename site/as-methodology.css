@@ -422,3 +422,10 @@ select.mth-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .mth-pg .mth-eq code sub{font-size:.72em}
 .mth-pg #open-iosco-btn{cursor:pointer}
 .mth-pg .mth-cl{margin:0}
+/* The IOSCO drawer waits off the right edge; keep it from widening the page. */
+html:has(.mth-pg),html:has(.mth-pg) body{overflow-x:clip}
+@media (min-width:768px) and (max-width:1100px){
+  .mth-g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mth-flow4{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .mth-flow4::before{display:none}
+}
