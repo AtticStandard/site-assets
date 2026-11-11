@@ -140,3 +140,6 @@ a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"]{display:none !important}
 
 /* Inner page headers: the subtitle stops well short of the header sheet on wide screens. */
 .pr-hsub,.cla-hsub,.cov-hsub,.mth-hsub,.tml-hsub,.lgl-hsub{max-width:34em;text-wrap:pretty}
+
+/* Publications: the paper link reads at the same size as every other section link. */
+.as-pb-go{font-size:var(--fs-ui,13px) !important}
