@@ -91,6 +91,8 @@
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', later);
     if(document.fonts && document.fonts.ready) document.fonts.ready.then(later);
     if(window.ResizeObserver) new ResizeObserver(later).observe(s);
+    /* The hero type script rescales the label after load: lay the tag out again whenever it does. */
+    if(window.MutationObserver) new MutationObserver(later).observe(t, { attributes:true, attributeFilter:['font-size'] });
   }
   function strip(){
     document.querySelectorAll('svg.as-vx').forEach(function(s){
