@@ -118,7 +118,7 @@
   CONTACT DRAWER ("Talk to the team"), staged on the new homepage; folds into the shared files
   and then shows on every page except /contact, which holds the full form.
   A folder sits on the bottom edge of the screen: only its tab and a thin lip show. The tab,
-  and every link to /contact, slides it up; the tab, Escape or a click outside tucks it down.
+  and every call to action that names a topic, slides it up; the tab, Escape or a click outside tucks it down.
   Submissions go to Web3forms, like the contact page, which emails info@atticstandard.com. */
 (function(){
   /* Not on /contact, which holds the full form, nor on a page that still carries the old contact section. */
@@ -153,8 +153,10 @@
     tab.addEventListener('click', function(){ set(!cd.classList.contains('up')); });
     document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && cd.classList.contains('up')){ set(false); tab.focus(); } });
     document.addEventListener('click', function(e){
+      /* Calls to action open the drawer (data-contact-open, data-contact-topic, #atomContact);
+         a plain link to /contact, as in the menu and the footer, goes to the Contact page. */
       var a = e.target.closest && e.target.closest('a[href],[data-contact-open]');
-      if(a && (a.hasAttribute('data-contact-open') || a.getAttribute('href') === '#atomContact' || /^(https?:\/\/(www\.)?atticstandard\.com)?\/contact\/?(#.*)?$/.test(a.getAttribute('href')))){
+      if(a && (a.hasAttribute('data-contact-open') || a.hasAttribute('data-contact-topic') || a.getAttribute('href') === '#atomContact')){
         e.preventDefault(); set(true, a.getAttribute('data-contact-topic')); return;
       }
       if(cd.classList.contains('up') && !cd.contains(e.target)) set(false);
