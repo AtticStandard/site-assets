@@ -62,7 +62,7 @@
       var dot = s.querySelector('circle[style*="gold"]');
       if(dot && !s.querySelector('.as-mab')){
         var NS = 'http://www.w3.org/2000/svg', g = document.createElementNS(NS, 'g'), t = document.createElementNS(NS, 'text');
-        g.setAttribute('class', 'as-mab'); g.setAttribute('font-family', 'Roboto, sans-serif'); g.setAttribute('font-size', '14.48'); g.setAttribute('font-weight', '600');
+        g.setAttribute('class', 'as-mab'); g.setAttribute('font-family', 'Roboto, sans-serif'); g.setAttribute('font-size', '14.48');
         t.setAttribute('x', (+dot.getAttribute('cx') + 4.5).toFixed(1)); t.setAttribute('y', (+dot.getAttribute('cy') + 26).toFixed(1));
         t.setAttribute('text-anchor', 'end'); t.setAttribute('style', 'fill: var(--gold)'); t.textContent = 'Market-adjusted bill';
         g.appendChild(t); dot.parentNode.insertBefore(g, dot.nextSibling);
