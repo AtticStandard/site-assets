@@ -73,14 +73,16 @@
       [ratio.toFixed(1) + '&times;', 'Vendor spread', 'Highest to lowest price for one model, ' + prices.length + ' vendors']];
     var cs = {}; (p.contracts || []).forEach(function(ct){
       var st = ct.months.filter(function(m){ return m.st && m.ix != null; });
-      cs[ct.id] = { fx:+ct.months[0].fx, st:st, saved:st.reduce(function(a, m){ return a + (m.fx - m.ix); }, 0) };
+      var min = ct.terms && ct.terms.commitment === 'minimum_spend';
+      cs[ct.id] = { fx:+ct.months[0].fx, st:st, min:min, saved:st.reduce(function(a, m){ return a + (m.fx - m.ix); }, 0),
+        use:st.reduce(function(a, m){ return a + (m.set ? m.fx * (100 / m.set - 1) : m.fx * (m.fx / m.ix - 1)); }, 0) };
     });
     var ids = ORDER.filter(function(id){ return cs[id]; });
     (p.contracts || []).forEach(function(ct){ if(ids.indexOf(ct.id) < 0) ids.push(ct.id); });
     var E = cs['ILLUS-FLG-2026-06'] || cs[ids[0]];
     var pay = [['2026-05', E.fx]].concat(E.st.map(function(m){ return [m.ym, +m.ix]; }));
     var from = E.st.length ? mname(E.st[0].ym) : 'June';
-    var sv = function(c){ return c.saved >= 0 ? money(c.saved) : money(-c.saved) + ' above'; };
+    var sv = function(c){ return c.min ? money(c.use) + ' more usage' : c.saved >= 0 ? money(c.saved) : money(-c.saved) + ' above'; };
     var s = cov && cov.summary || {};
     var countries = s.Countries || (cov && cov.countries || []).filter(function(c){ return Number(c.vendors) > 0; }).length;
     var h = '<style>' + CSS + '</style><div class="sheet">'
@@ -100,7 +102,7 @@
       + '<div><em>3</em><p><b>Terms already written</b><span>Fallback and model substitution are in the Clause, so nothing is reopened.</span></p></div>'
       + '</div></div></div>'
       + '<div class="blk"><p class="lb">Simulated contracts</p><h2>Five contracts settled on published index levels since May.</h2>'
-      + '<table><tr><th>Contract</th><th>Terms</th><th>Saved to date</th></tr>'
+      + '<table><tr><th>Contract</th><th>Terms</th><th>To date</th></tr>'
       + ids.map(function(id){ var c = COPY[id] || [id, '']; return '<tr><td>' + esc(c[0]) + '</td><td>' + esc(c[1]) + '</td><td>' + sv(cs[id]) + '</td></tr>'; }).join('') + '</table></div>'
       + '<div class="trust"><span>Administered with reference to the <b>IOSCO Principles</b></span><span>Independent: sells no inference, holds no position</span>'
       + '<span><b>' + int(s.Vendors) + '</b> vendors &middot; <b>' + int(s.Models) + '</b> models &middot; <b>' + int(countries) + '</b> countries</span></div>'

@@ -62,6 +62,9 @@
     var dl = s.querySelector('.as-dl'); g.style.display = dl && getComputedStyle(dl).display === 'none' ? 'none' : '';
     var t = g.querySelector('text'), r = g.querySelector('rect'), fs = +t.getAttribute('font-size') || 14.48;
     var cx = +dot.getAttribute('cx'), cy = +dot.getAttribute('cy'), px = fs * .7, h = fs * 1.75, w;
+    var k = 1200 / (s.clientWidth || 1200), ring = s.querySelector('.as-mab-ring');
+    dot.setAttribute('r', Math.max(4.5, 4 * k).toFixed(1));
+    if(ring){ ring.setAttribute('r', Math.max(9, 8 * k).toFixed(1)); ring.setAttribute('stroke-width', Math.max(1.5, 1.4 * k).toFixed(1)); }
     try { w = t.getComputedTextLength(); } catch(e){ w = fs * 9.5; }
     var right = cx + w / 2 + px, bottom = cy - 13;
     if(right > 1200) s.style.overflow = 'visible';
@@ -75,7 +78,7 @@
     s.querySelectorAll('text').forEach(function(t){ if(t.textContent.trim() === 'Your contract price' && p0){ t.setAttribute('x', p0[0]); t.setAttribute('y', (+p0[1] - 12).toFixed(1)); } });
     var ring = document.createElementNS(NS, 'circle');
     ring.setAttribute('cx', dot.getAttribute('cx')); ring.setAttribute('cy', dot.getAttribute('cy')); ring.setAttribute('r', '9');
-    ring.setAttribute('fill', 'none'); ring.setAttribute('stroke-width', '1.5'); ring.setAttribute('style', 'stroke: var(--gold); opacity: .45');
+    ring.setAttribute('class', 'as-mab-ring'); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke-width', '1.5'); ring.setAttribute('style', 'stroke: var(--gold); opacity: .45');
     dot.parentNode.insertBefore(ring, dot);
     var g = document.createElementNS(NS, 'g'), r = document.createElementNS(NS, 'rect'), t = document.createElementNS(NS, 'text');
     g.setAttribute('class', 'as-mab'); r.setAttribute('style', 'fill: var(--gold)');
@@ -111,4 +114,26 @@
   }
   strip();
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', strip);
+})();
+
+/* Minimum-spend simulated contract: the buyer pays the same and receives more usage, so the
+   homepage shows that usage, valued at the price at signing, exactly as the Clause page does. */
+(function(){
+  var AS = window.AS; if(!AS || !AS.hp) return;
+  var MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  AS.hp.then(function(p){
+    var ct = (p && p.contracts || []).filter(function(c){ return c.terms && c.terms.commitment === 'minimum_spend'; })[0]; if(!ct) return;
+    var st = ct.months.filter(function(m){ return m.st && m.ix != null; });
+    var use = Math.round(st.reduce(function(a, m){ return a + (m.set ? m.fx * (100 / m.set - 1) : m.fx * (m.fx / m.ix - 1)); }, 0));
+    var g = String(p.gate).split('-'), date = MON[+g[1] - 1] + ' ' + (+g[2]) + ', ' + g[0], from = st.length ? MON[+st[0].ym.slice(5, 7) - 1] : 'June';
+    var lbl = document.getElementById('hpClLbl'); if(!lbl) return;
+    function fix(){
+      if(!/three years/i.test(lbl.textContent)) return;
+      var big = document.getElementById('hpClBig'), d = document.getElementById('hpClD');
+      var t = '$' + use.toLocaleString('en-US'), dt = 'more usage from ' + from + ' to ' + date + ', for the same minimum spend, valued at the price at signing.';
+      if(big && big.textContent !== t) big.textContent = t;
+      if(d && d.textContent !== dt) d.textContent = dt;
+    }
+    new MutationObserver(fix).observe(lbl, { childList:true, characterData:true, subtree:true }); fix();
+  });
 })();
