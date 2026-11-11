@@ -373,7 +373,10 @@ select.cov-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
   .cov-crit{grid-template-columns:minmax(0,1fr)}
   .cov-frm{grid-template-columns:minmax(0,1fr)}
 }
-/* After the base rules: directory and channel columns, stack legend. */
+/* After the base rules: directory and channel columns, stack legend, and the request form, which
+   uses the contact drawer's own field classes (as-cd-*) so all three forms look the same. */
+.cov-cdf{display:flex;flex-direction:column;gap:var(--s4);margin:0;max-width:760px;min-width:0}
+.cov-pg .as-cd-n{margin:0}
 .cov-chn{grid-template-columns:190px minmax(0,1.8fr) 90px 150px 90px}
 .cov-stack-l{display:flex;gap:3px}
 .cov-stack-l span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px}

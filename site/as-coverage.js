@@ -131,37 +131,40 @@
     var tm = 0; t.querySelector('input').addEventListener('input', function(){ var v = this.value; clearTimeout(tm); tm = setTimeout(function(){ q = v.trim().toLowerCase(); draw(); }, 120); });
   }
 
-  /* ---------- request form ---------- */
+  /* ---------- request form: the contact drawer's own fields and classes (as-cd-*) ---------- */
   function form(){
     var w = $('covForm'); if(!w) return;
-    var f = function(id, lbl, inner, wide){ return '<label class="' + (wide ? 'cov-w' : '') + '" for="covF-' + id + '">' + lbl + inner + '</label>'; };
-    var inp = function(id, type, ac){ return '<input class="cov-in" type="' + type + '" id="covF-' + id + '" name="' + id + '" autocomplete="' + ac + '">'; };
-    var el = document.createElement('form'); el.className = 'cov-frm'; el.noValidate = true;
-    el.innerHTML = f('first', 'First name', inp('first', 'text', 'given-name')) + f('last', 'Last name', inp('last', 'text', 'family-name'))
-      + f('email', 'Work email', inp('email', 'email', 'email')) + f('company', 'Company', inp('company', 'text', 'organization'))
-      + f('kind', 'Request', '<select class="cov-in" id="covF-kind" name="kind"><option value="">Select an option</option><option>Cover my company, as a vendor</option><option>Suggest a vendor I use, as a buyer</option></select>')
-      + f('vendor', 'Vendor to cover', inp('vendor', 'text', 'off'))
-      + f('page', 'Pricing page', inp('page', 'url', 'url'), true)
-      + f('msg', 'Message', '<textarea class="cov-in" id="covF-msg" name="msg" placeholder="Anything we should know"></textarea>', true)
-      + '<div class="cov-frow"><button type="submit" class="as-btn as-btn-p">Send request</button><span>We respond within one business day.</span></div>';
+    var ERR = { first:'Enter your first name', last:'Enter your last name', email:'Enter a valid work email', company:'Enter your company',
+                kind:'Select an option', vendor:'Enter the vendor to cover', page:'Enter the vendor&rsquo;s pricing page', msg:'Enter a message' };
+    var f = function(id, lbl, inner, full){ return '<div class="as-cd-f' + (full ? ' full' : '') + '"><label class="as-cd-l" for="covF-' + id + '">' + lbl + '</label>' + inner + '<div class="as-cd-e" id="covF-' + id + '-err">' + ERR[id] + '</div></div>'; };
+    var inp = function(id, type, ac){ return '<input class="as-cd-i" type="' + type + '" id="covF-' + id + '" name="' + id + '" autocomplete="' + ac + '">'; };
+    var el = document.createElement('form'); el.className = 'cov-cdf'; el.noValidate = true;
+    el.innerHTML = '<p class="as-cd-n">All fields required.</p>'
+      + '<div class="as-cd-row">' + f('first', 'First name', inp('first', 'text', 'given-name')) + f('last', 'Last name', inp('last', 'text', 'family-name')) + '</div>'
+      + '<div class="as-cd-row">' + f('email', 'Work email', inp('email', 'email', 'email')) + f('company', 'Company', inp('company', 'text', 'organization')) + '</div>'
+      + '<div class="as-cd-row">' + f('kind', 'Request', '<select class="as-cd-i" id="covF-kind" name="kind"><option value="">Select an option</option><option>Cover my company, as a vendor</option><option>Suggest a vendor I use, as a buyer</option></select>')
+      + f('vendor', 'Vendor to cover', inp('vendor', 'text', 'off')) + '</div>'
+      + '<div class="as-cd-row">' + f('page', 'Pricing page', inp('page', 'url', 'url'), true) + '</div>'
+      + '<div class="as-cd-row">' + f('msg', 'Message', '<textarea class="as-cd-i" id="covF-msg" name="msg" placeholder="Tell us what you are working on"></textarea>', true) + '</div>'
+      + '<div class="as-cd-act"><button type="submit" class="as-cd-go">Send request</button><p class="as-cd-n as-cd-r">Your details are used to answer your enquiry and are not shared with third parties.</p></div>';
     w.innerHTML = ''; w.appendChild(el);
-    var go = el.querySelector('button'), note = el.querySelector('.cov-frow span'), g = function(id){ return $('covF-' + id); };
-    ['first','last','email','company','kind','vendor','page'].forEach(function(id){ g(id).addEventListener(id === 'kind' ? 'change' : 'input', function(){ this.classList.remove('cov-err'); }); });
+    var go = el.querySelector('.as-cd-go'), note = el.querySelector('.as-cd-r'), g = function(id){ return $('covF-' + id); };
+    var IDS = ['first','last','email','company','kind','vendor','page','msg'];
+    function err(id, on){ g(id).classList.toggle('err', on); $('covF-' + id + '-err').classList.toggle('show', on); }
+    IDS.forEach(function(id){ g(id).addEventListener(id === 'kind' ? 'change' : 'input', function(){ err(id, false); }); });
     el.addEventListener('submit', function(e){
       e.preventDefault(); var v = {}, ok = true;
-      ['first','last','company','kind','vendor','page'].forEach(function(id){ v[id] = g(id).value.trim(); var bad = !v[id]; g(id).classList.toggle('cov-err', bad); if(bad) ok = false; });
-      v.email = g('email').value.trim(); var be = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email); g('email').classList.toggle('cov-err', be); if(be) ok = false;
-      v.msg = g('msg').value.trim();
-      note.classList.toggle('cov-err', !ok); note.textContent = ok ? 'Sending' : 'Please complete the fields marked in red.';
+      IDS.forEach(function(id){ if(id === 'email') return; v[id] = g(id).value.trim(); var bad = !v[id]; err(id, bad); if(bad) ok = false; });
+      v.email = g('email').value.trim(); var be = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email); err('email', be); if(be) ok = false;
       if(!ok) return;
-      go.disabled = true;
+      go.disabled = true; go.textContent = 'Sending'; note.classList.remove('err');
       fetch(W3_URL, { method:'POST', headers:{ 'Content-Type':'application/json', Accept:'application/json' }, body:JSON.stringify({
         access_key:W3_KEY, from_name:'Attic Standard Website',
         subject:'Attic Standard coverage request: ' + v.vendor + ' (' + v.first + ' ' + v.last + ', ' + v.company + ')',
         replyto:v.email, first_name:v.first, last_name:v.last, email:v.email, company:v.company, interest:'Coverage request: ' + v.kind,
-        vendor:v.vendor, pricing_page:v.page, message:v.msg || '(none)', source_page:location.pathname + ' (coverage request)' }) })
+        vendor:v.vendor, pricing_page:v.page, message:v.msg, source_page:location.pathname + ' (coverage request)' }) })
       .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); el.reset(); go.textContent = 'Request sent'; note.textContent = 'Thank you. We respond within one business day.'; })
-      .catch(function(x){ console.error('Attic Standard coverage request unavailable:', x); go.disabled = false; note.classList.add('cov-err'); note.textContent = 'The request could not be sent. Please email info@atticstandard.com directly.'; });
+      .catch(function(x){ console.error('Attic Standard coverage request unavailable:', x); go.disabled = false; go.textContent = 'Send request'; note.classList.add('err'); note.textContent = 'The request could not be sent. Please email info@atticstandard.com directly.'; });
     });
   }
 
