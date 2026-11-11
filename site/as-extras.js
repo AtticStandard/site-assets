@@ -6,6 +6,8 @@
       and any older link that still points at the homepage card.
    2b. Chart months turn to initials where they would crowd; empty shares read 0.0%.
    2c. Tab rows that overflow get arrows and a fade; sideways scrollers keep space above their bar.
+   2d. The MCP is retired: its links leave the menu, footer and older page embeds, the About
+       page's access line drops it, and the contact topic list no longer offers it.
    3. The contact drawer.
    These fold into as-site.js when the header and footer markup are next rebuilt.
    ═══════════════════════════════════════════════════════════ */
@@ -96,7 +98,13 @@
       if(on !== el.classList.contains('as-scroll-x')) el.classList.toggle('as-scroll-x', on);
     });
   }
-  function tidy(){ fixLinks(); months(); zeros(); rails(); }
+  function noMcp(){
+    document.querySelectorAll('a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"],a[href*="atticstandard.com/mcp"]').forEach(function(a){ a.remove(); });
+    document.querySelectorAll('.cpg-dd-option').forEach(function(li){ if(li.textContent.trim() === 'MCP') li.remove(); });
+    document.querySelectorAll('option').forEach(function(o){ if(o.textContent.trim() === 'MCP') o.remove(); });
+    document.querySelectorAll('.abt-layer-desc').forEach(function(d){ if(/\bMCP\b/.test(d.textContent)) d.textContent = 'The published indexes, wherever pricing decisions are made: free on this site, and in the Terminal, where the parties to a contract on the benchmark follow its reference index, each month\u2019s settlement figure and the prices behind it. Both draw on the same published assessment, so a figure is identical wherever it is read.'; });
+  }
+  function tidy(){ noMcp(); fixLinks(); months(); zeros(); rails(); }
   function start(){
     nav(); tidy();
     var t = 0; new MutationObserver(function(){ clearTimeout(t); t = setTimeout(tidy, 120); }).observe(document.body, { childList:true, subtree:true });
@@ -116,7 +124,7 @@
   /* Not on /contact, which holds the full form, nor on a page that still carries the old contact section. */
   if(/^\/contact\/?$/.test(location.pathname) || document.getElementById('asCd') || document.getElementById('atomContact')) return;
   var W3_URL = 'https://api.web3forms.com/submit', W3_KEY = '21f374e5-af06-489a-b3b1-e31e060b5ab4';
-  var TOPICS = ['The Clause','Terminal','MCP','Coverage question','Methodology question','Vendor onboarding','Press','Partnerships','Other'];
+  var TOPICS = ['The Clause','Terminal','Coverage question','Methodology question','Vendor onboarding','Press','Partnerships','Other'];
   function f(id, lbl, inner, full){ return '<div class="as-cd-f' + (full ? ' full' : '') + '"><label class="as-cd-l" for="asCd-' + id + '">' + lbl + '</label>' + inner + '<div class="as-cd-e" id="asCd-' + id + '-err">' + ({first:'Enter your first name',last:'Enter your last name',email:'Enter a valid work email',company:'Enter your company',topic:'Select an option',msg:'Enter a message'})[id] + '</div></div>'; }
   function inp(id, type, ac){ return '<input class="as-cd-i" type="' + type + '" id="asCd-' + id + '" name="' + id + '" autocomplete="' + ac + '">'; }
   var html =

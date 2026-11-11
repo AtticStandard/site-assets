@@ -133,3 +133,7 @@ html.as-has-cd .atom-footer{padding-bottom:calc(var(--s5) + 52px)}
 .as-close-t{margin:0 0 var(--s2);font-size:36px;font-weight:700;line-height:1.25;color:var(--l1);text-wrap:balance}
 .as-close-p{margin:0;font-size:var(--fs-body);line-height:var(--lh-prose);color:var(--l2);text-wrap:pretty}
 @media (max-width:767px){.as-close-t{font-size:28px}}
+
+/* The MCP is retired: hide any link to it until the menu and footer markup are rebuilt
+   (as-extras.js removes them from the page). */
+a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"]{display:none !important}
