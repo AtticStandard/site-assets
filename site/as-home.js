@@ -63,7 +63,8 @@
     var t = g.querySelector('text'), r = g.querySelector('rect'), fs = +t.getAttribute('font-size') || 14.48;
     var cx = +dot.getAttribute('cx'), cy = +dot.getAttribute('cy'), px = fs * .7, h = fs * 1.75, w;
     try { w = t.getComputedTextLength(); } catch(e){ w = fs * 9.5; }
-    var right = Math.min(cx + 8, 1196), bottom = cy - 13;
+    var right = cx + w / 2 + px, bottom = cy - 13;
+    if(right > 1200) s.style.overflow = 'visible';
     r.setAttribute('x', (right - w - 2 * px).toFixed(1)); r.setAttribute('y', (bottom - h).toFixed(1));
     r.setAttribute('width', (w + 2 * px).toFixed(1)); r.setAttribute('height', h.toFixed(1)); r.setAttribute('rx', (h / 2).toFixed(1));
     t.setAttribute('x', (right - px).toFixed(1)); t.setAttribute('y', (bottom - h / 2 + fs * .36).toFixed(1));
