@@ -18,10 +18,10 @@
   };
   /* On phones, text set in the label column is collected for the list;
      axis values in that column are drawn inside the plot instead. */
-  C.text = function(x, y, s, o){
+  C.text = function pt(x, y, s, o){
     if(cap && x >= C.LX - 1){
       o = o || {};
-      if(AXV.test(String(s).trim())) return C.text(0, y - 8, s, { cls:o.cls, size:o.size });
+      if(AXV.test(String(s).trim())) return pt(0, y - 8, s, { cls:o.cls, size:o.size });
       cap.push({ y:y, s:String(s), cls:o.cls || 'as-f-l4', w:o.weight });
       return '';
     }
