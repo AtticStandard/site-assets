@@ -37,7 +37,7 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 
-/* Standard inner-page header: Published, Covers, For, Standards, the same four rows on every page. */
+/* Standard inner-page header: Published, Covers, For, the same three rows on every page. */
 (function(){
   function head(){
     var dl = document.querySelector('.ix-hero .ix-sheet'); if(!dl || dl._std) return;
@@ -49,7 +49,6 @@
     row('Published', d1);
     var d2 = document.createElement('dd'); d2.textContent = n + ' indexes in ' + f + ' families'; row('Covers', d2);
     var d3 = document.createElement('dd'); d3.textContent = 'Procurement, finance, engineering and analysts'; row('For', d3);
-    var d4 = document.createElement('dd'); d4.textContent = 'With reference to the IOSCO Principles'; row('Standards', d4);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();
 })();
