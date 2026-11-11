@@ -52,3 +52,19 @@
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();
 })();
+
+/* Standard page close (November 11, 2026): the Indexes page ends on Choose the index your contract
+   settles on, with Explore the Clause and Read the Primer. */
+(function(){
+  var ARR = '<svg width="20" height="12" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M0 6h18M13 1l5 5-5 5"/></svg>';
+  function run(){
+    if(document.getElementById('asClose')) return;
+    var mk = document.getElementById('atomMK'), emb = mk && mk.closest('.w-embed'); if(!emb) return;
+    var w = document.createElement('div'); w.className = 'as-close-w'; w.id = 'asClose';
+    w.innerHTML = '<section class="as-close"><div><h2 class="as-close-t">Choose the index your contract settles on.</h2>'
+      + '<p class="as-close-p">A published index, a blend of them or a custom index can anchor the&nbsp;Clause.</p></div>'
+      + '<div class="as-cl-a"><a href="/clause" class="as-btn as-btn-p">Explore the Clause</a><a href="/primer" class="as-cl-l">Read the Primer ' + ARR + '</a></div></section>';
+    emb.parentNode.insertBefore(w, emb.nextSibling);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();

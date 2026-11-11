@@ -118,3 +118,18 @@ html.as-has-cd .atom-footer{padding-bottom:calc(var(--s5) + 52px)}
 @media (max-width:991px){.as-cd-b{grid-template-columns:minmax(0,1fr);gap:var(--s5)}.as-cd-steps{display:none}}
 @media (max-width:767px){.as-cd{left:0;right:0}.as-cd-tab{right:var(--gutter)}.as-cd-b{border-radius:10px 10px 0 0;padding:var(--s5) var(--gutter)}.as-cd-row{grid-template-columns:minmax(0,1fr)}.as-cd-s{display:none}}
 @media (prefers-reduced-motion:reduce){.as-cd,.as-cd-tab svg{transition:none}}
+
+/* STANDARD PAGE CLOSE (set November 11, 2026). Every page ends on one close block: a headline of
+   its own tied to the Clause, one line, one blue button and at most one text link beside it.
+   Reading pages send readers to the Clause page; deciding pages open the contact drawer with the
+   topic set. .as-close is the block for pages built from embeds; native pages keep their own
+   close section and use .as-cl-a for the button row. */
+.as-cl-a{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s4) var(--s6)}
+.as-cl-l{display:inline-flex;align-items:center;gap:8px;line-height:1;font-size:var(--fs-ui);font-weight:500;color:var(--accent);text-decoration:none;cursor:pointer;background:none;border:0;padding:0;font-family:var(--font-sans)}
+.as-cl-l:hover{color:var(--accent-hover)}
+.as-cl-l svg{display:block;flex:none}
+.as-close-w{padding:0 var(--gutter)}
+.as-close{border-top:1px solid var(--border);padding:var(--s7) 0 calc(var(--s7) + var(--s6));display:flex;flex-direction:column;gap:var(--s6);margin:0}
+.as-close-t{margin:0 0 var(--s2);font-size:36px;font-weight:700;line-height:1.25;color:var(--l1);text-wrap:balance}
+.as-close-p{margin:0;font-size:var(--fs-body);line-height:var(--lh-prose);color:var(--l2);text-wrap:pretty}
+@media (max-width:767px){.as-close-t{font-size:28px}}

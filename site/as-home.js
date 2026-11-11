@@ -137,3 +137,17 @@
     new MutationObserver(fix).observe(lbl, { childList:true, characterData:true, subtree:true }); fix();
   });
 })();
+
+/* Standard page close (November 11, 2026): Talk to the team opens the drawer on The Clause, with
+   Explore the Clause as the text link beside it. */
+(function(){
+  var ARR = '<svg width="20" height="12" viewBox="0 0 20 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M0 6h18M13 1l5 5-5 5"/></svg>';
+  function run(){
+    var h = [].slice.call(document.querySelectorAll('section.as-sec h2.as-st')).filter(function(x){ return /Put the market price in your next AI contract/.test(x.textContent); })[0];
+    if(!h) return; var sec = h.closest('section'); if(!sec || sec._cl) return; sec._cl = 1;
+    var row = sec.querySelector('a.as-btn') && sec.querySelector('a.as-btn').parentNode; if(!row) return;
+    row.className = 'as-cl-a';
+    row.innerHTML = '<a href="/contact" data-contact-topic="The Clause" class="as-btn as-btn-p">Talk to the team</a><a href="/clause" class="as-cl-l">Explore the Clause ' + ARR + '</a>';
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
