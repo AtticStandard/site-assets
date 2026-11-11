@@ -15,7 +15,7 @@
     }).catch(function(){});
   }
   function counts(){
-    if(!window.fetch || !$('aboV')) return;
+    if(!window.fetch || !$('aboCov')) return;
     fetch(API, { method:'POST', headers:{ apikey:KEY, 'Content-Type':'application/json' }, body:'{}' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(p){
       var s = p && p.summary; if(!s) return;
       var ok = function(x){ return x != null && !isNaN(+x); };
