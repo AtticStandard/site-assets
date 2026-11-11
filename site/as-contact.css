@@ -56,6 +56,11 @@
 .cx-done{display:flex;flex-direction:column;gap:var(--s2);padding:var(--s4) 0}
 .cx-done b{font-size:20px;font-weight:600;color:var(--l1)}
 .cx-done span{font-size:15px;color:var(--l3);line-height:1.55}
+.cx-pg *{scrollbar-width:thin;scrollbar-color:rgba(50,120,255,.35) transparent}
+.cx-pg *::-webkit-scrollbar{width:6px;height:6px;background:transparent}
+.cx-pg *::-webkit-scrollbar-thumb{background:rgba(50,120,255,.35);border-radius:3px}
+.cx-pg *::-webkit-scrollbar-button{display:none}
+.cx-pg *::-webkit-scrollbar-corner,.cx-pg *::-webkit-resizer{background:transparent}
 @media (max-width:991px){
   .cx-in{grid-template-columns:minmax(0,1fr);min-height:0;gap:var(--s6)}
   .cx-l{justify-content:flex-start}
