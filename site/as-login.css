@@ -1,0 +1,80 @@
+/* LOGIN. The drawer's form on the left; on the right, the market this week, read from the
+   published levels (the outdated dashboard screenshot is gone). Sign-in logic in as-login.js. */
+.w-embed:has(> .lgn){padding:0 !important;margin:0 !important}
+.lgn,.lgn *{box-sizing:border-box}
+.lgn{background:var(--bg);font-family:var(--font-sans);color:var(--l3);min-height:calc(100vh - var(--header-h));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);width:100%;text-align:left;-webkit-font-smoothing:antialiased;border-top:1px solid var(--border)}
+.lgn p,.lgn h1{margin:0}
+.lgn a{text-decoration:none}
+
+/* Left: the form */
+.lgn-left{display:flex;align-items:center;justify-content:center;padding:var(--s7) var(--gutter)}
+.lgn-form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:var(--s4)}
+.lgn-brand{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s3);line-height:0;align-self:flex-start}
+.lgn-brand img{display:block;width:184px;height:13px;opacity:.9;transition:opacity .2s}
+.lgn-brand:hover img,.lgn-brand:focus-visible img{opacity:1}
+.lgn-brand:focus-visible{outline:1px solid var(--accent);outline-offset:6px}
+.lgn-brand .bar{width:1px;height:13px;background:var(--border)}
+.lgn-brand .name{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l4);line-height:1}
+.lgn-title{font-size:36px;font-weight:700;line-height:1.2;color:var(--l1)}
+.lgn-sub{margin-top:-8px !important;margin-bottom:var(--s2) !important;font-size:16px;color:var(--l3);line-height:1.5;text-wrap:pretty}
+.lgn-group{display:flex;flex-direction:column;gap:var(--s2);position:relative}
+.lgn-label{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l4);line-height:var(--lh-ui)}
+.lgn-input{width:100%;margin:0;background:0 0;border:1px solid var(--border);border-radius:var(--radius);padding:var(--s3) var(--s4);font:400 var(--fs-body)/var(--lh-ui) var(--font-sans);color:var(--l2);outline:0;transition:border-color .15s,background .15s;-webkit-appearance:none;appearance:none}
+.lgn-input::placeholder{color:var(--l5)}
+.lgn-input:focus,.lgn-input:focus-visible{border-color:var(--accent);background:var(--accent-soft)}
+.lgn-group.err .lgn-input{border-color:var(--error)}
+.lgn-msg{display:none;font-size:var(--fs-ui);color:var(--error);line-height:var(--lh-ui)}
+.lgn-group.err .lgn-msg{display:block}
+.lgn-field .lgn-input{padding-right:68px}
+.lgn-reveal{position:absolute;right:var(--s2);top:calc(var(--fs-label) * var(--lh-ui) + var(--s2));height:calc(var(--s3) * 2 + var(--fs-body) * var(--lh-ui) + 2px);background:0 0;border:0;padding:0 var(--s2);font:600 var(--fs-label)/1 var(--font-sans);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l4);cursor:pointer}
+.lgn-reveal:hover,.lgn-reveal:focus-visible{outline:0;color:var(--accent)}
+.lgn-caps{display:none;font-size:var(--fs-ui);color:var(--l4);line-height:var(--lh-ui)}
+.lgn-caps.on{display:block}
+.lgn-btn{width:100%;height:46px;margin-top:var(--s2);background:var(--accent);color:var(--l1);border:1px solid var(--accent);border-radius:var(--radius);font:600 var(--fs-body)/1 var(--font-sans);cursor:pointer;transition:background .2s,border-color .2s}
+.lgn-btn:hover,.lgn-btn:focus-visible{outline:0;background:var(--accent-hover);border-color:var(--accent-hover)}
+.lgn-btn:disabled{opacity:.6;cursor:not-allowed}
+.lgn-alert,.lgn-ok{display:none;padding:var(--s3) var(--s4);font-size:var(--fs-body);color:var(--l2);line-height:var(--lh-prose)}
+.lgn-alert{border-left:2px solid var(--error)}
+.lgn-ok{border-left:2px solid var(--l4)}
+.lgn-alert.on,.lgn-ok.on{display:block}
+.lgn-alert a{color:var(--accent)}
+.lgn-row{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3) var(--s4);flex-wrap:wrap;font-size:var(--fs-ui);color:var(--l4);line-height:var(--lh-ui)}
+.lgn-forgot{background:0 0;border:0;padding:0;font:500 var(--fs-ui)/var(--lh-ui) var(--font-sans);color:var(--accent);cursor:pointer}
+.lgn-forgot:hover,.lgn-forgot:focus-visible,.lgn-row a:hover{outline:0;color:var(--accent-hover)}
+.lgn-row a{color:var(--accent);font-weight:500}
+.lgn-legal{font-size:12px;color:var(--l5);line-height:1.6;border-top:1px solid var(--border);padding-top:var(--s4);margin-top:var(--s2) !important}
+.lgn-legal a{color:var(--l4);border-bottom:1px solid var(--border)}
+.lgn-legal a:hover{color:var(--l2)}
+
+/* Right: the market this week */
+.lgn-right{display:flex;flex-direction:column;justify-content:center;gap:var(--s5);padding:var(--s7) 56px;border-left:1px solid var(--border);min-width:0}
+.lgn-cap{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5);line-height:var(--lh-ui)}
+.lgn-cap b{color:var(--l2);font-weight:600}
+.lgn-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s4);flex-wrap:wrap}
+.lgn-nm{display:flex;flex-direction:column;gap:4px}
+.lgn-nm b{font-size:15px;font-weight:600;color:var(--l1)}
+.lgn-nm a,.lgn-tb .nm a{color:var(--accent);font-family:var(--font-mono);font-size:12.5px}
+.lgn-val{display:flex;align-items:baseline;gap:var(--s3)}
+.lgn-val strong{font-size:40px;font-weight:600;color:var(--l1);line-height:1;font-variant-numeric:tabular-nums}
+.lgn .dn,.lgn .up,.lgn .fl{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lgn .dn{color:var(--down)}.lgn .up{color:var(--up)}.lgn .fl{color:var(--flat)}
+.lgn-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.lgn-chart text{font:11px var(--font-sans);fill:var(--l5)}
+.lgn-tb{display:grid;grid-template-columns:minmax(0,1fr) max-content max-content;border-top:1px solid var(--border)}
+.lgn-tb>div{padding:10px 0;border-bottom:1px solid var(--border-soft);font-size:14px;color:var(--l3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.lgn-tb>div:nth-child(3n+2),.lgn-tb>div:nth-child(3n){justify-content:flex-end;padding-left:28px}
+.lgn-tb .nm{color:var(--l1);font-weight:500}
+.lgn-tb .h{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5)}
+.lgn-src{font-size:12px;color:var(--l5);line-height:1.5}
+
+@media (max-width:991px){
+  .lgn{grid-template-columns:minmax(0,1fr)}
+  .lgn-left{padding:var(--s7) var(--gutter) var(--s6)}
+  .lgn-right{border-left:0;border-top:1px solid var(--border);padding:var(--s6) var(--gutter) var(--s7)}
+}
+@media (max-width:767px){
+  .lgn-title{font-size:28px}
+  .lgn-val strong{font-size:32px}
+  .lgn-tb{display:none}
+}
+@media (prefers-reduced-motion:reduce){.lgn-input,.lgn-btn,.lgn-brand img{transition:none}}

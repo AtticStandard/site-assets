@@ -437,3 +437,7 @@ select.lgl-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .lgl-pg .lgl-lb,.lgl-pg .lgl-lb:last-child{border-bottom:0}
 .lgl-pg .lgl-lt{padding-bottom:var(--s5)}
 @media (max-width:767px){ .lgl-pg .lgl-lb h2{font-size:18px} .lgl-pg .lgl-lp,.lgl-pg .lgl-lu li{font-size:14.5px} }
+
+/* The embed already carries the site gutter; the page brings its own, so drop the embed's to
+   line the legal pages up with every other inner page. */
+.w-embed:has(> .lgl-pg){padding:0 !important;margin:0 !important}
