@@ -462,6 +462,7 @@ select.abo-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .abo-pg .abo-cl{margin:0}
 .abo-pg .abo-hsub{max-width:34em;text-wrap:pretty}
 .abo-pg .abo-fq blockquote{border-left:0;padding:0;margin:0}
+.abo-pg .abo-coin figcaption{text-align:left;margin:0}
 .abo-pg .abo-sheet dd a,.abo-pg .abo-gv a,.abo-pg .abo-sg a{color:var(--accent)}
 @media (min-width:768px) and (max-width:1100px){
   .abo-g3{grid-template-columns:repeat(2,minmax(0,1fr))}
