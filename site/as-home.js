@@ -151,3 +151,29 @@
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
 })();
+
+/* Homepage story, November 11, 2026: section headlines and subtitles set by script until the
+   homepage embeds are rebuilt (each pair is matched on its current text, so a rebuilt embed that
+   already carries the new copy is left alone). */
+(function(){
+  var SWAP = [
+    ['How has the market changed since you signed your AI contract?', 'The price of AI inference keeps moving after you sign.'],
+    ['Your bill follows the index, month by month.', 'Your bill follows an Attic Standard index, so each month you pay what the market charges.'],
+    ['Purpose-built indexes to protect your contract from price volatility.', 'Independent indexes for every segment of the inference market.'],
+    ['The international standard for the benchmarks that financial contracts settle against.', 'Every figure your contract settles on traces back to the published prices behind it, and to the rule that produced it.'],
+    ['Independent research on the price of AI inference.', 'Objective research and analysis of the AI inference market.'],
+    ["Written from Attic Standard's own data.", 'Written by information economists for the professionals who negotiate and approve AI spend.']
+  ];
+  function norm(s){ return String(s).replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim(); }
+  function run(){
+    var els = document.querySelectorAll('h1,h2,h3,p,div,span');
+    SWAP.forEach(function(p){
+      for(var i = 0; i < els.length; i++){
+        var e = els[i];
+        if(e.children.length || e.closest('#asCd,.atom-footer,.nav-dropdown')) continue;
+        if(norm(e.textContent) === p[0]){ e.textContent = p[1]; }
+      }
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run); else run();
+})();
