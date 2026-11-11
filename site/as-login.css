@@ -1,14 +1,21 @@
-/* LOGIN. The drawer's form on the left; on the right, the market this week, read from the
-   published levels (the outdated dashboard screenshot is gone). Sign-in logic in as-login.js. */
+/* LOGIN (C1). A centred panel with the drawer's form, over a dotted world map with every country
+   that hosts a vendor behind the indexes lit, from the published coverage. Sign-in logic in as-login.js. */
 .w-embed:has(> .lgn){padding:0 !important;margin:0 !important}
 .lgn,.lgn *{box-sizing:border-box}
-.lgn{background:var(--bg);font-family:var(--font-sans);color:var(--l3);min-height:calc(100vh - var(--header-h));display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);width:100%;text-align:left;-webkit-font-smoothing:antialiased;border-top:1px solid var(--border)}
+.lgn{position:relative;overflow:hidden;min-height:calc(100vh - var(--header-h));display:flex;align-items:center;justify-content:center;padding:var(--s7) var(--gutter) calc(var(--s7) + var(--s6));background:radial-gradient(ellipse at 50% 45%,rgba(50,120,255,.06),transparent 60%),var(--bg);font-family:var(--font-sans);color:var(--l3);text-align:left;-webkit-font-smoothing:antialiased;border-top:1px solid var(--border)}
 .lgn p,.lgn h1{margin:0}
 .lgn a{text-decoration:none}
+.lgn-map{position:absolute;inset:0;pointer-events:none}
+.lgn-map svg{display:block;width:100%;height:100%}
+.lgn-panel{position:relative;width:100%;max-width:440px;padding:var(--s6);background:rgba(24,26,31,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 24px 80px rgba(0,0,0,.45)}
+.lgn-foot{position:absolute;left:var(--gutter);right:var(--gutter);bottom:28px;display:flex;justify-content:space-between;gap:var(--s3) var(--s4);flex-wrap:wrap;font-size:12px;color:var(--l4);line-height:1.5}
+.lgn-key{display:flex;align-items:center;gap:8px}
+.lgn-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--l1)}
+.lgn-cap{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5)}
+.lgn-cap b{color:var(--l2);font-weight:600}
 
-/* Left: the form */
-.lgn-left{display:flex;align-items:center;justify-content:center;padding:var(--s7) var(--gutter)}
-.lgn-form{width:100%;max-width:400px;display:flex;flex-direction:column;gap:var(--s4)}
+/* The form */
+.lgn-form{width:100%;display:flex;flex-direction:column;gap:var(--s4)}
 .lgn-brand{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s3);line-height:0;align-self:flex-start}
 .lgn-brand img{display:block;width:184px;height:13px;opacity:.9;transition:opacity .2s}
 .lgn-brand:hover img,.lgn-brand:focus-visible img{opacity:1}
@@ -46,35 +53,11 @@
 .lgn-legal a{color:var(--l4);border-bottom:1px solid var(--border)}
 .lgn-legal a:hover{color:var(--l2)}
 
-/* Right: the market this week */
-.lgn-right{display:flex;flex-direction:column;justify-content:center;gap:var(--s5);padding:var(--s7) 56px;border-left:1px solid var(--border);min-width:0}
-.lgn-cap{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5);line-height:var(--lh-ui)}
-.lgn-cap b{color:var(--l2);font-weight:600}
-.lgn-hd{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--s4);flex-wrap:wrap}
-.lgn-nm{display:flex;flex-direction:column;gap:4px}
-.lgn-nm b{font-size:15px;font-weight:600;color:var(--l1)}
-.lgn-nm a,.lgn-tb .nm a{color:var(--accent);font-family:var(--font-mono);font-size:12.5px}
-.lgn-val{display:flex;align-items:baseline;gap:var(--s3)}
-.lgn-val strong{font-size:40px;font-weight:600;color:var(--l1);line-height:1;font-variant-numeric:tabular-nums}
-.lgn .dn,.lgn .up,.lgn .fl{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.lgn .dn{color:var(--down)}.lgn .up{color:var(--up)}.lgn .fl{color:var(--flat)}
-.lgn-chart svg{display:block;width:100%;height:auto;overflow:visible}
-.lgn-chart text{font:11px var(--font-sans);fill:var(--l5)}
-.lgn-tb{display:grid;grid-template-columns:minmax(0,1fr) max-content max-content;border-top:1px solid var(--border)}
-.lgn-tb>div{padding:10px 0;border-bottom:1px solid var(--border-soft);font-size:14px;color:var(--l3);display:flex;align-items:center;gap:8px;white-space:nowrap;font-variant-numeric:tabular-nums}
-.lgn-tb>div:nth-child(3n+2),.lgn-tb>div:nth-child(3n){justify-content:flex-end;padding-left:28px}
-.lgn-tb .nm{color:var(--l1);font-weight:500}
-.lgn-tb .h{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5)}
-.lgn-src{font-size:12px;color:var(--l5);line-height:1.5}
-
-@media (max-width:991px){
-  .lgn{grid-template-columns:minmax(0,1fr)}
-  .lgn-left{padding:var(--s7) var(--gutter) var(--s6)}
-  .lgn-right{border-left:0;border-top:1px solid var(--border);padding:var(--s6) var(--gutter) var(--s7)}
-}
 @media (max-width:767px){
+  .lgn{flex-direction:column;padding:var(--s6) var(--gutter) var(--s7)}
+  .lgn-map{opacity:.55}
+  .lgn-panel{padding:var(--s5) var(--s4);box-shadow:none}
   .lgn-title{font-size:28px}
-  .lgn-val strong{font-size:32px}
-  .lgn-tb{display:none}
+  .lgn-foot{position:static;margin-top:var(--s5);flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce){.lgn-input,.lgn-btn,.lgn-brand img{transition:none}}
