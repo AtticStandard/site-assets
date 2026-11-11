@@ -137,3 +137,6 @@ html.as-has-cd .atom-footer{padding-bottom:calc(var(--s5) + 52px)}
 /* The MCP is retired: hide any link to it until the menu and footer markup are rebuilt
    (as-extras.js removes them from the page). */
 a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"]{display:none !important}
+
+/* Inner page headers: the subtitle stops well short of the header sheet on wide screens. */
+.pr-hsub,.cla-hsub,.cov-hsub,.mth-hsub,.tml-hsub,.lgl-hsub{max-width:34em;text-wrap:pretty}
