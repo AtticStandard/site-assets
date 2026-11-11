@@ -36,3 +36,20 @@
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+/* Standard inner-page header: Published, Covers, For, Standards, the same four rows on every page. */
+(function(){
+  function head(){
+    var dl = document.querySelector('.ix-hero .ix-sheet'); if(!dl || dl._std) return;
+    var rows = [].slice.call(dl.querySelectorAll('.r')), get = function(lbl){ var r = rows.filter(function(x){ var t = x.querySelector('dt'); return t && t.textContent.trim().toLowerCase() === lbl; })[0]; return r && r.querySelector('dd b') ? r.querySelector('dd b').textContent.trim() : ''; };
+    var pub = dl.querySelector('#ixPub'), n = get('indexes') || '29', f = get('families') || '6';
+    dl._std = 1; dl.innerHTML = '';
+    function row(l, dd){ var r = document.createElement('div'); r.className = 'r'; var t = document.createElement('dt'); t.className = 'as-lbl'; t.textContent = l; r.appendChild(t); r.appendChild(dd); dl.appendChild(r); }
+    var d1 = document.createElement('dd'); if(pub) d1.appendChild(pub); else { var b = document.createElement('b'); b.id = 'ixPub'; d1.appendChild(b); }
+    row('Published', d1);
+    var d2 = document.createElement('dd'); d2.textContent = n + ' indexes in ' + f + ' families'; row('Covers', d2);
+    var d3 = document.createElement('dd'); d3.textContent = 'Procurement, finance, engineering and analysts'; row('For', d3);
+    var d4 = document.createElement('dd'); d4.textContent = 'With reference to the IOSCO Principles'; row('Standards', d4);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();
+})();
