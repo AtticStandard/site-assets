@@ -46,7 +46,7 @@
 .pr-toc .pr-g{margin:var(--s3) 0 var(--s1);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5)}
 .pr-toc a{display:flex;gap:var(--s3);padding:5px 0 5px var(--s3);border-left:2px solid var(--border);font-size:13px;color:var(--l4);text-decoration:none;line-height:1.35}
 .pr-toc a b{font-weight:500;color:var(--l5);min-width:14px;font-variant-numeric:tabular-nums}
-.pr-toc a.on{border-color:var(--l1);color:var(--l1)}.pr-toc a.on b{color:var(--l1)}
+.pr-toc a.pr-on{border-color:var(--l1);color:var(--l1)}.pr-toc a.pr-on b{color:var(--l1)}
 .pr-chips{display:none}
 .pr-blk{padding:var(--s7) 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:var(--s5)}
 .pr-blk:last-child{border-bottom:0}
@@ -66,7 +66,7 @@
 .pr-sb p b{color:var(--l1);font-weight:600}
 .pr-shot{margin-top:var(--s2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:#181A1F;padding:var(--s4) var(--s5)}
 .pr-shot{max-width:960px}
-.pr-shot.sm{max-width:max-content}
+.pr-shot.pr-sm{max-width:max-content}
 .pr-shot img{display:block;width:100%;height:auto}
 .pr-toc a{white-space:nowrap}
 .pr-toc a span{overflow:hidden;text-overflow:ellipsis}
@@ -76,14 +76,14 @@
 .as-btn{display:inline-block;font-size:var(--fs-body);font-weight:600;padding:var(--s3) var(--s6);border-radius:var(--radius);line-height:1;border:1px solid var(--accent);text-decoration:none}
 .as-btn-p{background:var(--accent);color:var(--l1)}
 .pr-shot .pr-pi{display:none}
-.pr-shot.sm img{width:auto;max-width:100%}
-.pr-shot.fade{max-height:260px;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+.pr-shot.pr-sm img{width:auto;max-width:100%}
+.pr-shot.pr-fade{max-height:260px;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
 .pr-shot-c{font-size:12px;color:var(--l5);margin-top:calc(var(--s2) * -1)}
 .pr-rt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,2fr);border-top:1px solid var(--border);margin-top:var(--s2);max-width:700px}
 .pr-rt>div{padding:9px 0;border-bottom:1px solid var(--border-soft);font-size:14px;color:var(--l2);display:flex;align-items:center;gap:8px}
 .pr-rt .pr-h{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5)}
 .pr-ar{display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent}
-.pr-ar.ad{border-top:7px solid var(--l2)}.pr-ar.au{border-bottom:7px solid var(--l2)}.pr-ar.af{width:10px;height:2px;border:0;background:var(--l2)}
+.pr-ar.pr-ad{border-top:7px solid var(--l2)}.pr-ar.pr-au{border-bottom:7px solid var(--l2)}.pr-ar.pr-af{width:10px;height:2px;border:0;background:var(--l2)}
 .pr-fam{display:grid;grid-template-columns:120px minmax(0,1fr);border-top:1px solid var(--border);max-width:700px}
 .pr-fam>div{padding:8px 0;border-bottom:1px solid var(--border-soft);font-size:14px;line-height:1.45;color:var(--l3)}
 .pr-fam>div:nth-child(odd){color:var(--l1);font-weight:500}
@@ -107,7 +107,7 @@
   .pr-toc{display:none}
   .pr-chips{display:flex;gap:6px;overflow:hidden;padding:var(--s3) 0;border-bottom:1px solid var(--border);-webkit-mask-image:linear-gradient(to right,#000 85%,transparent);mask-image:linear-gradient(to right,#000 85%,transparent)}
   .pr-chips a{flex:none;display:inline-flex;align-items:center;height:30px;padding:0 var(--s3);border:1px solid var(--border);border-radius:15px;font-size:13px;color:var(--l4);text-decoration:none}
-  .pr-chips a.on{color:var(--l1);border-color:var(--l4);background:var(--surface-chip)}
+  .pr-chips a.pr-on{color:var(--l1);border-color:var(--l4);background:var(--surface-chip)}
   .pr-blk{padding:var(--s6) 0;gap:var(--s4)}
   .pr-blk>h2{font-size:20px}.pr-blk>.pr-lead{font-size:15px}
   .pr-basics,.pr-two{grid-template-columns:minmax(0,1fr);gap:var(--s4)}
@@ -117,7 +117,7 @@
   .pr-shot{padding:0;border-radius:var(--radius);max-width:none}
   .pr-cl-t{font-size:28px}
   .pr-shot .pr-di{display:none}.pr-shot .pr-pi{display:block;width:100%}
-  .pr-shot.fade{max-height:240px}
+  .pr-shot.pr-fade{max-height:240px}
   .pr-rt{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .pr-rt>div:nth-child(3n){grid-column:1/-1;color:var(--l3);padding-top:0}
   .pr-rt .pr-h:nth-child(3){display:none}
