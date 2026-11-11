@@ -1,0 +1,46 @@
+/* PRICE INDEX TABLE D, homepage only (staging review). Each family states its unit once beside
+   its name; an index priced in another unit shows it after its name in faint grey, on the same
+   line. Changes are marked with drawn arrows so value and change sit on one baseline. Phones
+   show the change only, so the name and all three components fit the screen. The legend keeps
+   var(--s5) from the table. Phone charts list their labels under the plot. The Standards
+   statement seal steps down on phones. */
+body #hpHm .as-hm-lg{margin-bottom:var(--s3)}
+body #hpHm .as-hm-f{display:flex;align-items:baseline;gap:var(--s2)}
+body #hpHm .as-hm-fu{font-size:var(--fs-label);font-weight:400;letter-spacing:0;text-transform:none;color:var(--l5)}
+body #hpHm .as-hm-r{grid-template-columns:60px 240px repeat(3,142px)}
+body #hpHm .as-hm-r>.as-code,body #hpHm .as-hm-r>.as-hm-n{align-self:center;padding-top:0}
+body #hpHm .as-hm-n{display:flex;flex-direction:row;align-items:baseline;gap:var(--s2);min-width:0}
+body #hpHm .as-hm-nt{overflow:hidden;text-overflow:ellipsis;min-width:0}
+body #hpHm .as-hm-u{font-size:var(--fs-label);color:var(--l5);flex:none}
+body #hpHm .as-hm-c{align-items:center}
+body #hpHm .as-hm-c>span{line-height:1}
+body #hpHm .as-hm-p{display:inline-flex;align-items:center}
+body #hpHm .as-hm-a{display:inline-block;flex:none;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;margin-right:4px}
+body #hpHm .as-hm-a.up{border-bottom:6px solid currentColor}
+body #hpHm .as-hm-a.dn{border-top:6px solid currentColor}
+body #hpHm .as-hm-a.fl{width:8px;height:2px;border:0;background:currentColor}
+body #hpHm .as-hm-k>span{display:inline-flex;align-items:center}
+@container (min-width:1540px){
+  body #hpHm .as-hm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(64px,5vw,120px)}
+  body #hpHm .as-hm-r{grid-template-columns:60px 240px repeat(3,minmax(0,1fr))}
+  body #hpHm .as-hm-w{width:auto}
+}
+@container (max-width:1539.98px){
+  body #hpHm{width:max-content;max-width:100%}
+  body #hpHm .as-hm-g{display:grid;grid-template-columns:minmax(0,1fr)}
+}
+.as-ch-list{list-style:none;margin:var(--s4) 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.35}
+.as-ch-list li{display:flex;flex-wrap:wrap;column-gap:var(--s2);padding-left:14px;position:relative}
+.as-ch-list li:before{content:"";position:absolute;left:0;top:.6em;width:8px;height:2px;background:var(--bar-3,#4a5160)}
+.as-ch-list li.on:before{background:var(--series,var(--accent))}
+.as-ch-list .v{color:var(--l5)}
+@media (max-width:767px){
+  body #hpHm{width:auto}
+  body #hpHm .as-hm{overflow:visible}
+  body #hpHm .as-hm-r{grid-template-columns:minmax(0,1fr) repeat(3,64px);gap:6px var(--s2)}
+  body #hpHm .as-hm-r>:first-child{display:none}
+  body #hpHm .as-hm-fu,body #hpHm .as-hm-u,body #hpHm .as-hm-l{display:none}
+  body #hpHm .as-hm-c{justify-content:center;height:32px;padding:0 4px}
+  body #hpHm .as-hm-p{font-size:12px;font-weight:600;color:var(--l1)}
+  body .as-mb-seal{width:160px;height:160px}
+}

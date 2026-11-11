@@ -1,0 +1,154 @@
+/* ═══════════════════════════════════════════════════════════
+   ATTIC STANDARD · FLUID FRAME AND CONTACT DRAWER (staged on the new homepage)
+  FLUID PAGE FRAME, staged on the new homepage for review; folds into the shared stylesheet.
+  Space is fluid, type is fixed: sections, charts, tables and the map use the full screen
+  width, while every font keeps its set size at any width.
+  1. The side margin widens a little on wide screens.
+  2. Charts are redrawn at their real width (as-fluid.js), so their text stays at its set size.
+  3. The index table fills the width in two columns when both fit side by side; when they stack,
+  the block shrinks to the table so the legend stays on the table's right edge.
+  4. The map runs the full width, like the charts; its labels keep their set size.
+  5. Paragraphs keep a readable line length however wide the section is.
+  6. Index codes sit on the first line of their names; coverage counts sit above the map.
+  7. Primary buttons use the link blue; on hover they turn to a blue outline with no fill.
+   ═══════════════════════════════════════════════════════════ */
+@media (min-width:1440px){:root{--gutter:clamp(40px,2.6vw,72px)}}
+body .as-hero:has(.as-vx){padding-left:0 !important;padding-right:0 !important}
+body .as-hero:has(.as-vx) figure{max-width:none !important}
+body #hpHeat{container-type:inline-size}
+body .as-ds-c{max-width:760px}
+body .as-btn-p:hover{background:transparent;color:var(--accent);border-color:var(--accent)}
+body .as-btn,.as-cd-go{transition:background .15s,color .15s,border-color .15s}
+body .as-hm-w{display:flex;flex-direction:column;gap:var(--s3)}
+@container (min-width:1360px){
+  body .as-hm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(64px,5vw,120px)}
+  body .as-hm-r{grid-template-columns:60px 134px repeat(3,minmax(142px,1fr))}
+}
+@container (max-width:1359.98px){
+  body .as-hm-w{width:max-content;max-width:100%}
+  body .as-hm-g{display:grid;grid-template-columns:minmax(0,1fr)}
+}
+body .as-hm-r>.as-code,body .as-hm-r>.as-hm-n{align-self:start;padding-top:4px}
+body .as-hm-r>.as-code{line-height:15.6px}
+body .as-hm-r>.as-hm-n{line-height:1.2}
+body #hpCov .as-cv-top,body #hpCov .as-cv-map{max-width:none;width:100%}
+body #hpCov .as-cv-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:var(--s4) var(--s6);margin-bottom:var(--s3)}
+body #hpCov .as-cv-kg{display:flex;flex-wrap:wrap;gap:var(--s4) var(--s6)}
+body #hpCov .as-cv-leg svg{width:44px;height:16px;flex-shrink:0}
+
+/* Scrollbars: thin, in faint brand blue (a bar can be dragged, so it is clickable), wherever a
+   block scrolls sideways; such blocks keep var(--s3) between their content and the bar.
+   Tab rows hide their bar and carry arrows instead (.as-rail, see as-extras.js). */
+body .as-sec *,body .as-hero *,body #atomIC *,body #atomMK *{scrollbar-width:thin;scrollbar-color:rgba(50,120,255,.35) transparent}
+body .as-sec *::-webkit-scrollbar,body #atomIC *::-webkit-scrollbar,body #atomMK *::-webkit-scrollbar{width:6px;height:6px;background:transparent}
+body .as-sec *::-webkit-scrollbar-thumb,body #atomIC *::-webkit-scrollbar-thumb,body #atomMK *::-webkit-scrollbar-thumb{background:rgba(50,120,255,.35);border-radius:3px}
+body .as-sec *::-webkit-scrollbar-button,body #atomIC *::-webkit-scrollbar-button,body #atomMK *::-webkit-scrollbar-button{display:none}
+body .as-scroll-x{padding-bottom:var(--s3)}
+body .as-ds,body .as-cl-t,body .as-vt,body #atomIC .isel-rail,body #atomMK [class*="tabs"]{scrollbar-width:none}
+body .as-ds::-webkit-scrollbar,body .as-cl-t::-webkit-scrollbar,body .as-vt::-webkit-scrollbar,body #atomIC .isel-rail::-webkit-scrollbar,body #atomMK [class*="tabs"]::-webkit-scrollbar{display:none}
+/* Tab rows that run past the screen: an arrow at each end steps one tab (dimmed at the end,
+   as on the Indexes page selector), and the edge with more tabs fades out. */
+.as-rail{display:flex;align-items:center;gap:var(--s2);min-width:0;max-width:100%}
+.as-rail>.as-ds,.as-rail>.as-cl-t{flex:1 1 auto;min-width:0}
+.as-rail-b{flex:0 0 auto;display:none;align-items:center;justify-content:center;background:0 0;border:0;padding:var(--s2) var(--s1);color:var(--l4);cursor:pointer;transition:color .15s,opacity .15s}
+.as-rail-b:hover{color:var(--accent)}
+.as-rail-b:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
+.as-rail-b svg{display:block}
+.as-rail.on>.as-rail-b{display:flex}
+.as-rail-b.off{opacity:.25;pointer-events:none}
+.as-rail.on.fr:not(.fl)>.as-ds,.as-rail.on.fr:not(.fl)>.as-cl-t{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
+.as-rail.on.fl:not(.fr)>.as-ds,.as-rail.on.fl:not(.fr)>.as-cl-t{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 32px),transparent)}
+.as-rail.on.fl.fr>.as-ds,.as-rail.on.fl.fr>.as-cl-t{-webkit-mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,transparent,#000 32px,#000 calc(100% - 32px),transparent)}
+@media (prefers-reduced-motion:reduce){.as-rail-b{transition:none}}
+body .as-hm{overflow-y:hidden}
+/* The hero description runs as one paragraph at every width. */
+body .as-hero .as-prose br{display:none}
+/* Index table legend on phones: its title on one line, the five keys in even columns below. */
+@media (max-width:767px){
+  body .as-hm-k{display:grid;grid-template-columns:repeat(3,auto minmax(0,1fr));align-items:center;gap:var(--s2) var(--s2);width:100%}
+  body .as-hm-k>span:first-child{grid-column:1 / -1;margin:0}
+  body .as-hm-k .as-hm-sw{margin-left:0}
+}
+/* Indexes page selector: every label sits the same distance above its control. */
+body #atomIC .ix-rows .isel-dd{margin-top:0}
+
+/* ═══ CONTACT DRAWER ═══
+  CONTACT DRAWER ("Talk to the team"), staged on the new homepage; folds into the shared files
+  and then shows on every page except /contact, which holds the full form.
+  A folder sits on the bottom edge of the screen: only its tab and a thin lip show. The tab,
+  and every link to /contact, slides it up; the tab, Escape or a click outside tucks it down.
+  Submissions go to Web3forms, like the contact page, which emails info@atticstandard.com. */
+.as-cd{position:fixed;left:var(--gutter);right:var(--gutter);bottom:0;z-index:950;transform:translateY(calc(100% - 8px));transition:transform .45s cubic-bezier(.2,.8,.2,1);font-family:var(--font-sans);-webkit-font-smoothing:antialiased;pointer-events:none}
+.as-cd.up{transform:translateY(0)}
+.as-cd *{box-sizing:border-box}
+.as-cd-tab{pointer-events:auto;position:absolute;right:0;bottom:calc(100% - 1px);z-index:1;display:flex;align-items:center;gap:var(--s3);height:44px;padding:0 var(--s5);margin:0;background:var(--surface-raised);border:1px solid var(--border);border-bottom:0;border-radius:10px 10px 0 0;font:600 var(--fs-ui)/1 var(--font-sans);color:var(--l1);cursor:pointer;box-shadow:0 -10px 24px rgba(0,0,0,.35)}
+.as-cd-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.as-cd-dot{width:6px;height:6px;border-radius:50%;background:var(--live);box-shadow:0 0 6px var(--live);flex:none}
+.as-cd-s{font-weight:400;color:var(--l4)}
+.as-cd-tab svg{width:12px;height:8px;color:var(--l3);transition:transform .45s}
+.as-cd.up .as-cd-tab svg{transform:rotate(180deg)}
+.as-cd-b{pointer-events:auto;background:var(--surface-raised);border:1px solid var(--border);border-bottom:0;border-radius:10px 0 0 0;box-shadow:0 -24px 48px rgba(0,0,0,.4);padding:var(--s6) var(--s6) var(--s7);display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:var(--s7);max-height:calc(100vh - var(--header-h, 110px) - 64px);overflow-y:auto}
+.as-cd-k{display:flex;flex-direction:column;gap:var(--s5);min-width:0}
+.as-cd-t{margin:0;font-size:var(--fs-title);font-weight:600;color:var(--l1);line-height:var(--lh-ui)}
+.as-cd-st{margin:var(--s1) 0 0;font-size:var(--fs-ui);color:var(--l4);line-height:var(--lh-ui)}
+.as-cd-steps{display:flex;flex-direction:column;gap:var(--s4);margin:0;padding:0;list-style:none}
+.as-cd-steps li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:var(--s3);font-size:var(--fs-body);line-height:var(--lh-prose);color:var(--l3)}
+.as-cd-steps b{font-family:var(--font-mono);font-size:var(--fs-ui);font-weight:600;color:var(--accent);line-height:22px}
+.as-cd form{display:flex;flex-direction:column;gap:var(--s4);margin:0;max-width:760px;min-width:0}
+.as-cd-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s4)}
+.as-cd-f{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
+.as-cd-f.full{grid-column:1 / -1}
+.as-cd-l{font-size:var(--fs-label);font-weight:600;text-transform:uppercase;letter-spacing:var(--ls-label);color:var(--l4);line-height:var(--lh-ui)}
+.as-cd-n{font-size:var(--fs-ui);color:var(--l4);line-height:var(--lh-ui);margin:0}
+.as-cd-i{width:100%;margin:0;background:0 0;border:1px solid var(--border);border-radius:var(--radius);padding:var(--s3) var(--s4);font:400 var(--fs-body)/var(--lh-ui) var(--font-sans);color:var(--l2);transition:border-color .15s,background .15s}
+.as-cd-i::placeholder{color:var(--l5)}
+.as-cd-i:focus{outline:0;border-color:var(--accent);background:var(--accent-soft)}
+.as-cd-i.err{border-color:var(--error)}
+select.as-cd-i{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:var(--s7);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.6 L6 6.4 L11 1.6' fill='none' stroke='%233278FF' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 16px center/13px 9px}
+select.as-cd-i option{background:var(--surface-raised);color:var(--l2)}
+textarea.as-cd-i{display:block;resize:vertical;min-height:110px;line-height:var(--lh-prose)}
+.as-cd-e{display:none;font-size:var(--fs-ui);color:var(--error);line-height:var(--lh-ui)}
+.as-cd-e.show{display:block}
+.as-cd-act{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s3);margin-top:var(--s2)}
+.as-cd-go{font:600 var(--fs-body)/1 var(--font-sans);padding:var(--s3) var(--s6);border-radius:var(--radius);border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+.as-cd-go:hover{background:transparent;color:var(--accent);border-color:var(--accent)}
+.as-cd-go:disabled{opacity:.5;cursor:default}
+.as-cd-r.err{color:var(--error)}
+html.as-has-cd .atom-footer{padding-bottom:calc(var(--s5) + 52px)}
+@media (max-width:991px){.as-cd-b{grid-template-columns:minmax(0,1fr);gap:var(--s5)}.as-cd-steps{display:none}}
+@media (max-width:767px){.as-cd{left:0;right:0}.as-cd-tab{right:var(--gutter)}.as-cd-b{border-radius:10px 10px 0 0;padding:var(--s5) var(--gutter)}.as-cd-row{grid-template-columns:minmax(0,1fr)}.as-cd-s{display:none}}
+@media (prefers-reduced-motion:reduce){.as-cd,.as-cd-tab svg{transition:none}}
+
+/* STANDARD PAGE CLOSE (set November 11, 2026). Every page ends on one close block: a headline of
+   its own tied to the Clause, one line, one blue button and at most one text link beside it.
+   Reading pages send readers to the Clause page; deciding pages open the contact drawer with the
+   topic set. .as-close is the block for pages built from embeds; native pages keep their own
+   close section and use .as-cl-a for the button row. */
+.as-cl-a{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s4) var(--s6)}
+.as-cl-l{display:inline-flex;align-items:center;gap:8px;line-height:1;font-size:var(--fs-ui);font-weight:500;color:var(--accent);text-decoration:none;cursor:pointer;background:none;border:0;padding:0;font-family:var(--font-sans)}
+.as-cl-l:hover{color:var(--accent-hover)}
+.as-cl-l svg{display:block;flex:none}
+.as-close-w{padding:0 var(--gutter)}
+.as-close{border-top:1px solid var(--border);padding:var(--s7) 0 calc(var(--s7) + var(--s6));display:flex;flex-direction:column;gap:var(--s6);margin:0}
+.as-close-t{margin:0 0 var(--s2);font-size:36px;font-weight:700;line-height:1.25;color:var(--l1);text-wrap:balance}
+.as-close-p{margin:0;font-size:var(--fs-body);line-height:var(--lh-prose);color:var(--l2);text-wrap:pretty}
+@media (max-width:767px){.as-close-t{font-size:28px}}
+
+/* The MCP is retired: hide any link to it until the menu and footer markup are rebuilt
+   (as-extras.js removes them from the page). */
+a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"]{display:none !important}
+
+/* Inner page headers: the subtitle stops well short of the header sheet on wide screens. */
+.pr-hsub,.cla-hsub,.cov-hsub,.mth-hsub,.tml-hsub,.lgl-hsub{max-width:34em;text-wrap:pretty}
+
+/* Publications: the paper link reads at the same size as every other section link. */
+.as-pb-go{font-size:var(--fs-ui,13px) !important}
+/* PDF download links read at the same size as every other text link. */
+a[data-ov-pdf]{font-size:var(--fs-ui,13px) !important}
+
+/* One button everywhere: the same type, height, padding and hover on every page, in the
+   drawer and on the login form. Inner pages set a larger body size, which buttons ignore;
+   Webflow's link underline never shows inside a button. */
+body .as-btn,body .as-cd-go,body .lgn-btn,body .cpg-submit{font-family:var(--font-sans) !important;font-size:13px !important;font-weight:600 !important;line-height:1 !important;letter-spacing:.2px;text-decoration:none !important;padding:12px 32px !important;border-radius:var(--radius) !important;border:1px solid var(--accent) !important;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:39px}
+body .as-btn:hover,body .as-btn:focus-visible,body .as-cd-go:hover,body .lgn-btn:hover,body .lgn-btn:focus-visible,body .cpg-submit:hover{text-decoration:none !important;background:transparent !important;color:var(--accent) !important;border-color:var(--accent) !important}
+body .lgn-btn{width:100%}
