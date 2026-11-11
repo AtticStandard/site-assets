@@ -8,8 +8,8 @@
 (function(){
   var AS = window.AS = window.AS || {}, C = AS.chart;
   if(!C || C.mount) return;
-  var BASE = C.W, MIN = 720, PHONE = 560, text = C.text, cap = null, boxes = {};
-  var AXV = /^[\u2212+\-]?\$?\d[\d.,]*%?$/, MORE = /^([a-z0-9$+\u2212\-]|listings per week)/i;
+  var BASE = C.W, MIN = 720, PHONE = 560, text = C.text, cap = null, boxes = [];
+  var AXV = /^[\u2212+\-]?\$?\d[\d.,]*%?$/, MORE = /^([a-z0-9$+\u2212\-]|Listings per week)/;
   C.fit = function(w){
     w = Math.round(w || BASE);
     if(w < PHONE){ C.phone = true; C.W = w; C.X0 = 6; C.X1 = w - 10; C.AL = 0; C.AR = w; C.LX = w + 400; }
@@ -21,7 +21,7 @@
   C.text = function(x, y, s, o){
     if(cap && x >= C.LX - 1){
       o = o || {};
-      if(AXV.test(String(s).trim())) return text(C.W - 2, y - 8, s, { cls:o.cls, anchor:'end', size:o.size });
+      if(AXV.test(String(s).trim())) return C.text(0, y - 8, s, { cls:o.cls, size:o.size });
       cap.push({ y:y, s:String(s), cls:o.cls || 'as-f-l4', w:o.weight });
       return '';
     }
@@ -31,9 +31,9 @@
       var a = o.anchor || 'start', tw = String(s).length * (o.size || 11) * 0.58, x0 = a === 'middle' ? x - tw / 2 : a === 'end' ? x - tw : x;
       if(x0 < 0){ x0 = 0; x = 0; a = 'start'; }
       else if(x0 + tw > C.W){ x0 = C.W - tw; x = C.W; a = 'end'; }
-      var k = Math.round(y), row = boxes[k] = boxes[k] || [];
-      if(row.some(function(b){ return x0 < b[1] + 6 && x0 + tw > b[0] - 6; })) return '';
-      row.push([x0, x0 + tw]);
+      var h = (o.size || 11) + 1;
+      if(boxes.some(function(b){ return Math.abs(b[2] - y) < h && x0 < b[1] + 6 && x0 + tw > b[0] - 6; })) return '';
+      boxes.push([x0, x0 + tw, y]);
       return text(x, y, s, { cls:o.cls, anchor:a, size:o.size, weight:o.weight });
     }
     return text.apply(this, arguments);
@@ -59,7 +59,7 @@
     if(!w || (!force && w === el._asw) || !el._asdraw) return;
     el._asw = w; C.fit(w);
     try {
-      cap = C.phone ? [] : null; boxes = {};
+      cap = C.phone ? [] : null; boxes = [];
       var html = el._asdraw() || '';
       if(C.phone){
         /* Leader lines that ran out to the label column are dropped. */
