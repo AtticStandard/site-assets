@@ -145,3 +145,10 @@ a[href="/mcp"],a[href^="/mcp#"],a[href^="/mcp?"]{display:none !important}
 .as-pb-go{font-size:var(--fs-ui,13px) !important}
 /* PDF download links read at the same size as every other text link. */
 a[data-ov-pdf]{font-size:var(--fs-ui,13px) !important}
+
+/* One button everywhere: the same type, height, padding and hover on every page, in the
+   drawer and on the login form. Inner pages set a larger body size, which buttons ignore;
+   Webflow's link underline never shows inside a button. */
+body .as-btn,body .as-cd-go,body .lgn-btn{font-family:var(--font-sans) !important;font-size:13px !important;font-weight:600 !important;line-height:1 !important;letter-spacing:.2px;text-decoration:none !important;padding:12px 32px !important;border-radius:var(--radius) !important;border:1px solid var(--accent) !important;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:39px}
+body .as-btn:hover,body .as-btn:focus-visible,body .as-cd-go:hover,body .lgn-btn:hover,body .lgn-btn:focus-visible{text-decoration:none !important;background:transparent !important;color:var(--accent) !important;border-color:var(--accent) !important}
+body .lgn-btn{width:100%}
