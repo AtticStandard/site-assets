@@ -20,14 +20,14 @@ body #hpHm .as-hm-a.up{border-bottom:6px solid currentColor}
 body #hpHm .as-hm-a.dn{border-top:6px solid currentColor}
 body #hpHm .as-hm-a.fl{width:8px;height:2px;border:0;background:currentColor}
 body #hpHm .as-hm-k>span{display:inline-flex;align-items:center}
-/* Two tables side by side down to a 1,360px content width, so 1,440px and 1,512px laptop
-   screens keep both columns; the name column gives way first, the cells keep their room. */
-@container (min-width:1360px){
+/* Two tables side by side down to a 1,320px content width, so 1,440px and 1,512px laptop
+   screens keep both columns, scrollbar or not; the name column gives way first, the cells keep their room. */
+@container (min-width:1320px){
   body #hpHm .as-hm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(40px,4vw,120px)}
-  body #hpHm .as-hm-r{grid-template-columns:60px minmax(150px,240px) repeat(3,minmax(0,1fr))}
+  body #hpHm .as-hm-r{grid-template-columns:60px minmax(150px,240px) repeat(3,minmax(104px,1fr))}
   body #hpHm .as-hm-w{width:auto}
 }
-@container (max-width:1359.98px){
+@container (max-width:1319.98px){
   body #hpHm{width:max-content;max-width:100%}
   body #hpHm .as-hm-g{display:grid;grid-template-columns:minmax(0,1fr)}
 }
