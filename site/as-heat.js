@@ -69,11 +69,11 @@
   function key(){
     var s = scale(), small = s[0], big = s[1], f = function(v){ return String(v).replace(/\.0$/, ''); };
     function sw(v, label, d){ return '<span class="as-hm-sw" style="background:' + heat(v) + '"></span><span><i class="as-hm-a ' + d + '"></i>' + label + '</span>'; }
-    return '<span class="as-hm-k"><span class="as-hm-kt" aria-live="polite">' + PER[per].lg + '<i class="as-hm-pg"></i></span>'
+    return '<span class="as-hm-k">'
       + sw(-big, f(big) + '% or more', 'dn') + sw(-small, f(small) + '%', 'dn') + sw(0, 'Unchanged', 'fl')
       + sw(small, f(small) + '%', 'up') + sw(big, f(big) + '% or more', 'up') + '</span>';
   }
-  function legend(){ return '<div class="as-hm-lg">' + key() + '</div>'; }
+  function legend(){ return '<div class="as-hm-lg"><span class="as-hm-kt" aria-live="polite">' + PER[per].lg + '<i class="as-hm-pg"></i></span>' + key() + '</div>'; }
 
   function draw(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
@@ -97,6 +97,7 @@
   function update(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
     var lg = hm.querySelector('.as-hm-k'); if(lg) lg.outerHTML = key();
+    var kt = hm.querySelector('.as-hm-kt'); if(kt && kt.firstChild) kt.firstChild.nodeValue = PER[per].lg;
     var rows = [].slice.call(hm.querySelectorAll('.as-hm-r'));
     hm.querySelectorAll('.as-hm-q').forEach(function(c){
       var i = BY[c.getAttribute('data-c')], L = i && leg(i, c.getAttribute('data-k')); if(!L) return;
