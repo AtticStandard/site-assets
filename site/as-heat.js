@@ -20,10 +20,10 @@
   /* Periods, in the order the board steps through them. small and big set the colour scale and
      the legend for each view: a week's move is read on a finer scale than a move since the base. */
   var PER = [
-    { k:'base', b:'Since base', lg:'Change since the base', lv:[2, 10], sp:[10, 50] },
-    { k:'ytd',  b:'Year to date', lg:'Change year to date', lv:[2, 10], sp:[10, 50] },
-    { k:'mom',  b:'1 month', lg:'Change over 1 month', lv:[1, 5], sp:[5, 25] },
-    { k:'wow',  b:'1 week', lg:'Change over 1 week', lv:[0.5, 2], sp:[2, 10] }
+    { k:'base', b:'Since base', lg:'% change since the base', lv:[2, 10], sp:[10, 50] },
+    { k:'ytd',  b:'Year to date', lg:'% change year to date', lv:[2, 10], sp:[10, 50] },
+    { k:'mom',  b:'1 month', lg:'% change month over month', lv:[1, 5], sp:[5, 25] },
+    { k:'wow',  b:'1 week', lg:'% change week over week', lv:[0.5, 2], sp:[2, 10] }
   ];
   var TAIL = {
     levels:'Base: May 2026 = 100, regional indexes October 19, 2026 = 100. Year to date runs from the first publication of 2026 or, for a younger index, from its first publication. A dashed cell is a component not priced separately.',
@@ -168,8 +168,6 @@
   function start(){
     var tabs = document.getElementById('hpHmTabs'), hm = document.getElementById('hpHm'); if(!tabs || !hm || !AS.rest) return;
     tabs.addEventListener('click', function(e){ var b = e.target.closest('.as-vt-b'); if(b) view_(b.getAttribute('data-v')); });
-    hm.addEventListener('mouseenter', function(){ paused = true; }); hm.addEventListener('mouseleave', function(){ paused = false; });
-    hm.addEventListener('focusin', function(){ paused = true; }); hm.addEventListener('focusout', function(){ paused = false; });
     if(window.IntersectionObserver) new IntersectionObserver(function(es){ seen = es[0].isIntersecting; }, { threshold:0.25 }).observe(hm);
     var cols = 'index_code,date,unit,input_price,cached_price,output_price,input_wow,input_mom,input_ytd,cached_wow,cached_mom,cached_ytd,output_wow,output_mom,output_ytd,'
       + 'spot_input_price,spot_cached_price,spot_output_price,spot_input_wow,spot_input_mom,spot_input_vs_base,spot_cached_wow,spot_cached_mom,spot_cached_vs_base,spot_output_wow,spot_output_mom,spot_output_vs_base';
