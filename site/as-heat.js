@@ -1,7 +1,7 @@
 /* PRICE INDEXES AT A GLANCE (homepage #hpHm). Every published index as one row, each component
    coloured by its change over the chosen period. Toggle buttons switch between index levels and
-   spot prices; the period chips (since the base, year to date, 1 month, 1 week) step through on
-   their own like a market board until the reader picks one. Every figure is a published one:
+   spot prices; the change shown in every cell rotates on its own, like a market board, through
+   since the base, year to date, 1 month and 1 week, with the period named above the table. Every figure is a published one:
    levels and spot prices from index_values, 1 week, 1 month and year-to-date changes from the
    change columns stored with each publication, and the change since the base worked out from the
    same series as before. Replaces the script that sat in homepage embed 4. */
@@ -69,15 +69,11 @@
   function key(){
     var s = scale(), small = s[0], big = s[1], f = function(v){ return String(v).replace(/\.0$/, ''); };
     function sw(v, label, d){ return '<span class="as-hm-sw" style="background:' + heat(v) + '"></span><span><i class="as-hm-a ' + d + '"></i>' + label + '</span>'; }
-    return '<span class="as-hm-k"><span class="as-hm-kt">' + PER[per].lg + '</span>'
+    return '<span class="as-hm-k"><span class="as-hm-kt" aria-live="polite">' + PER[per].lg + '<i class="as-hm-pg"></i></span>'
       + sw(-big, f(big) + '% or more', 'dn') + sw(-small, f(small) + '%', 'dn') + sw(0, 'Unchanged', 'fl')
       + sw(small, f(small) + '%', 'up') + sw(big, f(big) + '% or more', 'up') + '</span>';
   }
-  function chips(){
-    return '<div class="as-hm-per" role="tablist" aria-label="Change over">' + PER.map(function(p, n){
-      return '<button type="button" role="tab" class="as-hm-pb" data-p="' + n + '" aria-selected="' + (n === per) + '" tabindex="' + (n === per ? 0 : -1) + '">' + p.b + '<i class="as-hm-pg"></i></button>'; }).join('') + '</div>';
-  }
-  function legend(){ return '<div class="as-hm-lg">' + chips() + key() + '</div>'; }
+  function legend(){ return '<div class="as-hm-lg">' + key() + '</div>'; }
 
   function draw(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
@@ -101,7 +97,6 @@
   function update(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
     var lg = hm.querySelector('.as-hm-k'); if(lg) lg.outerHTML = key();
-    hm.querySelectorAll('.as-hm-pb').forEach(function(b){ var on = +b.getAttribute('data-p') === per; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
     var rows = [].slice.call(hm.querySelectorAll('.as-hm-r'));
     hm.querySelectorAll('.as-hm-q').forEach(function(c){
       var i = BY[c.getAttribute('data-c')], L = i && leg(i, c.getAttribute('data-k')); if(!L) return;
@@ -126,15 +121,16 @@
       var hm = document.getElementById('hpHm');
       if(paused || !seen || document.hidden){ t0 = t - (hm && hm._el || 0); loop(); return; }
       var el = t - t0; if(hm) hm._el = el;
-      var bar = hm && hm.querySelector('.as-hm-pb[aria-selected="true"] .as-hm-pg'); if(bar) bar.style.transform = 'scaleX(' + Math.min(1, el / STEP).toFixed(3) + ')';
+      var bar = hm && hm.querySelector('.as-hm-kt .as-hm-pg'); if(bar) bar.style.transform = 'scaleX(' + Math.min(1, el / STEP).toFixed(3) + ')';
       if(el >= STEP){ if(bar) bar.style.transform = 'scaleX(0)'; go(per + 1); }
       loop();
     });
   }
   function view_(v){
     view = v;
+    var hm = document.getElementById('hpHm'); if(hm) hm.classList.toggle('as-hm-sp', v === 'spot');
     document.querySelectorAll('#hpHmTabs .as-vt-b').forEach(function(b){ var on = b.getAttribute('data-v') === v; b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; b.style.cssText = on ? 'color: var(--l1); background: var(--surface-chip)' : ''; });
-    draw(); seed();
+    draw(); seed(); t0 = performance.now();
   }
 
   function all(path, off, acc){ off = off || 0; acc = acc || [];
@@ -171,9 +167,6 @@
   function start(){
     var tabs = document.getElementById('hpHmTabs'), hm = document.getElementById('hpHm'); if(!tabs || !hm || !AS.rest) return;
     tabs.addEventListener('click', function(e){ var b = e.target.closest('.as-vt-b'); if(b) view_(b.getAttribute('data-v')); });
-    hm.addEventListener('click', function(e){ var b = e.target.closest('.as-hm-pb'); if(!b) return; stop(); go(+b.getAttribute('data-p')); });
-    hm.addEventListener('keydown', function(e){ var b = e.target.closest('.as-hm-pb'); if(!b || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
-      e.preventDefault(); stop(); go(per + (e.key === 'ArrowRight' ? 1 : -1)); var n = hm.querySelector('.as-hm-pb[data-p="' + per + '"]'); if(n) n.focus(); });
     hm.addEventListener('mouseenter', function(){ paused = true; }); hm.addEventListener('mouseleave', function(){ paused = false; });
     hm.addEventListener('focusin', function(){ paused = true; }); hm.addEventListener('focusout', function(){ paused = false; });
     if(window.IntersectionObserver) new IntersectionObserver(function(es){ seen = es[0].isIntersecting; }, { threshold:0.25 }).observe(hm);
