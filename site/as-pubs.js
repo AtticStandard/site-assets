@@ -1,7 +1,8 @@
 /* ═══ PUBLICATIONS (homepage research section, #hpPubs) ═══
    Left column: every live white paper, newest first, as a list row with a small
    cover, date, format, title, summary and link (up to four). Right column: the
-   five newest weekly assessments. Everything comes from the publications table.
+   seven newest weekly assessments, so the two
+   columns run to the same height with the larger paper covers. Everything comes from the publications table.
    A paper whose url ends in .pdf is offered as a download, anything else as a
    link out. The section stays hidden until the rows load, so a failed request
    leaves no empty frame. The wordmark for the covers is kept in the embed as
@@ -31,7 +32,7 @@
     var root = $('hpPubs'); if(!root) return;
     rows = (rows || []).slice().sort(function(a, b){ return a.published_on < b.published_on ? 1 : a.published_on > b.published_on ? -1 : 0; });
     var papers = rows.filter(function(r){ return r.kind === 'paper'; }).slice(0, 4);
-    var eds = rows.filter(function(r){ return r.kind === 'edition'; }).slice(0, 5);
+    var eds = rows.filter(function(r){ return r.kind === 'edition'; }).slice(0, 7);
     if(!papers.length && !eds.length) return;
     var box = $('hpPbPaper'), list = $('hpPbList'), t = $('hpPbWm');
     var wm = t ? (t.innerHTML || '').trim() : '';

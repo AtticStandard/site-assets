@@ -74,13 +74,13 @@ body #hpHm .as-hm-c.fx-dn{animation:asHmDn .9s ease-out}
 /* ── Research section: white papers as a list with small covers, beside the weekly
    assessment, in the same row rhythm (concept C, November 16, 2026). ── */
 body #hpPubs .as-pb-pl{display:flex;flex-direction:column;border-bottom:1px solid var(--border-soft);flex:1}
-body #hpPubs .as-pb-pr{display:grid;grid-template-columns:84px minmax(0,1fr);gap:var(--s5);align-items:start;padding:var(--s4) 0;border-top:1px solid var(--border-soft);color:inherit}
-body #hpPubs .as-pb-pr .as-pb-cv{flex:none;width:84px;height:119px;padding:9px 8px 7px;overflow:hidden}
-body #hpPubs .as-pb-pr .as-pb-cv .as-wm svg{height:5px}
-body #hpPubs .as-pb-pr .as-pb-cv .as-crule{margin:6px 0 8px}
-body #hpPubs .as-pb-pr .as-pb-cv .as-ck{font-size:5px;letter-spacing:.5px}
-body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:9px;margin-top:5px}
-body #hpPubs .as-pb-pr .as-pb-cv .as-cf{font-size:4.5px;padding-top:3px}
+body #hpPubs .as-pb-pr{display:grid;grid-template-columns:120px minmax(0,1fr);gap:var(--s5);align-items:start;padding:var(--s4) 0;border-top:1px solid var(--border-soft);color:inherit}
+body #hpPubs .as-pb-pr .as-pb-cv{flex:none;width:120px;height:170px;padding:12px 11px 10px;overflow:hidden}
+body #hpPubs .as-pb-pr .as-pb-cv .as-wm svg{height:6px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-crule{margin:9px 0 11px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-ck{font-size:6.5px;letter-spacing:.7px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:13px;margin-top:7px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-cf{font-size:6px;padding-top:4px}
 body #hpPubs .as-pb-px{display:flex;flex-direction:column;gap:6px;min-width:0}
 body #hpPubs .as-pb-pt{font-size:var(--fs-subhead);font-weight:600;color:var(--l1);line-height:var(--lh-ui);transition:color .15s}
 body #hpPubs .as-pb-ps{margin:0;font-size:14px;line-height:1.55;color:var(--l3);text-wrap:pretty}
@@ -89,7 +89,9 @@ body #hpPubs .as-pb-pr:hover .as-pb-pt{color:var(--accent-hover)}
 body #hpPubs .as-pb-pr:hover .as-pb-cv{border-color:var(--l5)}
 body #hpPubs .as-pb-pr:hover .as-pb-go{color:var(--accent-hover)}
 @media (max-width:560px){
-  body #hpPubs .as-pb-pr{grid-template-columns:72px minmax(0,1fr);gap:var(--s4)}
-  body #hpPubs .as-pb-pr .as-pb-cv{width:72px;height:102px}
+  body #hpPubs .as-pb-pr{grid-template-columns:88px minmax(0,1fr);gap:var(--s4)}
+  body #hpPubs .as-pb-pr .as-pb-cv{width:88px;height:125px;padding:9px 8px 7px}
+  body #hpPubs .as-pb-pr .as-pb-cv .as-wm svg{height:5px}
+  body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:10px}
   body #hpPubs .as-pb-ps{display:none}
 }
