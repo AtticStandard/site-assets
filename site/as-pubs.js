@@ -43,6 +43,10 @@
     $('hpPbRows').innerHTML = eds.map(function(r){
       return '<a href="' + esc(safe(r.url)) + '" class="as-pb-r" target="_blank" rel="noopener"><span class="as-pb-d">' + longDate(r.published_on) + '</span><span class="as-pb-h">' + esc(r.title) + '</span><span class="as-pb-go" aria-hidden="true">↗</span></a>';
     }).join('');
+    /* The LinkedIn editions link: beside the newsletter name on tablets and desktops,
+       under the list on phones (both placements are in the page; CSS shows one). */
+    var hd = root.querySelector('.as-pb-l:not(#hpPbPaper) .as-pb-hd'), sf = root.querySelector('.as-sf-a');
+    if(hd && sf && !hd.querySelector('.as-pb-hl')){ var c = sf.cloneNode(true); c.classList.add('as-pb-hl'); hd.appendChild(c); }
     root.hidden = false;
   }
 
