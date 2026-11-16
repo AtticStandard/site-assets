@@ -104,3 +104,25 @@ body #hpPubs .as-sf{display:none}
   body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:10px}
   body #hpPubs .as-pb-ps{display:none}
 }
+
+/* ── Legends and facts, site rule F (November 16, 2026) ──
+   Live tables: the period label with a full-width loader (grey track, white fill), then the colour
+   key on its own row under it, left-aligned above the columns. Nothing sits at the far right. */
+body #hpHm .as-hm-lg{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:12px}
+body #hpHm .as-hm-kt{display:block;align-self:stretch;padding-bottom:8px}
+body #hpHm .as-hm-kt::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--border)}
+body #hpHm .as-hm-kt .as-hm-pg{background:var(--l1);opacity:1;z-index:1}
+body #hpHm .as-hm-k{margin-left:0;justify-content:flex-start}
+/* Charts name their lines at the ends (no legend). Contract facts sit on one line under the
+   saved figure, separated by middle dots (rules would read as tabs); on phones they stack. */
+body #hpClause .as-cl{display:flex;flex-direction:column;gap:var(--s4)}
+body #hpClause .as-pl{flex-direction:row;flex-wrap:wrap;gap:4px 0}
+body #hpClause .as-pl li{padding-left:0;color:var(--l3)}
+body #hpClause .as-pl li:first-child{color:var(--l2)}
+body #hpClause .as-pl li::before{content:none}
+body #hpClause .as-pl li+li::before{content:"\00B7";position:static;display:inline;width:auto;height:auto;background:none;margin:0 12px;color:var(--l5)}
+body #hpClause .as-cl-c{margin-top:var(--s5)}
+@media (max-width:560px){
+  body #hpClause .as-pl{flex-direction:column;gap:6px}
+  body #hpClause .as-pl li+li::before{content:none}
+}
