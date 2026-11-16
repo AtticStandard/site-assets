@@ -73,7 +73,10 @@
       + sw(-big, f(big) + '% or more', 'dn') + sw(-small, f(small) + '%', 'dn') + sw(0, 'Unchanged', 'fl')
       + sw(small, f(small) + '%', 'up') + sw(big, f(big) + '% or more', 'up') + '</span>';
   }
-  function legend(){ return '<div class="as-hm-lg"><span class="as-hm-kt" aria-live="polite">' + PER[per].lg + '<i class="as-hm-pg"></i></span>' + key() + '</div>'; }
+  /* Step dots after the period label: one per period, the current one lit; they show that the
+     table rotates and where it is, without a moving bar. */
+  function dots(){ return '<span class="as-hm-ds" aria-hidden="true">' + PER.map(function(p, i){ return '<i class="as-hm-d' + (i === per ? ' on' : '') + '"></i>'; }).join('') + '</span>'; }
+  function legend(){ return '<div class="as-hm-lg"><span class="as-hm-kt" aria-live="polite">' + PER[per].lg + dots() + '<i class="as-hm-pg"></i></span>' + key() + '</div>'; }
 
   function draw(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
@@ -98,6 +101,7 @@
     var hm = document.getElementById('hpHm'); if(!hm) return;
     var lg = hm.querySelector('.as-hm-k'); if(lg) lg.outerHTML = key();
     var kt = hm.querySelector('.as-hm-kt'); if(kt && kt.firstChild) kt.firstChild.nodeValue = PER[per].lg;
+    hm.querySelectorAll('.as-hm-d').forEach(function(d, i){ d.classList.toggle('on', i === per); });
     var rows = [].slice.call(hm.querySelectorAll('.as-hm-r'));
     hm.querySelectorAll('.as-hm-q').forEach(function(c){
       var i = BY[c.getAttribute('data-c')], L = i && leg(i, c.getAttribute('data-k')); if(!L) return;

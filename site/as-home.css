@@ -106,12 +106,14 @@ body #hpPubs .as-sf{display:none}
 }
 
 /* ── Legends and facts, site rule F (November 16, 2026) ──
-   Live tables: the period label with a full-width loader (grey track, white fill), then the colour
+   Live tables: the period label with four step dots (current one white), then the colour
    key on its own row under it, left-aligned above the columns. Nothing sits at the far right. */
 body #hpHm .as-hm-lg{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:12px}
-body #hpHm .as-hm-kt{display:block;align-self:stretch;padding-bottom:8px}
-body #hpHm .as-hm-kt::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--border)}
-body #hpHm .as-hm-kt .as-hm-pg{background:var(--l1);opacity:1;z-index:1}
+body #hpHm .as-hm-kt{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;padding-bottom:0}
+body #hpHm .as-hm-kt .as-hm-pg{display:none}
+body #hpHm .as-hm-ds{display:inline-flex;align-items:center;gap:6px}
+body #hpHm .as-hm-d{display:block;width:6px;height:6px;border-radius:50%;background:var(--l5);opacity:.6;transition:background .3s,opacity .3s}
+body #hpHm .as-hm-d.on{background:var(--l1);opacity:1}
 body #hpHm .as-hm-k{margin-left:0;justify-content:flex-start}
 /* Charts name their lines at the ends (no legend). Contract facts sit on one line under the
    saved figure, separated by middle dots (rules would read as tabs); on phones they stack. */
