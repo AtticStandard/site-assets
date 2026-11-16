@@ -88,6 +88,8 @@ body #hpPubs .as-pb-px .as-pb-go{margin-top:2px}
 body #hpPubs .as-pb-pr:hover .as-pb-pt{color:var(--accent-hover)}
 body #hpPubs .as-pb-pr:hover .as-pb-cv{border-color:var(--l5)}
 body #hpPubs .as-pb-pr:hover .as-pb-go{color:var(--accent-hover)}
+/* Edition rows stretch to the papers column height; centre their text in the taller row. */
+body #hpPubs .as-pb-r{align-content:center}
 @media (max-width:560px){
   body #hpPubs .as-pb-pr{grid-template-columns:88px minmax(0,1fr);gap:var(--s4)}
   body #hpPubs .as-pb-pr .as-pb-cv{width:88px;height:125px;padding:9px 8px 7px}
