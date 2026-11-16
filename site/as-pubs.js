@@ -1,10 +1,11 @@
 /* ═══ PUBLICATIONS (homepage research section, #hpPubs) ═══
-   The newest white paper takes the cover slot; up to two earlier papers sit
-   under it as compact rows; the five newest weekly assessments fill the right
-   column. Everything comes from the publications table. A paper whose url ends
-   in .pdf is offered as a download, anything else as a link out. The section
-   stays hidden until the rows load, so a failed request leaves no empty frame.
-   AS.pubs.render(rows) draws from given rows (used to preview unpublished rows). */
+   Left column: every live white paper, newest first, as a list row with a small
+   cover, date, format, title, summary and link (up to four). Right column: the
+   five newest weekly assessments. Everything comes from the publications table.
+   A paper whose url ends in .pdf is offered as a download, anything else as a
+   link out. The section stays hidden until the rows load, so a failed request
+   leaves no empty frame. The wordmark for the covers is kept in the embed as
+   <template id="hpPbWm">. AS.pubs.render(rows) draws from given rows. */
 (function(){
   var AS = window.AS = window.AS || {};
   var MONTH = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -15,38 +16,29 @@
   function isPdf(u){ return /\.pdf(?:$|[?#])/i.test(String(u || '')); }
   function $(id){ return document.getElementById(id); }
 
+  function paperRow(p, wm){
+    var my = monthYear(p.published_on), pdf = isPdf(p.url);
+    return '<a href="' + esc(safe(p.url)) + '" class="as-pb-pr" target="_blank" rel="noopener">'
+      + '<div class="as-pb-cv" aria-hidden="true"><div class="as-wm">' + wm + '</div><div class="as-crule"></div><div class="as-ck">White paper</div>'
+      + '<div class="as-ct">' + esc(p.title) + '</div><div class="as-cf"><span>Attic Standard</span><span>' + esc(my) + '</span></div></div>'
+      + '<div class="as-pb-px"><span class="as-pb-d">' + esc(my) + ' · ' + (pdf ? 'PDF' : 'LinkedIn article') + '</span>'
+      + '<span class="as-pb-pt">' + esc(p.title) + '</span>'
+      + (p.summary ? '<p class="as-pb-ps">' + esc(p.summary) + '</p>' : '')
+      + '<span class="as-pb-go">' + (pdf ? 'Download the paper (PDF) ↓' : 'Read the paper ↗') + '</span></div></a>';
+  }
+
   function render(rows){
     var root = $('hpPubs'); if(!root) return;
     rows = (rows || []).slice().sort(function(a, b){ return a.published_on < b.published_on ? 1 : a.published_on > b.published_on ? -1 : 0; });
-    var papers = rows.filter(function(r){ return r.kind === 'paper'; });
+    var papers = rows.filter(function(r){ return r.kind === 'paper'; }).slice(0, 4);
     var eds = rows.filter(function(r){ return r.kind === 'edition'; }).slice(0, 5);
     if(!papers.length && !eds.length) return;
-    var paper = papers[0], box = $('hpPbPaper');
-    if(paper && box){
-      var my = monthYear(paper.published_on), href = safe(paper.url), pdf = isPdf(paper.url);
-      [$('hpPbCvA'), $('hpPbLink')].forEach(function(a){ if(a) a.href = href; });
-      $('hpPbCt').textContent = paper.title;
-      $('hpPbCs').textContent = paper.subtitle || '';
-      $('hpPbCm').textContent = my;
-      $('hpPbKind').textContent = 'White paper · ' + my;
-      $('hpPbTitle').textContent = paper.title;
-      /* The summary's closing sentence stands as the finding, as on the paper's cover. */
-      var s = String(paper.summary || ''), parts = s.match(/[^.!?]+[.!?]+/g) || [s], s1 = $('hpPbSum'), s2 = $('hpPbSum2');
-      if(parts.length > 1){ s1.textContent = parts.slice(0, -1).join('').trim(); s2.textContent = parts[parts.length - 1].trim(); s2.hidden = false; }
-      else { s1.textContent = s; s2.hidden = true; }
-      $('hpPbGo').textContent = pdf ? 'Download the paper (PDF) ↓' : 'Read the paper ↗';
-      var earlier = papers.slice(1, 3), wrap = $('hpPbEarlier');
-      if(wrap){
-        $('hpPbErows').innerHTML = earlier.map(function(r){
-          return '<a href="' + esc(safe(r.url)) + '" class="as-pb-er" target="_blank" rel="noopener">'
-            + '<span class="as-pb-h">' + esc(r.title) + '</span>'
-            + '<span class="as-pb-d">' + esc(monthYear(r.published_on)) + (isPdf(r.url) ? ' · PDF' : '') + '</span>'
-            + '<span class="as-pb-go" aria-hidden="true">' + (isPdf(r.url) ? '↓' : '↗') + '</span></a>';
-        }).join('');
-        wrap.hidden = !earlier.length;
-      }
-      box.hidden = false;
-    } else if(box) box.hidden = true;
+    var box = $('hpPbPaper'), list = $('hpPbList'), t = $('hpPbWm');
+    var wm = t ? (t.innerHTML || '').trim() : '';
+    if(box && list){
+      list.innerHTML = papers.map(function(p){ return paperRow(p, wm); }).join('');
+      box.hidden = !papers.length;
+    }
     $('hpPbRows').innerHTML = eds.map(function(r){
       return '<a href="' + esc(safe(r.url)) + '" class="as-pb-r" target="_blank" rel="noopener"><span class="as-pb-d">' + longDate(r.published_on) + '</span><span class="as-pb-h">' + esc(r.title) + '</span><span class="as-pb-go" aria-hidden="true">↗</span></a>';
     }).join('');

@@ -71,21 +71,25 @@ body #hpHm .as-hm-c.fx-dn{animation:asHmDn .9s ease-out}
 }
 @media (prefers-reduced-motion:reduce){body #hpHm .as-hm-c{transition:none}body #hpHm .as-hm-c.fx-up,body #hpHm .as-hm-c.fx-dn{animation:none}}
 
-/* ── Research section: newest paper in the cover slot, earlier papers as rows ──
-   The block is no longer one link, so the cover and the text are each a link,
-   and hovering either lights both. Earlier papers sit under the featured text. */
-body #hpPubs .as-pb-p:hover .as-sub{color:var(--l1) !important}
-body #hpPubs .as-pb-p:hover .as-pb-cv{border-color:var(--axis)}
-body #hpPubs .as-pb-p:hover .as-pb-go{color:var(--accent)}
-body #hpPubs .as-pb-cva{display:block;color:inherit;flex:0 0 207px}
-body #hpPubs .as-pb-fa{display:flex;flex-direction:column;gap:var(--s4);color:inherit}
-body #hpPubs .as-pb-p:has(.as-pb-cva:hover,.as-pb-fa:hover) .as-pb-fa .as-sub{color:var(--accent-hover) !important}
-body #hpPubs .as-pb-p:has(.as-pb-cva:hover,.as-pb-fa:hover) .as-pb-cv{border-color:var(--l5)}
-body #hpPubs .as-pb-p:has(.as-pb-cva:hover,.as-pb-fa:hover) .as-pb-fa .as-pb-go{color:var(--accent-hover)}
-body #hpPubs .as-pb-e{display:flex;flex-direction:column;gap:var(--s3);margin-top:var(--s3)}
-body #hpPubs .as-pb-er{display:grid;grid-template-columns:minmax(0,1fr) auto 16px;gap:var(--s4);align-items:baseline;padding:var(--s3) 0;border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);color:var(--l2)}
-body #hpPubs .as-pb-er + .as-pb-er{border-top:0}
-body #hpPubs .as-pb-er:hover{color:var(--l1)}
-body #hpPubs .as-pb-er:hover .as-pb-go{color:var(--accent-hover)}
-body #hpPubs .as-pb-er .as-pb-go{text-align:right}
-@media (max-width:560px){body #hpPubs .as-pb-cva{flex:none;align-self:flex-start}}
+/* ── Research section: white papers as a list with small covers, beside the weekly
+   assessment, in the same row rhythm (concept C, November 16, 2026). ── */
+body #hpPubs .as-pb-pl{display:flex;flex-direction:column;border-bottom:1px solid var(--border-soft);flex:1}
+body #hpPubs .as-pb-pr{display:grid;grid-template-columns:84px minmax(0,1fr);gap:var(--s5);align-items:start;padding:var(--s4) 0;border-top:1px solid var(--border-soft);color:inherit}
+body #hpPubs .as-pb-pr .as-pb-cv{flex:none;width:84px;height:119px;padding:9px 8px 7px;overflow:hidden}
+body #hpPubs .as-pb-pr .as-pb-cv .as-wm svg{height:5px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-crule{margin:6px 0 8px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-ck{font-size:5px;letter-spacing:.5px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:9px;margin-top:5px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-cf{font-size:4.5px;padding-top:3px}
+body #hpPubs .as-pb-px{display:flex;flex-direction:column;gap:6px;min-width:0}
+body #hpPubs .as-pb-pt{font-size:var(--fs-subhead);font-weight:600;color:var(--l1);line-height:var(--lh-ui);transition:color .15s}
+body #hpPubs .as-pb-ps{margin:0;font-size:14px;line-height:1.55;color:var(--l3);text-wrap:pretty}
+body #hpPubs .as-pb-px .as-pb-go{margin-top:2px}
+body #hpPubs .as-pb-pr:hover .as-pb-pt{color:var(--accent-hover)}
+body #hpPubs .as-pb-pr:hover .as-pb-cv{border-color:var(--l5)}
+body #hpPubs .as-pb-pr:hover .as-pb-go{color:var(--accent-hover)}
+@media (max-width:560px){
+  body #hpPubs .as-pb-pr{grid-template-columns:72px minmax(0,1fr);gap:var(--s4)}
+  body #hpPubs .as-pb-pr .as-pb-cv{width:72px;height:102px}
+  body #hpPubs .as-pb-ps{display:none}
+}
