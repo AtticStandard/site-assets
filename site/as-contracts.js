@@ -51,11 +51,12 @@
     var yF = y(100).toFixed(1), path = pts.map(function(q){ return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
     var e = pts[pts.length - 1], tk = '';
     for(i = 0; i <= n; i++) tk += '<line x1="' + x(i).toFixed(1) + '" x2="' + x(i).toFixed(1) + '" y1="' + ax + '" y2="' + (ax + 4) + '" class="as-s-axis" vector-effect="non-scaling-stroke"></line>';
-    return '<span class="as-k5-ch"><svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false" style="overflow:visible">'
+    return '<span class="as-k5-ch"><svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true" focusable="false" style="overflow:visible">'
       + '<line x1="0" x2="' + W + '" y1="' + yF + '" y2="' + yF + '" class="as-s-hist" stroke-width="1.2" vector-effect="non-scaling-stroke"></line>'
       + '<polygon points="0,' + yF + ' ' + path + ' ' + W + ',' + yF + '" style="fill: var(--gold); fill-opacity: .12"></polygon>'
       + '<polyline points="' + path + '" fill="none" style="stroke: var(--gold)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>'
-      + '<circle cx="' + e[0].toFixed(1) + '" cy="' + e[1].toFixed(1) + '" r="3" style="fill: var(--gold)"></circle>'
+      /* The end dot as a round-capped point, so it stays round when the chart stretches to its column. */
+      + '<line x1="' + e[0].toFixed(1) + '" x2="' + e[0].toFixed(1) + '" y1="' + e[1].toFixed(1) + '" y2="' + e[1].toFixed(1) + '" style="stroke: var(--gold)" stroke-width="6" stroke-linecap="round" vector-effect="non-scaling-stroke"></line>'
       + '<line x1="0" x2="' + W + '" y1="' + ax + '" y2="' + ax + '" class="as-s-axis" vector-effect="non-scaling-stroke"></line>' + tk + '</svg>'
       + '<span class="as-k5-m">' + mons.map(function(m){ return '<i>' + m + '</i>'; }).join('') + '</span></span>';
   }
