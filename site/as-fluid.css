@@ -187,3 +187,7 @@ body #atomIC #cg .mc > .ix-chw:has(+ .mc-rbkey){margin-top:12px}
 body .mc > .ix-chw{order:4}
 body .mc > .mc-spot{order:5}
 body .mc > .mc-spot ~ .ix-chw{order:6}
+
+/* The contact drawer reads in the UI size of the type scale, 13px, like every other control on the
+   site (November 17, 2026); it was 12px. */
+.as-cd-tab,.as-cd-st,.as-cd-n{font-size:13px}

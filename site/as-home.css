@@ -160,7 +160,7 @@ body #hpClause .as-k5-c:focus-visible{outline:2px solid var(--accent);outline-of
   body #hpClause .as-k5-c + .as-k5-c{border-left:0}
   body #hpClause .as-k5-c > span{grid-column:1}
   body #hpClause .as-k5-c svg{grid-column:2;grid-row:1 / span 5;align-self:center;margin:0}
-  body #hpClause .as-k5-v{font-size:20px;margin-top:2px}
+  body #hpClause .as-k5-v{font-size:24px;margin-top:2px}
   body #hpClause .as-k5-t,body #hpClause .as-k5-n{display:none}
   body #hpClause .as-k5-go{padding-top:4px}
   body #hpClause .as-k5-c:first-child{padding-top:0}
@@ -180,7 +180,7 @@ body #hpClause .as-k5-m i{flex:1 1 0;min-width:0;font-style:normal;font-size:11p
 @media (max-width:1199px){
   body #hpClause .as-k5-c .as-k5-ch{grid-column:2;grid-row:1 / span 4;align-self:center;margin:0}
   body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
-  body #hpClause .as-k5-m i{font-size:10px}
+  body #hpClause .as-k5-m i{font-size:11px}
 }
 /* The five columns line up row by row (name, terms, figure, share, chart) even when a name or the
    terms wrap: each column shares the section's rows (subgrid). */
