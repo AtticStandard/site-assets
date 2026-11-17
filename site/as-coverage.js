@@ -27,7 +27,12 @@
   function int(n){ return Math.round(Number(n)).toLocaleString('en-US'); }
   function longDate(iso){ var p = String(iso).slice(0, 10).split('-'); return MONTH[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; }
   function set(id, h){ var e = $(id); if(e) e.innerHTML = h; }
-  function bar(frac, label, color){ return '<div class="cov-bar"><i style="width:calc((100% - 64px) * ' + Math.max(frac, 0.004).toFixed(4) + ')' + (color ? ';background:' + color : '') + '"></i><span>' + label + '</span></div>'; }
+  /* Single-value bars follow the site's data marks: --bar on a --border-soft track, the value beside it. */
+  function bar(frac, label){ return '<div class="cov-bar"><em><i style="width:' + (Math.max(frac, 0.004) * 100).toFixed(2) + '%"></i></em>' + (label != null ? '<span>' + label + '</span>' : '') + '</div>'; }
+  /* Parts of a whole take --bar-1..4, ordered largest to smallest; a fifth part and beyond, darker still. */
+  var RAMP = ['var(--bar-1)', 'var(--bar-2)', 'var(--bar-3)', 'var(--bar-4)', '#363A40', '#2C2F35'];
+  /* Legend with values (site rule C), above the bar it keys. */
+  function key(items){ return '<div class="as-lgv">' + items.map(function(it){ return '<span class="as-lg"><span class="as-lg-k k-bar" style="--k:' + it.c + '"></span>' + it.n + (it.v ? ' <b>' + it.v + '</b>' : '') + (it.note ? ' <span class="as-lg-n">' + it.note + '</span>' : '') + '</span>'; }).join('') + '</div>'; }
   function ixName(code){ var p = String(code).split(' '), n = IXN[p[1]] || p[1], c = CUR[p[2]] || '';
     return esc(n + c) + '&nbsp;<span class="cov-nw">(<a class="cov-ixc" href="/indexes?index=' + code.toLowerCase().replace(/\s+/g, '-') + '#atom-index-card">' + esc(code) + '</a>)</span>'; }
   function slug(v){ return v.slug || String(v.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
@@ -49,20 +54,24 @@
   function modalities(list){
     var box = $('covMod'); if(!box || !list || !list.length) return;
     var mx = Math.max.apply(null, list.map(function(m){ return +m.skus; })), h = '<div class="cov-h">Modality</div><div class="cov-h cov-x">Priced in</div><div class="cov-h">&nbsp;</div><div class="cov-h cov-r">SKUs</div>';
-    list.forEach(function(m){ h += '<div class="cov-nm">' + esc(m.modality) + '</div><div class="cov-x">' + (UNITS[m.modality] || '') + '</div><div><div class="cov-bar"><i style="width:' + (m.skus / mx * 100).toFixed(1) + '%"></i></div></div><div class="cov-r cov-b">' + int(m.skus) + '</div>'; });
+    list.forEach(function(m){ h += '<div class="cov-nm">' + esc(m.modality) + '</div><div class="cov-x">' + (UNITS[m.modality] || '') + '</div><div>' + bar(m.skus / mx) + '</div><div class="cov-r cov-b">' + int(m.skus) + '</div>'; });
     box.innerHTML = h;
   }
   function channels(list){
     if(!list || !list.length) return;
-    list = list.slice().sort(function(a, b){ return (CH[a.channel] || [0,0,0,0,9])[4] - (CH[b.channel] || [0,0,0,0,9])[4]; });
+    /* Largest first, so the ramp reinforces the order; the table below follows the same order and swatches. */
+    list = list.slice().sort(function(a, b){ return b.skus - a.skus; });
     var tot = list.reduce(function(a, c){ return a + +c.skus; }, 0), st = $('covStack'), box = $('covChn');
-    if(st){ st.innerHTML = list.map(function(c){ var k = CH[c.channel] || [c.channel, c.channel, '', '#7D848F']; return '<div style="flex:' + c.skus + ';background:' + k[3] + '" title="' + esc(k[1]) + '">' + Math.round(c.skus / tot * 100) + '%</div>'; }).join('');
-      var lg = document.createElement('div'); lg.className = 'cov-stack-l';
-      lg.innerHTML = list.map(function(c){ return '<span style="flex:' + c.skus + '">' + esc((CH[c.channel] || [0, c.channel])[1]) + '</span>'; }).join('');
-      var old = st.parentNode.querySelector('.cov-stack-l'); if(old) old.remove(); st.parentNode.appendChild(lg); }
+    if(st){
+      st.innerHTML = list.map(function(c, i){ var k = CH[c.channel] || [c.channel, c.channel]; return '<div style="flex:' + c.skus + ';background:' + RAMP[i] + '" title="' + esc(k[1]) + ', ' + Math.round(c.skus / tot * 100) + '%"></div>'; }).join('');
+      var old = st.parentNode.querySelector('.cov-stack-l, .as-lgv'); if(old) old.remove();
+      var w = document.createElement('div'); w.innerHTML = key(list.map(function(c, i){ var k = CH[c.channel] || [c.channel, c.channel];
+        return { c:RAMP[i], n:esc(k[1]), v:Math.round(c.skus / tot * 100) + '%', note:int(c.skus) + ' SKUs, ' + int(c.vendors) + ' vendors' }; }));
+      st.parentNode.insertBefore(w.firstChild, st);
+    }
     if(box){ var h = '<div class="cov-h">Channel</div><div class="cov-h cov-x">What it sells</div><div class="cov-h cov-r">Vendors</div><div class="cov-h cov-r cov-x">Pricing services</div><div class="cov-h cov-r">SKUs</div>';
-      list.forEach(function(c){ var k = CH[c.channel] || [c.channel, c.channel, '', '#7D848F'];
-        h += '<div class="cov-nm"><span class="cov-sw" style="background:' + k[3] + '"></span>' + esc(k[1]) + '</div><div class="cov-x">' + k[2] + '</div><div class="cov-r">' + int(c.vendors) + '</div><div class="cov-r cov-x">' + int(c.services) + '</div><div class="cov-r cov-b">' + int(c.skus) + '</div>'; });
+      list.forEach(function(c, i){ var k = CH[c.channel] || [c.channel, c.channel, ''];
+        h += '<div class="cov-nm"><span class="cov-sw" style="background:' + RAMP[i] + '"></span>' + esc(k[1]) + '</div><div class="cov-x">' + k[2] + '</div><div class="cov-r">' + int(c.vendors) + '</div><div class="cov-r cov-x">' + int(c.services) + '</div><div class="cov-r cov-b">' + int(c.skus) + '</div>'; });
       box.innerHTML = h; }
   }
 
@@ -74,8 +83,8 @@
   }
   function panel(v){
     var k = CH[v.channel] || [v.channel], mix = Object.keys(v.mix || {}).map(function(m){ return [m, v.mix[m]]; }).sort(function(a, b){ return b[1] - a[1]; });
-    var mx = '<div class="cov-mix">' + mix.map(function(m){ return '<i style="flex:' + m[1] + ';background:' + (MIXC[m[0]] || '#7D848F') + '"></i>'; }).join('') + '</div>'
-      + '<div class="cov-mixl">' + mix.map(function(m){ return '<span><em style="background:' + (MIXC[m[0]] || '#7D848F') + '"></em>' + esc(m[0]) + ' <b>' + int(m[1]) + '</b></span>'; }).join('') + '</div>';
+    var mx = key(mix.map(function(m, i){ return { c:RAMP[i] || RAMP[5], n:esc(m[0]), v:int(m[1]) }; }))
+      + '<div class="cov-mix">' + mix.map(function(m, i){ return '<i style="flex:' + m[1] + ';background:' + (RAMP[i] || RAMP[5]) + '"></i>'; }).join('') + '</div>';
     var c = (v.contrib || []).slice().sort(function(a, b){ return b[1] - a[1]; }), cb;
     if(c.length){
       var top = Math.max(c[0][1], 1), t = '<div class="cov-h">Index</div><div class="cov-h cov-x">Share of basket SKUs</div><div class="cov-h cov-r">Models in basket</div>';

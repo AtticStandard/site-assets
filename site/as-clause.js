@@ -43,42 +43,24 @@
     else if(legs.length > 1) idx = code(ct.index) + ': ' + legs.map(function(l){ return Math.round(l.share * 100) + '% ' + (LEG[l.leg] || l.leg); }).join(', ');
     else idx = code(ct.index) + ', ' + (LEG[ct.leg] || ct.leg) + (ct.form === 'differential' ? ', at a fixed differential to the spot price' : '');
     var c = COPY[ct.id] || { tab:ct.id, buyer:ct.label, terms:ct.label };
-    var start = String(ct.start || '2026-06-01');
+    var start = String(ct.start || '2026-06-01'), endYm = String(ct.months[ct.months.length - 1].ym);
     return { id:ct.id, c:c, fx:fx, st:st, min:min, saved:saved, use:use, unl:unl, lim:lim >= 0 ? [lim, st[lim].lim] : null,
-      fixedTd:+ct.fixed_td, indTd:+ct.indexed_td, reset:+ct.reset || 1,
+      end:mname(endYm) + ' ' + endYm.slice(0, 4), fixedTd:+ct.fixed_td, indTd:+ct.indexed_td, reset:+ct.reset || 1,
       commit:(min ? mil(ct.commit) + ' a year minimum spend' : mil(ct.commit) + ' a year') + ' for ' + ct.term + ' months, from ' + longDate(start), idx:idx };
   }
 
+  /* The chart is the shared simulated contract chart (AS.chart.contract in as-fluid.js), the same
+     drawing as on the homepage, with the legend with values above it (site rule C). */
   function chart(C){
-    var box = $('clChart'); if(!box) return;
-    var W = Math.max(300, Math.round(box.getBoundingClientRect().width)), phone = W < 560;
-    var H = phone ? 210 : 260, L = 8, R = phone ? 78 : 150, T = 26, B = 30;
-    var pts = C.st.map(function(m){ return +m.ix; }), fx = C.fx, vals = pts.concat([fx]);
-    (C.unl || []).forEach(function(u){ if(u != null) vals.push(u); });
-    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = Math.max((hi - lo) * .12, fx * .01); lo -= pad; hi += pad;
-    var n = pts.length, X = function(i){ return L + i * (W - L - R) / n; }, Y = function(v){ return T + (hi - v) / (hi - lo) * (H - T - B); };
-    var fs = phone ? 11 : 12, line = [], i;
-    for(i = 0; i < n; i++){ line.push(X(i).toFixed(1) + ',' + Y(pts[i]).toFixed(1), X(i + 1).toFixed(1) + ',' + Y(pts[i]).toFixed(1)); }
-    var fy = Y(fx), ly = Y(pts[n - 1]), lx = W - R + 8;
-    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Monthly payment under the Clause against the fixed price, ' + esc(C.c.tab) + '">';
-    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + fy.toFixed(1) + '" y2="' + fy.toFixed(1) + '" style="stroke:var(--l4)" stroke-width="1.5"/>';
-    s += '<polygon points="' + X(0).toFixed(1) + ',' + fy.toFixed(1) + ' ' + line.join(' ') + ' ' + X(n).toFixed(1) + ',' + fy.toFixed(1) + '" style="fill:var(--gold);fill-opacity:.12"/>';
-    if(C.unl){
-      var up = []; for(i = 0; i < n; i++){ if(C.unl[i] == null) continue; up.push(X(i).toFixed(1) + ',' + Y(C.unl[i]).toFixed(1), X(i + 1).toFixed(1) + ',' + Y(C.unl[i]).toFixed(1)); }
-      s += '<polyline points="' + up.join(' ') + '" fill="none" style="stroke:var(--l2)" stroke-width="1.5" stroke-dasharray="4 3"/>';
-    }
-    s += '<polyline points="' + line.join(' ') + '" fill="none" style="stroke:var(--gold)" stroke-width="2.5" stroke-linejoin="round"/>';
-    s += '<circle cx="' + X(n).toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="4.5" style="fill:var(--gold)"/>';
-    var fyl = Math.abs(ly - fy) < 34 ? Math.min(fy, ly) - 22 : fy;
-    s += '<text x="' + lx + '" y="' + (fyl - 2).toFixed(1) + '" font-size="' + fs + '" font-weight="600" letter-spacing="1" style="fill:var(--l4)">FIXED</text>';
-    s += '<text x="' + lx + '" y="' + (fyl + 13).toFixed(1) + '" font-size="' + fs + '" style="fill:var(--l5)">' + money(fx) + '</text>';
-    var lyl = Math.abs(ly - fy) < 34 ? Math.max(fy, ly) + 10 : ly;
-    s += '<text x="' + lx + '" y="' + (lyl + 4).toFixed(1) + '" font-size="' + fs + '" font-weight="600" style="fill:var(--l1)">' + money(pts[n - 1]) + '</text>';
-    s += '<text x="' + lx + '" y="' + (lyl + 19).toFixed(1) + '" font-size="' + fs + '" style="fill:var(--l5)">' + (C.reset > 1 ? 'Set for the quarter' : MON[+C.st[n - 1].ym.slice(5, 7) - 1] + ' to date') + '</text>';
-    if(C.lim){ var k = C.lim[0]; s += '<text x="' + ((X(k) + X(k + 1)) / 2).toFixed(1) + '" y="' + (Y(pts[k]) - 8).toFixed(1) + '" font-size="' + fs + '" text-anchor="middle" style="fill:var(--l4)">' + (C.lim[1] === 'floor' ? 'Floor' : 'Cap') + ' applied from ' + MONTH[+C.st[k].ym.slice(5, 7) - 1] + '</text>'; }
-    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + (H - B + 6) + '" y2="' + (H - B + 6) + '" style="stroke:var(--border)"/>';
-    C.st.forEach(function(m, j){ s += '<text x="' + ((X(j) + X(j + 1)) / 2).toFixed(1) + '" y="' + (H - 8) + '" font-size="' + fs + '" text-anchor="middle" style="fill:var(--l5)">' + MON[+m.ym.slice(5, 7) - 1] + '</text>'; });
-    box.innerHTML = s + '</svg>';
+    var box = $('clChart'), AC = window.AS && window.AS.chart; if(!box || !AC || !AC.contract) return;
+    var lim = C.lim ? C.lim[1] : null, last = C.st[C.st.length - 1], lg = $('clLgd');
+    if(lg){ lg.className = 'as-lgv'; }
+    var S = { fx:C.fx, months:C.st.map(function(m){ return m.ym; }), pay:C.st.map(function(m){ return +m.ix; }),
+      unl:C.unl ? C.unl.map(function(u){ return u == null ? null : u / C.fx * 100; }) : null, lim:lim,
+      ann:C.lim ? [C.lim[0], (lim === 'floor' ? 'Floor' : 'Cap') + ' applied from ' + mname(C.st[C.lim[0]].ym)] : null,
+      end:C.end, note:C.reset > 1 ? 'Set for the quarter' : mname(last.ym) + ' to date', gate:GATE, from:mname(C.st[0].ym), min:C.min };
+    var draw = function(){ var r = AC.contract(S); AC.legend(lg, r.legend); return r.svg; };
+    if(AC.mount) AC.mount(box, draw); else box.innerHTML = draw();
   }
 
   function show(i){
@@ -95,7 +77,6 @@
         (Math.abs(pc) < 0.005 ? mo + ' is level with it.' : mo + ' is ' + Math.abs(pc).toFixed(2) + '% ' + (pc > 0 ? 'below' : 'above') + '&nbsp;it.'));
     }
     set('clKt', '<div>Buyer</div><div>' + esc(C.c.buyer) + '</div><div>Commitment</div><div>' + esc(C.commit) + '</div><div>Index</div><div>' + C.idx + '</div>');
-    set('clLgd', '<span><i></i>' + (C.min ? 'Committed usage at the index price' : 'Monthly payment under the Clause') + '</span>' + (C.unl ? '<span><i class="cla-u"></i>Without the floor</span>' : '') + '<span><i class="cla-f"></i>Fixed price</span>');
     chart(C);
   }
 
@@ -158,7 +139,7 @@
           if(hit && chips && a.parentNode === chips && chips.scrollWidth > chips.clientWidth) chips.scrollTo({ left:a.offsetLeft - 16, behavior:'smooth' }); }); }); }, { rootMargin:'-30% 0px -60% 0px' });
       els.forEach(function(el){ io.observe(el); });
     }
-    var tm = 0; window.addEventListener('resize', function(){ clearTimeout(tm); tm = setTimeout(function(){ if(LIST[cur]) chart(LIST[cur]); }, 150); });
+    /* The shared frame redraws the chart when its box changes width. */
     DATA.then(fill)
       .catch(function(e){ console.error('Attic Standard Clause data unavailable:', e); });
   }

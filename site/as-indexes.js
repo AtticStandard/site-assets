@@ -12,7 +12,8 @@
     [/We compute every measure each week from/g, 'We compute every measure at each publication from'],
     [/History builds each week\./g, 'History builds with each publication.'],
     [/compare this week(?:’|')s basket with/g, 'compare the current basket with'],
-    [/what the market charges this week,/g, 'what the market charges now,']];
+    [/what the market charges this week,/g, 'what the market charges now,'],
+    [/^Neocloud(\s*)$/g, 'Neoclouds$1']];
   var ATTR = ['title', 'aria-label', 'data-tip', 'data-tooltip'];
   function fix(str){ var o = str; RULES.forEach(function(r){ if(r[0].test(o)) o = o.replace(r[0], r[1]); r[0].lastIndex = 0; }); return o; }
   function walk(root){

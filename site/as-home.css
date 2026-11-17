@@ -115,22 +115,18 @@ body #hpHm .as-hm-ds{display:inline-flex;align-items:center;gap:6px}
 body #hpHm .as-hm-d{display:block;width:6px;height:6px;border-radius:50%;background:var(--l5);opacity:.6;transition:background .3s,opacity .3s}
 body #hpHm .as-hm-d.on{background:var(--l1);opacity:1}
 body #hpHm .as-hm-k{margin-left:0;justify-content:flex-start}
-/* Charts name their lines at the ends (no legend). Contract facts sit on one line under the
-   saved figure, separated by middle dots (rules would read as tabs); on phones they stack. */
+/* Contract section. The older dotted facts list (.as-pl) is no longer in the page; its rules stay
+   harmless until the stylesheet is folded. Charts carry a legend with values, never end labels. */
 body #hpClause .as-cl{display:flex;flex-direction:column;gap:var(--s4)}
 body #hpClause .as-pl{flex-direction:row;flex-wrap:wrap;gap:4px 0}
 body #hpClause .as-pl li{padding-left:0;color:var(--l3)}
 body #hpClause .as-pl li:first-child{color:var(--l2)}
 body #hpClause .as-pl li::before{content:none}
 body #hpClause .as-pl li+li::before{content:"\00B7";position:static;display:inline;width:auto;height:auto;background:none;margin:0 12px;color:var(--l5)}
-body #hpClause .as-cl-c{margin-top:0}
-/* Legend C: the contract facts as one sentence, and a legend row above the chart whose keys carry each line's latest value, so the chart needs no end labels. */
+body #hpClause .as-cl-c{margin-top:-8px}
+/* Legend C: the contract facts as one sentence; the legend row above the chart is the shared .as-lgv (as-fluid.css). 24px from the sentence to the legend, as on every chart. */
 body #hpClause .as-cl-s{margin:0;max-width:760px;font-size:15px;line-height:1.6;color:var(--l3)}
 body #hpClause .as-cl-s b{color:var(--l2);font-weight:600}
-body #hpClause .as-cl-lg2{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px 24px;margin:0}
-body #hpClause .as-cl-lg2 .as-lg b{font-weight:600;color:var(--l1)}
-body #hpClause .as-cl-lg2 .as-lg-n{color:var(--l4)}
-@media (max-width:560px){ body #hpClause .as-cl-lg2 .as-lg{white-space:normal} }
 @media (max-width:560px){
   body #hpClause .as-pl{flex-direction:column;gap:6px}
   body #hpClause .as-pl li+li::before{content:none}

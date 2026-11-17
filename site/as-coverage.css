@@ -384,3 +384,17 @@ select.cov-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .cov-vd{grid-template-columns:38px minmax(0,1.6fr) 150px 130px 70px 70px 80px 20px}
 .cov-vd .cov-chev{padding-right:0}
 @media (max-width:767px){.cov-vd{grid-template-columns:38px minmax(0,1fr) 60px 20px}}
+
+/* Charts on one rule set (November 17, 2026). Single-value bars: --bar on a --border-soft track,
+   6px, the value beside it. Parts of a whole: a 14px bar in --bar-1..4, largest first, with the
+   legend with values (.as-lgv, as-fluid.css) 12px above it, as on the Indexes page. */
+.cov-bar em{flex:1 1 auto;min-width:0;display:block;height:6px;border-radius:3px;background:var(--border-soft);font-style:normal;overflow:hidden}
+.cov-bar em i{display:block;height:100%;border-radius:3px;background:var(--bar)}
+.cov-bar span{text-align:right}
+.cov-stack{height:14px;min-height:14px;gap:4px}
+.cov-stack>div{padding:0;font-size:0;border-radius:3px}
+.cov-stk .as-lgv{margin-top:4px}
+.as-lgv + .cov-stack,.as-lgv + .cov-mix{margin-top:12px}
+.cov-mix{height:14px;gap:4px;border-radius:0;overflow:visible}
+.cov-mix i{border-radius:3px}
+.cov-fact2 .as-lgv{margin-top:8px}

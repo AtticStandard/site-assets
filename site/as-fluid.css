@@ -152,3 +152,36 @@ a[data-ov-pdf]{font-size:var(--fs-ui,13px) !important}
 body .as-btn,body .as-cd-go,body .lgn-btn,body .cpg-submit{font-family:var(--font-sans) !important;font-size:13px !important;font-weight:600 !important;line-height:1 !important;letter-spacing:.2px;text-decoration:none !important;padding:12px 32px !important;border-radius:var(--radius) !important;border:1px solid var(--accent) !important;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;height:39px}
 body .as-btn:hover,body .as-btn:focus-visible,body .as-cd-go:hover,body .lgn-btn:hover,body .lgn-btn:focus-visible,body .cpg-submit:hover{text-decoration:none !important;background:transparent !important;color:var(--accent) !important;border-color:var(--accent) !important}
 body .lgn-btn{width:100%}
+
+/* CHART LEGEND WITH VALUES (site rule C, November 17, 2026), for every chart on the site.
+   One row above the chart, left-aligned: the key in the series' own style, the name, the latest
+   value in bold and a short note. Spacing: 24px from the sentence above, 12px to the chart. */
+body .as-lgv{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:8px 24px;margin:0}
+body .as-lgv .as-lg{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-ui,13px);line-height:var(--lh-ui,1.4);color:var(--l4);white-space:nowrap}
+body .as-lgv .as-lg b{font-weight:600;color:var(--l1)}
+body .as-lgv .as-lg-n{color:var(--l4)}
+body .as-lgv .as-lg-k{display:inline-block;flex:none;width:16px;height:2px;background:var(--k)}
+body .as-lgv .as-lg-k.k-thin{height:1px}
+body .as-lgv .as-lg-k.k-dash{height:0;background:none;border-top:2px dashed var(--k)}
+body .as-lgv .as-lg-k.k-dot{width:8px;height:8px;border-radius:50%}
+body .as-lgv .as-lg-k.k-bar{width:10px;height:10px;border-radius:2px}
+body .as-ds-p > .as-lgv{margin-bottom:-12px}
+@media (max-width:560px){ body .as-lgv{gap:8px 16px} body .as-lgv .as-lg{white-space:normal} }
+
+/* Indexes page (drawn by its embeds), brought onto the same rule set: the vendor type key is a
+   legend with values ABOVE its bar, styled as .as-lgv; each index chart's key sits above the chart. */
+body .pad:has(> #stack){display:flex;flex-direction:column}
+body .pad:has(> #stack) > .sec-head{order:0}
+body #key{order:1;margin-top:16px;gap:8px 24px}
+body #stack{order:2;margin-top:12px}
+body #key .k{gap:8px;font-size:13px;color:var(--l4)}
+body #key .k s{width:10px;height:10px;border-radius:2px}
+body #key .k b{font-weight:600;color:var(--l1)}
+body #key .k u{font-size:13px;color:var(--l4);text-decoration:none}
+body .mc{display:flex;flex-direction:column}
+body .mc > .mc-dir{order:1}
+body .mc > .mc-row{order:2}
+body .mc > .mc-rbkey{order:3;justify-content:flex-start;margin:0 0 4px}
+body .mc > .ix-chw{order:4}
+body .mc > .mc-spot{order:5}
+body .mc > .mc-spot ~ .ix-chw{order:6}

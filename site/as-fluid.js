@@ -13,7 +13,9 @@
   C.fit = function(w){
     w = Math.round(w || BASE);
     if(w < PHONE){ C.phone = true; C.W = w; C.X0 = 6; C.X1 = w - 10; C.AL = 0; C.AR = w; C.LX = w + 400; }
-    else { C.phone = false; var W = Math.max(MIN, w); C.W = W; C.X0 = 14; C.AL = 0; C.X1 = W - 170; C.LX = W - 146; C.AR = W - 156; }
+    /* No label column on any chart (site rule C, November 17, 2026): names and latest values sit in
+       the legend above the chart, so the plot runs the full width. */
+    else { C.phone = false; var W = Math.max(MIN, w); C.W = W; C.X0 = 14; C.AL = 0; C.X1 = W - 12; C.LX = W + 400; C.AR = W; }
     return C;
   };
   /* On phones, text set in the label column is collected for the list;
@@ -79,6 +81,70 @@
     } catch(e){ console.error('Attic Standard chart:', e); }
     finally { cap = null; C.fit(BASE); }
   }
+  /* LEGEND WITH VALUES (site rule C). One row above every chart, left-aligned: a key drawn in the
+     series' own style, its name, its latest value in bold and a short note. The chart itself carries
+     no series names or values at line ends. items: [{ k:'line'|'thin'|'dash'|'dot'|'bar', c:css colour,
+     n:name, v:value, note:note }]. */
+  C.legend = function(el, items){
+    if(!el) return;
+    el.classList.add('as-lgv');
+    el.innerHTML = (items || []).map(function(it){
+      return '<span class="as-lg"><span class="as-lg-k k-' + (it.k || 'line') + '" style="--k:' + it.c + '"></span>' + C.esc(it.n)
+        + (it.v != null && it.v !== '' ? ' <b>' + C.esc(it.v) + '</b>' : '') + (it.note ? ' <span class="as-lg-n">' + C.esc(it.note) + '</span>' : '') + '</span>';
+    }).join('');
+  };
+  /* The legend row for a chart box: the element just before it, created if missing. */
+  C.legendFor = function(box){
+    if(!box) return null;
+    var p = box.previousElementSibling;
+    if(p && p.classList.contains('as-lgv')) return p;
+    var d = document.createElement('div'); d.className = 'as-lgv'; box.parentNode.insertBefore(d, box); return d;
+  };
+
+  /* SIMULATED CONTRACT CHART, one drawing for the homepage and the Clause page. S: { fx (fixed monthly
+     price), months (settled months, YYYY-MM), pay (monthly payments), unl (payments without the floor
+     or cap, as % of fx, or null), lim ('floor'|'cap'), ann ([month index, text]), end ('May 2027'),
+     note ('November to date'), gate (published date), from (first month name), min (minimum spend) }.
+     Returns { svg, legend }. The fixed price sits 28px under the top edge on every contract; the
+     legend carries every value, so the plot has no labels at line ends. */
+  function fmon(ym){ var d = new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1)); while(d.getUTCDay() !== 1) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
+  function nym(ym){ var y = +ym.slice(0, 4), m = +ym.slice(5, 7) + 1; if(m > 12){ m = 1; y++; } return y + '-' + (m < 10 ? '0' : '') + m; }
+  function usd(n){ return '$' + Math.round(Number(n)).toLocaleString('en-US'); }
+  var LONGM = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  C.contract = function(S){
+    var c = C, fx = +S.fx, AX = C.axis('2026-05-04', S.gate), i;
+    var pc = S.pay.map(function(p){ return p / fx * 100; }), un = (S.unl || []).filter(function(u){ return u != null; });
+    var lo = Math.min.apply(null, [97].concat(pc.map(function(v){ return v - 1.5; }), un.map(function(u){ return u - 1.5; })));
+    var hi = Math.max.apply(null, [100].concat(pc, un));
+    var Y = function(v){ return Math.round((c.PB - (v / fx * 100 - lo) / (hi - lo) * (c.PB - c.PT - 28)) * 10) / 10; };
+    var T = function(x, y, s, cls, anchor){ return c.text(x, y, s, { cls:cls || 'as-f-l4', anchor:anchor, size:11 }); };
+    var g = [c.rule(Y(fx), { cls:'as-s-hist', width:1.5 }), T(c.X0, Y(fx) - 10, 'May: base period')];
+    var pts = [];
+    for(i = 0; i < S.months.length; i++){
+      var a = fmon(S.months[i]), b = i < S.months.length - 1 ? fmon(S.months[i + 1]) : (fmon(nym(S.months[i])) <= S.gate ? fmon(nym(S.months[i])) : S.gate);
+      pts.push([AX.x(a), Y(S.pay[i])], [AX.x(b), Y(S.pay[i])]);
+    }
+    var path = pts.map(function(p){ return p[0].toFixed(1) + ',' + p[1]; }).join(' ');
+    g.push('<polygon points="' + pts[0][0].toFixed(1) + ',' + Y(fx) + ' ' + path + ' ' + pts[pts.length - 1][0].toFixed(1) + ',' + Y(fx) + '" style="fill: var(--gold); fill-opacity: .12"></polygon>');
+    var lg = [];
+    if(S.unl){
+      var up = [];
+      for(i = 0; i < S.months.length; i++){ if(S.unl[i] == null) continue; var y = Y(fx * S.unl[i] / 100); up.push([pts[2 * i][0], y], [pts[2 * i + 1][0], y]); }
+      g.push('<polyline points="' + up.map(function(p){ return p[0].toFixed(1) + ',' + p[1]; }).join(' ') + '" fill="none" class="as-s-series" stroke-width="1.5" stroke-dasharray="4 3"></polyline>');
+    }
+    g.push('<polyline points="' + path + '" fill="none" style="stroke: var(--gold)" stroke-width="2.2" stroke-linejoin="round"></polyline>');
+    var lx = pts[pts.length - 1][0], ly = pts[pts.length - 1][1];
+    g.push('<circle cx="' + lx.toFixed(1) + '" cy="' + ly + '" r="4" style="fill: var(--gold)"></circle>');
+    if(S.ann){ i = S.ann[0]; g.push(T((pts[2 * i][0] + pts[2 * i + 1][0]) / 2, Y(S.pay[i]) - 10, S.ann[1], 'as-f-l4', 'middle')); }
+    g.push(T(c.X1, Y(fx) - 10, 'Term continues to ' + S.end, 'as-f-l4', 'end'));
+    g.push(AX.svg());
+    lg.push({ k:'line', c:'var(--gold)', n:S.min ? 'Usage at the index price' : 'On the Clause', v:usd(S.pay[S.pay.length - 1]), note:S.note });
+    lg.push({ k:'line', c:'var(--series-history)', n:'Fixed price', v:usd(fx), note:'a month' });
+    if(S.unl){ var lu = S.unl[S.unl.length - 1]; lg.push({ k:'dash', c:'var(--series)', n:'Without the ' + (S.lim || 'floor'), v:lu == null ? '' : usd(fx * lu / 100) }); }
+    var ld = S.gate ? (function(p){ return LONGM[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; })(String(S.gate).split('-')) : '';
+    return { legend:lg, svg:c.svg(g.join(''), 'Monthly payments on the simulated contract under the Clause, ' + S.from + ' to ' + ld + ', against the fixed price set at May levels') };
+  };
+
   /* Draw into el now, and again whenever el changes width. */
   C.mount = function(el, draw){
     if(!el) return;
@@ -90,6 +156,14 @@
       el._asro.observe(el);
     }
   };
+
+  /* Chart type scale (folded in from the homepage footer, November 17, 2026): names and labels
+     inside charts 12px, axis ticks 11px, on every page that draws on the shared frame. */
+  if(!C._scaled){
+    C._scaled = true;
+    var t0 = C.text;
+    C.text = function(x, y, s, o){ o = o || {}; var z = o.size || 11, q = {}; for(var k in o) q[k] = o[k]; q.size = z <= 10 ? 11 : z === 11 ? 12 : z + 1; return t0(x, y, s, q); };
+  }
 
   /* Illustrations drawn on a fixed viewBox (the hero): the picture scales with
      the width, its labels are resized so they render at their set size. */
