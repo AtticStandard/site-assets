@@ -116,7 +116,7 @@
     var pc = S.pay.map(function(p){ return p / fx * 100; }), un = (S.unl || []).filter(function(u){ return u != null; });
     var lo = Math.min.apply(null, [97].concat(pc.map(function(v){ return v - 1.5; }), un.map(function(u){ return u - 1.5; })));
     var hi = Math.max.apply(null, [100].concat(pc, un));
-    var Y = function(v){ return Math.round((c.PB - (v / fx * 100 - lo) / (hi - lo) * (c.PB - c.PT - 28)) * 10) / 10; };
+    var Y = function(v){ return Math.round((c.PB - (v / fx * 100 - lo) / (hi - lo) * (c.PB - c.PT - 6)) * 10) / 10; };
     var T = function(x, y, s, cls, anchor){ return c.text(x, y, s, { cls:cls || 'as-f-l4', anchor:anchor, size:11 }); };
     /* November 17, 2026: no labels inside the plot; the legend names the lines, and the base, the term
        and any floor or cap are stated beside the chart. */
