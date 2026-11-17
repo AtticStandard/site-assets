@@ -203,3 +203,9 @@ body #hpClause .as-k5-ch svg{height:62px}
 }
 /* The contract terms show on every screen, under the name, as on desktop (November 17, 2026). */
 @media (max-width:1199px){ body #hpClause .as-k5-t{display:block;margin-bottom:2px} }
+
+/* Index table colour key: a gradient bar read in words (November 17, 2026). */
+body #hpHm .as-hm-k.as-hm-gk{display:inline-flex;flex-direction:column;gap:4px;width:240px;max-width:100%;margin-left:0;align-self:flex-start}
+body #hpHm .as-hm-gb{display:block;height:8px;border-radius:2px}
+body #hpHm .as-hm-gt{display:flex;justify-content:space-between;align-items:center;font-size:11px;line-height:1.3;color:var(--l4);white-space:nowrap}
+body #hpHm .as-hm-gt > span{display:inline-flex;align-items:center;gap:4px}

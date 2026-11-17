@@ -66,12 +66,15 @@
     });
     return h + '</div>';
   }
+  /* The colour key: one gradient bar, falls to rises, read in words (November 17, 2026). Its ends
+     name direction, not a percentage, because the scale tightens for monthly and weekly changes;
+     in words the key never changes as the periods rotate. */
   function key(){
-    var s = scale(), small = s[0], big = s[1], f = function(v){ return String(v).replace(/\.0$/, ''); };
-    function sw(v, label, d){ return '<span class="as-hm-sw" style="background:' + heat(v) + '"></span><span><i class="as-hm-a ' + d + '"></i>' + label + '</span>'; }
-    return '<span class="as-hm-k">'
-      + sw(-big, f(big) + '% or more', 'dn') + sw(-small, f(small) + '%', 'dn') + sw(0, 'Unchanged', 'fl')
-      + sw(small, f(small) + '%', 'up') + sw(big, f(big) + '% or more', 'up') + '</span>';
+    var s = scale(), small = s[0], big = s[1];
+    var g = 'linear-gradient(90deg,' + heat(-big) + ' 0%,' + heat(-small) + ' 30%,' + heat(0) + ' 50%,' + heat(small) + ' 70%,' + heat(big) + ' 100%)';
+    return '<span class="as-hm-k as-hm-gk" role="img" aria-label="Colour key: red for falls, green for rises, deeper for larger moves">'
+      + '<span class="as-hm-gb" style="background:' + g + '"></span>'
+      + '<span class="as-hm-gt"><span><i class="as-hm-a dn"></i>Larger fall</span><span>Unchanged</span><span>Larger rise<i class="as-hm-a up"></i></span></span></span>';
   }
   /* Step dots after the period label: one per period, the current one lit; they show that the
      table rotates and where it is, without a moving bar. */
