@@ -297,3 +297,12 @@
    column, so the section reads top to bottom as on the homepage: figure, terms, legend, chart. */
 .cla-simtop{grid-template-columns:minmax(0,1fr);gap:var(--s5);max-width:760px}
 .cla-kt{grid-template-columns:120px minmax(0,1fr)}
+
+/* November 17, 2026: the five drivers in the homepage order and sizes (name, 24px figure, breakdown
+   in brackets), and the contract table's Terms column wraps instead of running into the figures. */
+.cla-drv>div .cla-k{order:-1;font-size:13px;font-weight:600;color:var(--l1)}
+.cla-drv .cla-n{font-size:24px;margin-top:2px}
+.cla-drv .cla-t{color:var(--l4)}
+.cla-tbl>.cla-x:not(.cla-r){white-space:normal}
+.cla-bigt{font-size:15px;color:var(--l3)}
+@media (max-width:767px){.cla-drv .cla-n{font-size:20px}}

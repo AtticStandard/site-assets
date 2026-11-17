@@ -118,7 +118,9 @@
     var hi = Math.max.apply(null, [100].concat(pc, un));
     var Y = function(v){ return Math.round((c.PB - (v / fx * 100 - lo) / (hi - lo) * (c.PB - c.PT - 28)) * 10) / 10; };
     var T = function(x, y, s, cls, anchor){ return c.text(x, y, s, { cls:cls || 'as-f-l4', anchor:anchor, size:11 }); };
-    var g = [c.rule(Y(fx), { cls:'as-s-hist', width:1.5 }), T(c.X0, Y(fx) - 10, 'May: base period')];
+    /* November 17, 2026: no labels inside the plot; the legend names the lines, and the base, the term
+       and any floor or cap are stated beside the chart. */
+    var g = [c.rule(Y(fx), { cls:'as-s-hist', width:1.5 })];
     var pts = [];
     for(i = 0; i < S.months.length; i++){
       var a = fmon(S.months[i]), b = i < S.months.length - 1 ? fmon(S.months[i + 1]) : (fmon(nym(S.months[i])) <= S.gate ? fmon(nym(S.months[i])) : S.gate);
@@ -135,12 +137,11 @@
     g.push('<polyline points="' + path + '" fill="none" style="stroke: var(--gold)" stroke-width="2.2" stroke-linejoin="round"></polyline>');
     var lx = pts[pts.length - 1][0], ly = pts[pts.length - 1][1];
     g.push('<circle cx="' + lx.toFixed(1) + '" cy="' + ly + '" r="4" style="fill: var(--gold)"></circle>');
-    if(S.ann){ i = S.ann[0]; g.push(T((pts[2 * i][0] + pts[2 * i + 1][0]) / 2, Y(S.pay[i]) - 10, S.ann[1], 'as-f-l4', 'middle')); }
-    g.push(T(c.X1, Y(fx) - 10, 'Term continues to ' + S.end, 'as-f-l4', 'end'));
     g.push(AX.svg());
-    lg.push({ k:'line', c:'var(--gold)', n:S.min ? 'Usage at the index price' : 'On the Clause', v:usd(S.pay[S.pay.length - 1]), note:S.note });
-    lg.push({ k:'line', c:'var(--series-history)', n:'Fixed price', v:usd(fx), note:'a month' });
-    if(S.unl){ var lu = S.unl[S.unl.length - 1]; lg.push({ k:'dash', c:'var(--series)', n:'Without the ' + (S.lim || 'floor'), v:lu == null ? '' : usd(fx * lu / 100) }); }
+    /* The legend names the lines only, in the words of the homepage Simulated contracts. */
+    lg.push({ k:'line', c:'var(--gold)', n:S.min ? 'Usage at the index price' : 'Monthly bill on the Clause' });
+    lg.push({ k:'line', c:'var(--series-history)', n:'Fixed price at May levels' });
+    if(S.unl){ lg.push({ k:'dash', c:'var(--series)', n:'Without the ' + (S.lim || 'floor') }); }
     var ld = S.gate ? (function(p){ return LONGM[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; })(String(S.gate).split('-')) : '';
     return { legend:lg, svg:c.svg(g.join(''), 'Monthly payments on the simulated contract under the Clause, ' + S.from + ' to ' + ld + ', against the fixed price set at May levels') };
   };

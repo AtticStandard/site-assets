@@ -69,14 +69,18 @@
     var from = C.st.length ? mname(C.st[0].ym) : 'June', last = C.st[C.st.length - 1], date = longDate(GATE);
     if(C.min){
       set('clBig', money(C.use));
-      set('clBigT', 'more usage from ' + from + ' to ' + date + ', for the same minimum spend, valued at the price at signing.');
+      set('clBigT', 'more usage since ' + from + ' for the same minimum spend (valued at the price at signing)');
     } else {
       var pc = last ? (1 - last.ix / C.fx) * 100 : 0, mo = C.reset > 1 ? 'This quarter&rsquo;s price' : 'This month&rsquo;s price';
       set('clBig', money(Math.abs(C.saved)));
-      set('clBigT', (C.saved >= 0 ? 'saved' : 'paid above a fixed price') + ' from ' + from + ' to ' + date + (C.saved >= 0 ? ', against a fixed price at May levels. ' : '. ') +
-        (Math.abs(pc) < 0.005 ? mo + ' is level with it.' : mo + ' is ' + Math.abs(pc).toFixed(2) + '% ' + (pc > 0 ? 'below' : 'above') + '&nbsp;it.'));
+      /* One line under the figure, as on the homepage: what it is, then the detail in brackets. */
+      mo = C.reset > 1 ? 'this quarter' : 'this month';
+      set('clBigT', (C.saved >= 0 ? 'saved' : 'paid above') + ' since ' + from + ' against a fixed price at May levels (' +
+        (Math.abs(pc) < 0.005 ? mo + ' level with it' : mo + ' ' + Math.abs(pc).toFixed(2) + '% ' + (pc > 0 ? 'below' : 'above')) + ')');
     }
-    set('clKt', '<div>Buyer</div><div>' + esc(C.c.buyer) + '</div><div>Commitment</div><div>' + esc(C.commit) + '</div><div>Index</div><div>' + C.idx + '</div>');
+    /* The term end and any floor or cap sit in the key table, not inside the chart (November 17, 2026). */
+    set('clKt', '<div>Buyer</div><div>' + esc(C.c.buyer) + '</div><div>Commitment</div><div>' + esc(C.commit) + ', to ' + esc(C.end) + '</div><div>Index</div><div>' + C.idx + '</div>' +
+      (C.lim ? '<div>' + (C.lim[1] === 'floor' ? 'Floor' : 'Cap') + '</div><div>Applied from ' + mname(C.st[C.lim[0]].ym) + '</div>' : ''));
     chart(C);
   }
 
@@ -94,12 +98,20 @@
     var ser = p.series || {}, last = function(k){ var s = ser['AIPI TXT GLB|' + k]; return s && s.length ? +s[s.length - 1][1] - 100 : 0; };
     var tl = last('output'), dc = last('cached'), r = p.reprice || {}, L = p.listings || {};
     var pr = ((p.spread || {}).prices || []).map(Number).sort(function(a, b){ return a - b; }), ratio = pr.length ? pr[pr.length - 1] / pr[0] : 0;
-    var D = [[Math.abs(tl).toFixed(2) + '%', (tl <= 0 ? 'Fall' : 'Rise') + ' in text output prices on the same models since May'],
-             [int(r.n), 'List price changes in 13 weeks: ' + int(r.down) + ' cuts, ' + int(r.up) + ' rises'],
-             [int(L.added_13w), 'Model listings added in 13 weeks, with ' + int(L.gone_13w) + ' withdrawn'],
-             [Math.abs(dc).toFixed(2) + '%', (dc <= 0 ? 'Fall' : 'Rise') + ' in cached input prices since May'],
-             [ratio.toFixed(1) + '&times;', 'Highest to lowest price for one model, ' + pr.length + ' vendors']];
-    D.forEach(function(d, i){ var e = $('clD' + i); if(!e) return; e.querySelector('.cla-n').innerHTML = d[0]; e.querySelector('.cla-t').textContent = d[1]; });
+    /* Since November 17, 2026 the five drivers read exactly as on the homepage: the same order, the
+       same headline figures and the same breakdown in brackets. Drift shows the input or output index
+       leg that has moved most since May; cached input belongs to Component shifts. */
+    var pct = function(v, d){ return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(d) + '%'; };
+    var hl = null; Object.keys(ser).forEach(function(k){ if(k.split('|')[1] === 'cached') return; var s = ser[k]; if(!s || !s.length) return; var v = +s[s.length - 1][1] - 100; if(hl === null || Math.abs(v) > Math.abs(hl[1])) hl = [k, v]; });
+    if(!hl) hl = ['AIPI TXT GLB|output', tl];
+    var hk = hl[0].split('|'), hn = (NAMES[hk[0].split(' ')[1]] || hk[0]) + ' ' + (LEG[hk[1]] || hk[1]);
+    var di = -last('input'), dcf = -dc;
+    var D = [['Vendor spread', ratio.toFixed(1) + '&times;', '(highest price over lowest for one model, ' + pr.length + ' vendors)'],
+             ['Vendor repricing', int(r.n), '(price changes in 13 weeks: ' + int(r.down) + ' cuts, ' + int(r.up) + ' rises)'],
+             ['Price drift', pct(hl[1], 2), '(' + hn.toLowerCase() + ' index since May)'],
+             ['Component shifts', (di > 0.05 && dcf > 0) ? (dcf / di).toFixed(1) + '&times;' : pct(dc, 2), '(cached input ' + pct(dc, 2) + ' vs input ' + pct(-di, 2) + ' since May)'],
+             ['Model turnover', int(+L.added_13w + +L.gone_13w), '(model listings in 13 weeks: ' + int(L.added_13w) + ' added, ' + int(L.gone_13w) + ' withdrawn)']];
+    D.forEach(function(d, i){ var e = $('clD' + i); if(!e) return; e.querySelector('.cla-k').textContent = d[0]; e.querySelector('.cla-n').innerHTML = d[1]; e.querySelector('.cla-t').textContent = d[2]; });
     var gap = Math.round(Math.abs(tl) / 100 * 1e7 / 1000) * 1000;
     set('clScaleN', money(gap) + ' a year');
     set('clScaleT', 'What a $10 million contract held at May prices now pays ' + (tl <= 0 ? 'above' : 'below') + ' the market.');
