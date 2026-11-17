@@ -48,7 +48,7 @@ g.push(AX.svg());
 var mx = 0; keys.forEach(function(k){ mx = Math.max(mx, Math.abs(chg(k))); });
 var nmh = nm(hl); nmh = nmh.charAt(0).toUpperCase() + nmh.slice(1);
 LGD.drift = [{ k:'line', c:'var(--series)', n:nmh + ' index' }, { k:'thin', c:'var(--bar-3)', n:'Other indexes' }];
-FIG.drift = { v:pct(tl, 2), d:'(' + nm(hl) + ' index; others to ' + pct(mn, 1) + ')' };
+FIG.drift = { v:pct(tl, 2), d:'(' + nm(hl).toLowerCase() + ' index; others to ' + pct(mn, 1) + ')' };
 TXT.drift = 'The text output index is <strong>' + Math.abs(tl).toFixed(2) + '%</strong> ' + (tl <= 0 ? 'below' : 'above') + ' its May level, and other indexes have moved by as much as ' + mx.toFixed(1) + '%.';
 return svg(g.join(''), 'Index legs since May: text output is ' + Math.abs(tl).toFixed(2) + '% ' + (tl <= 0 ? 'below' : 'above') + ' its May level; others have moved by as much as ' + mx.toFixed(1) + '%');
 }
