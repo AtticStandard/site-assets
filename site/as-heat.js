@@ -66,7 +66,8 @@
     });
     return h + '</div>';
   }
-  /* The colour key: one gradient bar, falls to rises, read in words (November 17, 2026). Its ends
+  /* The colour key: one gradient bar, falls to rises, with only its two ends named, Fall and Rise,
+     beside the same arrows the cells use (November 17, 2026). Its ends
      name direction, not a percentage, because the scale tightens for monthly and weekly changes;
      in words the key never changes as the periods rotate. */
   function key(){
@@ -74,7 +75,7 @@
     var g = 'linear-gradient(90deg,' + heat(-big) + ' 0%,' + heat(-small) + ' 30%,' + heat(0) + ' 50%,' + heat(small) + ' 70%,' + heat(big) + ' 100%)';
     return '<span class="as-hm-k as-hm-gk" role="img" aria-label="Colour key: red for falls, green for rises, deeper for larger moves">'
       + '<span class="as-hm-gb" style="background:' + g + '"></span>'
-      + '<span class="as-hm-gt"><span><i class="as-hm-a dn"></i>Larger fall</span><span>Unchanged</span><span>Larger rise<i class="as-hm-a up"></i></span></span></span>';
+      + '<span class="as-hm-gt"><span><i class="as-hm-a dn"></i>Fall</span><span>Rise<i class="as-hm-a up"></i></span></span></span>';
   }
   /* Step dots after the period label: one per period, the current one lit; they show that the
      table rotates and where it is, without a moving bar. */
