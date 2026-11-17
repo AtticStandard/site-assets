@@ -188,24 +188,36 @@
         if (!row || row.level == null) return;
         var lvl = Number(row.level);
         if (!(lvl > 0)) return;
-        var c = (row.wow == null) ? null : Number(row.wow);
-        /* Each chip names its period; a null wow renders the house placeholder. */
-        var chg = (c === null)
-          ? '<span class="tk-chg change-neutral">--</span>'
-          : '<span class="tk-chg ' + chgClass(c) + '">'
-                + arrow(c) + ' ' + Math.abs(c).toFixed(1) + '%<span class="tk-1w">1w</span></span>';
+        /* Since November 17, 2026 each chip shows the change since the index base: levels are
+           rebased to 100 at the base, so the change is the level less 100. A week's change is
+           often 0.0%; the change since base shows how far each index has moved. */
+        var c = lvl - 100;
+        var chg = '<span class="tk-chg ' + chgClass(c) + '">'
+                + arrow(c) + ' ' + Math.abs(c).toFixed(1) + '%<span class="tk-1w">vs Base</span></span>';
         grp += '<span class="tk-item">'
             +  '<span class="tk-dir">' + d.tag + '</span>'
             +  '<span class="tk-lvl">' + lvl.toFixed(1) + '</span>'
             +  chg
             +  '</span>';
       });
-      if (grp) html += '<a class="tk-grp" href="#atom-index-card" data-code="' + code + '">'
+      /* Every item opens its index on the Indexes page; on that page it selects the card instead. */
+      if (grp) html += '<a class="tk-grp" href="/indexes?index=' + code.toLowerCase().replace(/\s+/g, '-') + '#atom-index-card" data-code="' + code + '" title="Open this index">'
                     + '<span class="tk-code">' + shortCode + '</span>'
                     + grp + '<span class="tk-go">\u203A</span></a>';
     });
 
     if (!html) { ticker.innerHTML = '<div class="ticker-item">No index data</div>'; return; }
+
+    /* The label carries the publication date of the figures: "Price Indexes · November 16". */
+    var dt = rows.reduce(function(m, r) { return r.date && r.date > m ? r.date : m; }, '');
+    var lab = document.querySelector('.ticker-label');
+    if (lab && dt && !lab.querySelector('.tk-date')) {
+      var MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      var dd = String(dt).slice(0, 10).split('-');
+      var sp = document.createElement('span'); sp.className = 'tk-date';
+      sp.textContent = '\u00b7 ' + MON[+dd[1] - 1] + ' ' + (+dd[2]);
+      lab.appendChild(sp);
+    }
 
     requestAnimationFrame(function() {
       ticker.innerHTML = html + html;
@@ -239,7 +251,7 @@
   /* One request, and no site_config lookup: the gate is applied inside
      the view, so the band cannot read a week the cards are not showing. */
   function initTicker() {
-    sb('/v_index_ticker?select=index_code,direction,level,wow,display_order&order=display_order.asc,index_code.asc')
+    sb('/v_index_ticker?select=index_code,direction,level,wow,display_order,date&order=display_order.asc,index_code.asc')
       .then(function(rows) {
         if (!rows || !rows.length) throw new Error('no index rows');
         build(rows);
