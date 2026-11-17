@@ -191,3 +191,13 @@ body #hpClause .as-k5-m i{flex:1 1 0;min-width:0;font-style:normal;font-size:11p
 /* Every small chart is the same height whatever its column width, so the axes line up. */
 body #hpClause .as-k5-ch svg{height:62px}
 @media (max-width:991px){ body #hpClause .as-k5-ch svg{height:52px} }
+/* Responsive (November 17, 2026). Five columns from 992px. Tablets (600 to 991px): one row per
+   contract with the figures at the left and the small chart filling the rest of the row, so no
+   gap opens in the middle. Phones (under 600px): the chart keeps a fixed 150px at the right. */
+@media (min-width:600px) and (max-width:991px){
+  body #hpClause .as-k5-c{grid-template-columns:minmax(180px,1fr) minmax(0,2fr);column-gap:var(--s6)}
+  body #hpClause .as-k5-ch svg{height:56px}
+}
+@media (max-width:599px){
+  body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
+}
