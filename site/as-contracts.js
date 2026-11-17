@@ -28,11 +28,14 @@
     var saved = st.reduce(function(a, m){ return a + (m.fx - m.ix); }, 0);
     var use = st.reduce(function(a, m){ return a + (m.set ? m.fx * (100 / m.set - 1) : m.fx * (m.fx / m.ix - 1)); }, 0);
     var out = min ? use : saved, last = st[st.length - 1], pc = (1 - last.ix / last.fx) * 100;
-    var lim = -1; st.some(function(m, i){ if(m.lim === 'floor' || m.lim === 'cap'){ lim = i; return true; } return false; });
+    /* A floor or cap is named only on a single-leg contract, as on the Clause page; a blended contract's legs are limited one by one. */
+    var single = ct.months[0].legs && ct.months[0].legs.length === 1, lim = -1;
+    if(single) st.some(function(m, i){ if(m.lim === 'floor' || m.lim === 'cap'){ lim = i; return true; } return false; });
     var note = lim >= 0 ? (st[lim].lim === 'floor' ? 'Floor' : 'Cap') + ' applied from ' + mname(st[lim].ym)
       : (+ct.reset > 1) ? 'Priced a quarter ahead'
-      : mname(last.ym) + ' ' + Math.abs(pc).toFixed(1) + '% ' + (pc >= 0 ? 'below' : 'above') + ' the fixed price';
+      : mname(last.ym) + ' bill ' + Math.abs(pc).toFixed(1) + '% ' + (pc >= 0 ? 'below' : 'above');
     var c = COPY[ct.id] || { tab:ct.id, terms:ct.label || '' };
+    out = Math.round(out);
     return { tab:c.tab, terms:c.terms, min:min, out:out, share:base ? out / base * 100 : 0, kind:min ? 'more usage' : out >= 0 ? 'saved' : 'paid above',
       pay:st.map(function(m){ return m.ix / m.fx * 100; }), note:note };
   }
