@@ -166,3 +166,8 @@ body #hpClause .as-k5-c:focus-visible{outline:2px solid var(--accent);outline-of
   body #hpClause .as-k5-c:first-child{padding-top:0}
   body #hpClause .as-k5-c:last-child{border-bottom:0}
 }
+/* November 17, 2026: no notes and no per-contract links; each column still opens its contract on the
+   Clause page (a quiet hover), and the one blue link under the section leads to all five. */
+body #hpClause .as-k5-n,body #hpClause .as-k5-go{display:none}
+body #hpClause .as-k5-c:hover .as-lbl,body #hpClause .as-k5-c:focus-visible .as-lbl{color:var(--l2)}
+body #hpClause .as-k5-c svg{margin-bottom:0}
