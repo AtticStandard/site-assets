@@ -83,8 +83,17 @@
      (Base, YTD, 1M, 1W) beside Index levels and Spot prices. It still steps on its own every six
      seconds; the only sign of the timer is a 1px line filling inside the selected period. Picking a
      period stops the rotation there; hovering the switch or the table pauses it. Above the table
-     sits only the colour key. */
-  function legend(){ return '<div class="as-hm-lg">' + key() + '<span class="as-hm-sr" aria-live="polite">' + PER[per].lg + '</span></div>'; }
+     sits only the colour key. Since November 17, 2026 the key sits at the right end of the control
+     row, level with the two switches: a colour scale is a reference, read after the controls, so it
+     takes the top right; legends that name series stay above their chart on the left (rule C). */
+  function legend(){
+    var hm = document.getElementById('hpHm'), row = document.querySelector('#hpHeat .as-mk-live');
+    var lg = document.getElementById('hpHmKey');
+    if(!lg){ lg = document.createElement('div'); lg.className = 'as-hm-lg'; lg.id = 'hpHmKey'; }
+    lg.innerHTML = key() + '<span class="as-hm-sr" aria-live="polite">' + PER[per].lg + '</span>';
+    if(row){ if(lg.parentNode !== row) row.appendChild(lg); }
+    else if(hm && lg.parentNode !== hm) hm.insertBefore(lg, hm.firstChild);
+  }
   function perSwitch(){
     var w = document.getElementById('hpHmPer');
     if(!w){
@@ -102,8 +111,8 @@
 
   function draw(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
-    hm.innerHTML = legend() + '<div class="as-hm-g">' + block(FAM.slice(0, 3)) + block(FAM.slice(3)) + '</div>';
-    perSwitch(); note();
+    hm.innerHTML = '<div class="as-hm-g">' + block(FAM.slice(0, 3)) + block(FAM.slice(3)) + '</div>';
+    perSwitch(); legend(); note();
   }
   function note(){
     var n = document.getElementById('hpHmNote'); if(!n) return;
@@ -121,8 +130,9 @@
   }
   function update(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
-    var lg = hm.querySelector('.as-hm-k'); if(lg) lg.outerHTML = key();
-    var sr = hm.querySelector('.as-hm-sr'); if(sr) sr.textContent = PER[per].lg;
+    var kb = document.getElementById('hpHmKey') || hm;
+    var lg = kb.querySelector('.as-hm-k'); if(lg) lg.outerHTML = key();
+    var sr = kb.querySelector('.as-hm-sr'); if(sr) sr.textContent = PER[per].lg;
     perSwitch();
     var rows = [].slice.call(hm.querySelectorAll('.as-hm-r'));
     hm.querySelectorAll('.as-hm-q').forEach(function(c){
