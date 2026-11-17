@@ -20,10 +20,10 @@
   /* Periods, in the order the board steps through them. small and big set the colour scale and
      the legend for each view: a week's move is read on a finer scale than a move since the base. */
   var PER = [
-    { k:'base', b:'Since base', lg:'% change since the base', lv:[2, 10], sp:[10, 50] },
-    { k:'ytd',  b:'Year to date', lg:'% change year to date', lv:[2, 10], sp:[10, 50] },
-    { k:'mom',  b:'1 month', lg:'% change month over month', lv:[1, 5], sp:[5, 25] },
-    { k:'wow',  b:'1 week', lg:'% change week over week', lv:[0.5, 2], sp:[2, 10] }
+    { k:'base', s:'Base', b:'Since base', lg:'% change since the base', lv:[2, 10], sp:[10, 50] },
+    { k:'ytd',  s:'YTD', b:'Year to date', lg:'% change year to date', lv:[2, 10], sp:[10, 50] },
+    { k:'mom',  s:'1M', b:'1 month', lg:'% change month over month', lv:[1, 5], sp:[5, 25] },
+    { k:'wow',  s:'1W', b:'1 week', lg:'% change week over week', lv:[0.5, 2], sp:[2, 10] }
   ];
   var TAIL = {
     levels:'Base: May 2026 = 100, regional indexes October 19, 2026 = 100. Year to date runs from the first publication of 2026 or, for a younger index, from its first publication. A dashed cell is a component not priced separately.',
@@ -79,12 +79,31 @@
   /* Step dots after the period label: one per period, the current one lit; they show that the
      table rotates and where it is, without a moving bar. */
   function dots(){ return '<span class="as-hm-ds" aria-hidden="true">' + PER.map(function(p, i){ return '<i class="as-hm-d' + (i === per ? ' on' : '') + '"></i>'; }).join('') + '</span>'; }
-  function legend(){ return '<div class="as-hm-lg"><span class="as-hm-kt" aria-live="polite">' + PER[per].lg + dots() + '<i class="as-hm-pg"></i></span>' + key() + '</div>'; }
+  /* Option G (November 17, 2026): the period is chosen on a switch built from the site toggle
+     (Base, YTD, 1M, 1W) beside Index levels and Spot prices. It still steps on its own every six
+     seconds; the only sign of the timer is a 1px line filling inside the selected period. Picking a
+     period stops the rotation there; hovering the switch or the table pauses it. Above the table
+     sits only the colour key. */
+  function legend(){ return '<div class="as-hm-lg">' + key() + '<span class="as-hm-sr" aria-live="polite">' + PER[per].lg + '</span></div>'; }
+  function perSwitch(){
+    var w = document.getElementById('hpHmPer');
+    if(!w){
+      var tabs = document.getElementById('hpHmTabs'); if(!tabs) return;
+      w = document.createElement('div'); w.className = 'as-vt as-hm-pv'; w.id = 'hpHmPer'; w.setAttribute('role', 'tablist'); w.setAttribute('aria-label', 'Period of the change');
+      w.innerHTML = PER.map(function(p, i){ return '<button class="as-vt-b" type="button" role="tab" data-p="' + i + '" title="' + p.lg.charAt(0).toUpperCase() + p.lg.slice(1) + '">' + p.s + '<i class="as-hm-tm" aria-hidden="true"></i></button>'; }).join('');
+      tabs.parentNode.insertBefore(w, tabs.nextSibling);
+      w.addEventListener('click', function(e){ var b = e.target.closest('.as-vt-b'); if(!b) return; stop(); go(+b.getAttribute('data-p')); });
+      w.addEventListener('keydown', function(e){ if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); stop(); go(per + (e.key === 'ArrowRight' ? 1 : -1)); w.querySelectorAll('.as-vt-b')[per].focus(); });
+      w.addEventListener('mouseenter', function(){ paused = true; }); w.addEventListener('mouseleave', function(){ paused = false; });
+      var hm = document.getElementById('hpHm'); if(hm){ hm.addEventListener('mouseenter', function(){ paused = true; }); hm.addEventListener('mouseleave', function(){ paused = false; }); }
+    }
+    w.querySelectorAll('.as-vt-b').forEach(function(b, i){ var on = i === per; b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; b.style.cssText = on ? 'color: var(--l1); background: var(--surface-chip)' : ''; b.classList.toggle('on', on); var t = b.querySelector('.as-hm-tm'); if(t) t.style.transform = 'scaleX(0)'; });
+  }
 
   function draw(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
     hm.innerHTML = legend() + '<div class="as-hm-g">' + block(FAM.slice(0, 3)) + block(FAM.slice(3)) + '</div>';
-    note();
+    perSwitch(); note();
   }
   function note(){
     var n = document.getElementById('hpHmNote'); if(!n) return;
@@ -103,8 +122,8 @@
   function update(){
     var hm = document.getElementById('hpHm'); if(!hm) return;
     var lg = hm.querySelector('.as-hm-k'); if(lg) lg.outerHTML = key();
-    var kt = hm.querySelector('.as-hm-kt'); if(kt && kt.firstChild) kt.firstChild.nodeValue = PER[per].lg;
-    hm.querySelectorAll('.as-hm-d').forEach(function(d, i){ d.classList.toggle('on', i === per); });
+    var sr = hm.querySelector('.as-hm-sr'); if(sr) sr.textContent = PER[per].lg;
+    perSwitch();
     var rows = [].slice.call(hm.querySelectorAll('.as-hm-r'));
     hm.querySelectorAll('.as-hm-q').forEach(function(c){
       var i = BY[c.getAttribute('data-c')], L = i && leg(i, c.getAttribute('data-k')); if(!L) return;
@@ -122,14 +141,14 @@
   function seed(){ document.querySelectorAll('#hpHm .as-hm-q').forEach(function(c){ var i = BY[c.getAttribute('data-c')], L = i && leg(i, c.getAttribute('data-k')); var b = c.querySelector('.as-hm-p b'); if(b) b._v = chg(L); }); }
 
   function go(n){ per = (n + PER.length) % PER.length; update(); t0 = performance.now(); }
-  function stop(){ auto = false; if(timer){ cancelAnimationFrame(timer); timer = null; } var hm = document.getElementById('hpHm'); if(hm) hm.classList.add('as-hm-man'); }
+  function stop(){ auto = false; if(timer){ cancelAnimationFrame(timer); timer = null; } var hm = document.getElementById('hpHm'); if(hm) hm.classList.add('as-hm-man'); document.querySelectorAll('#hpHmPer .as-hm-tm').forEach(function(t){ t.style.transform = 'scaleX(0)'; }); }
   function loop(){
     if(!auto) return;
     timer = requestAnimationFrame(function(t){
       var hm = document.getElementById('hpHm');
       if(paused || !seen || document.hidden){ t0 = t - (hm && hm._el || 0); loop(); return; }
       var el = t - t0; if(hm) hm._el = el;
-      var bar = hm && hm.querySelector('.as-hm-kt .as-hm-pg'); if(bar) bar.style.transform = 'scaleX(' + Math.min(1, el / STEP).toFixed(3) + ')';
+      var bar = document.querySelector('#hpHmPer .as-vt-b.on .as-hm-tm'); if(bar) bar.style.transform = 'scaleX(' + Math.min(1, el / STEP).toFixed(3) + ')';
       if(el >= STEP){ if(bar) bar.style.transform = 'scaleX(0)'; go(per + 1); }
       loop();
     });

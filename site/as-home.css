@@ -213,3 +213,15 @@ body #hpHm .as-hm-k.as-hm-gk{align-items:stretch}
 body #hpHm .as-hm-k.as-hm-gk > .as-hm-gb,body #hpHm .as-hm-k.as-hm-gk > .as-hm-gt{width:100%;align-self:stretch;gap:0}
 body #hpHm .as-hm-k.as-hm-gk > .as-hm-gb{display:block}
 body #hpHm .as-hm-k.as-hm-gk > .as-hm-gt{justify-content:space-between}
+
+/* Index table option G (November 17, 2026): the period switch beside the view switch, both the site
+   toggle; no Live label (the header ticker keeps the pulsing dot); only the colour key above the table. */
+body #hpHeat .as-ib-live{display:none}
+body #hpHeat .as-mk-live{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3) var(--s2)}
+body #hpHmPer .as-vt-b{position:relative}
+body #hpHmPer .as-hm-tm{position:absolute;left:var(--s3);right:var(--s3);bottom:3px;height:1px;background:var(--l3);opacity:0;transform:scaleX(0);transform-origin:left center;pointer-events:none}
+body #hpHmPer .as-vt-b.on .as-hm-tm{opacity:.9}
+body #hpHmPer .as-vt-b.on::before{content:"";position:absolute;left:var(--s3);right:var(--s3);bottom:3px;height:1px;background:rgba(255,255,255,.08)}
+body #hpHm.as-hm-man ~ * #hpHmPer .as-vt-b.on::before{display:none}
+body #hpHm .as-hm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body #hpHm .as-hm-lg{margin-bottom:var(--s4)}
