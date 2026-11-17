@@ -615,11 +615,10 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
 .as-hm-lg .as-hm-k{margin-left:0}
 @media (max-width:768px){.as-hm-lg{justify-content:flex-start}}
 @media (prefers-reduced-motion:reduce){.as-hero *,.as-sec *{transition:none !important;animation:none !important}}
-/* Phones and small tablets (November 17, 2026): the ticker label keeps only the pulsing dot; the
-   words and the date go, so the readings get the row. font-size and letter-spacing at 0 hide the
-   text nodes while the dot keeps its own pixel size. */
+/* Phones and small tablets (November 17, 2026): on landing the label reads dot and PRICE INDEXES,
+   without the date, so the readings keep most of the row. */
 @media (max-width: 767px) {
-  .atom-header .ticker-label { display: flex !important; font-size: 0; letter-spacing: 0; gap: 0; padding-left: var(--s1); padding-right: var(--s3); }
+  .atom-header .ticker-label { display: flex !important; padding-left: var(--s1); padding-right: var(--s4); }
   .atom-header .ticker-label .tk-date { display: none; }
 }
 /* Once the reader scrolls on a phone, the header is the stacked name, the readings and the menu,
