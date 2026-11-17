@@ -119,7 +119,7 @@
   function note(){
     var n = document.getElementById('hpHmNote'); if(!n) return;
     n.setAttribute('data-fn-tail', TAIL[view]);
-    if(AS.footnote) AS.footnote('published').then(function(t){ n.textContent = t + ' ' + TAIL[view]; }).catch(function(){});
+    if(AS.footnote) AS.footnote(view === 'spot' ? 'spot prices published' : 'index levels published').then(function(t){ n.textContent = t + ' ' + TAIL[view]; }).catch(function(){});
   }
 
   /* A period change updates the board in place: each cell crossfades to its new colour, its

@@ -11,7 +11,7 @@
     var d = window.AS && window.AS.activeDate; if(!d || !d.then) return;
     d.then(function(v){
       var b = $('aboPub'); if(b) b.textContent = fmt(v);
-      var s = $('aboSrc'); if(s) s.textContent = 'Source: Attic Standard coverage, published ' + fmt(v) + '. Figures update with each publication.';
+      var s = $('aboSrc'); if(s) s.textContent = 'Source: Attic Standard, coverage as of ' + fmt(v) + '. Figures update with each index publication.';
     }).catch(function(){});
   }
   function counts(){

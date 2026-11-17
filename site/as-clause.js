@@ -111,7 +111,7 @@
     set('clPub', date);
     drivers(p);
     set('clSrcX', 'Source: Attic Standard, published index levels and listings to ' + date + '. Figures update with each index publication.');
-    set('clSrcS', 'Source: Attic Standard, simulated contracts settled on published index levels to ' + date + '. Figures update with each index publication. The minimum-spend contract pays the same and receives more usage, valued at the price at signing.');
+    set('clSrcS', 'Source: Attic Standard, simulated contracts settled on published index levels to ' + date + '. Figures update with each index publication. Minimum spend: the contract pays the same and receives more usage, valued at the price at signing.');
     var by = {}; (p.contracts || []).forEach(function(ct){ by[ct.id] = ct; });
     var ids = ORDER.filter(function(id){ return by[id]; }); (p.contracts || []).forEach(function(ct){ if(ids.indexOf(ct.id) < 0) ids.push(ct.id); });
     LIST = ids.map(function(id){ return model(by[id]); });
