@@ -25,7 +25,7 @@
 .cx-pg a.cx-cal:hover{color:var(--accent-hover)}
 .cx-p{align-self:center;background:rgba(24,26,31,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 24px 60px rgba(0,0,0,.35);padding:32px;display:flex;flex-direction:column;gap:var(--s4)}
 .cx-p h2{font-size:20px;font-weight:600;color:var(--l1);line-height:1.3}
-.cx-sb{margin-top:-8px !important;font-size:15px;color:var(--l4);line-height:1.5}
+.cx-sb{margin-top:-4px !important;font-size:15px;color:var(--l4);line-height:1.5}
 .cx-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
 .cx-g{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
 .cx-lb{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--l4);line-height:1.3}
