@@ -33,9 +33,9 @@
        L5 is chart furniture only and never carries a value. */
     --l1: #FFFFFF;
     --l2: #E3E3E3;
-    --l3: #A0A0A0;
+    --l3: #A6ACB6;
     --l4: #8B93A0;
-    --l5: #6B727C;
+    --l5: #7D848F;
 
     /* Surfaces and rules.
        Every pop-out sits one step above the page: nav menu,
@@ -631,3 +631,12 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
   .atom-header.as-compact .as-band { justify-content: space-between; }
   .atom-header.as-compact .as-band .menu-toggle { margin-left: auto; }
 }
+
+/* November 17, 2026: body grey (l3) and faint grey (l5) move into the cool grey family of l4 on every
+   page, as the homepage and inner pages already use; l5 passes AA contrast on the page background.
+   The 404 page reads on the site type scale and colours instead of the Webflow default. */
+.utility-page-wrap{display:flex;align-items:center;justify-content:center;min-height:60vh;padding:var(--s7) var(--gutter)}
+.utility-page-content{display:flex;flex-direction:column;align-items:center;gap:var(--s3);text-align:center;max-width:560px}
+.utility-page-content img{display:none}
+.utility-page-content h2{margin:0;font-size:36px;font-weight:700;line-height:1.15;color:var(--l1)}
+.utility-page-content > div{font-size:16px;line-height:1.55;color:var(--l2)}

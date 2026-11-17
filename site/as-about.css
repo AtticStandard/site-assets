@@ -259,7 +259,7 @@ select.abo-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .abo-fx{border:0;padding:var(--s3) 0 0;border-radius:0}
 .abo-forms>div,.abo-ix3>div,.abo-sub3>.abo-bx,.abo-ind{border:0;border-top:1px solid var(--border);border-radius:0;padding:var(--s3) 0 0}
 .abo-sub3{align-items:start}.abo-sub3>.abo-bx{min-height:0;justify-content:flex-start}.abo-sub3 .abo-bx.abo-g{border-color:var(--border)}.abo-sub3 .abo-ar2{padding-top:var(--s4)}
-.abo-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s6);position:relative;margin-top:var(--s2)}
+.abo-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s6);position:relative;margin-top:0}
 .abo-flow::before{content:"";position:absolute;left:22px;right:22px;top:22px;border-top:1px solid var(--l5)}
 .abo-flow .abo-st{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2)}
 .abo-flow .abo-sn2{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--l1);background:var(--bg);color:var(--l1);font-size:18px;font-weight:600;margin-bottom:var(--s2)}

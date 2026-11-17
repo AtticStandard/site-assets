@@ -8,7 +8,7 @@
 .lgn-map{position:absolute;inset:0;pointer-events:none}
 .lgn-map svg{display:block;width:100%;height:100%}
 .lgn-panel{position:relative;width:100%;max-width:440px;padding:var(--s6);background:rgba(24,26,31,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 24px 80px rgba(0,0,0,.45)}
-.lgn-foot{position:absolute;left:var(--gutter);right:var(--gutter);bottom:28px;display:flex;justify-content:space-between;gap:var(--s3) var(--s4);flex-wrap:wrap;font-size:12px;color:var(--l4);line-height:1.5}
+.lgn-foot{position:absolute;left:var(--gutter);right:var(--gutter);bottom:28px;display:flex;justify-content:space-between;gap:var(--s3) var(--s4);flex-wrap:wrap;font-size:13px;color:var(--l4);line-height:1.5}
 .lgn-key{display:flex;align-items:center;gap:8px}
 .lgn-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--l1)}
 .lgn-cap{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5)}
@@ -46,10 +46,10 @@
 .lgn-alert.on,.lgn-ok.on{display:block}
 .lgn-alert a{color:var(--accent)}
 .lgn-row{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3) var(--s4);flex-wrap:wrap;font-size:var(--fs-ui);color:var(--l4);line-height:var(--lh-ui)}
-.lgn-forgot{background:0 0;border:0;padding:0;font:500 var(--fs-ui)/var(--lh-ui) var(--font-sans);color:var(--accent);cursor:pointer}
+.lgn-forgot{background:0 0;border:0;padding:0;font:500 13px/var(--lh-ui) var(--font-sans);color:var(--accent);cursor:pointer}
 .lgn-forgot:hover,.lgn-forgot:focus-visible,.lgn-row a:hover{outline:0;color:var(--accent-hover)}
 .lgn-row a{color:var(--accent);font-weight:500}
-.lgn-legal{font-size:12px;color:var(--l5);line-height:1.6;border-top:1px solid var(--border);padding-top:var(--s4);margin-top:var(--s2) !important}
+.lgn-legal{font-size:13px;color:var(--l5);line-height:1.6;border-top:1px solid var(--border);padding-top:var(--s4);margin-top:var(--s2) !important}
 .lgn-legal a{color:var(--l4);border-bottom:1px solid var(--border)}
 .lgn-legal a:hover{color:var(--l2)}
 

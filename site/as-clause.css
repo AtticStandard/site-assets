@@ -253,7 +253,7 @@
 .cla-fx{border:0;padding:var(--s3) 0 0;border-radius:0}
 .cla-forms>div,.cla-ix3>div,.cla-sub3>.cla-bx,.cla-ind{border:0;border-top:1px solid var(--border);border-radius:0;padding:var(--s3) 0 0}
 .cla-sub3{align-items:start}.cla-sub3>.cla-bx{min-height:0;justify-content:flex-start}.cla-sub3 .cla-bx.cla-g{border-color:var(--border)}.cla-sub3 .cla-ar2{padding-top:var(--s4)}
-.cla-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s6);position:relative;margin-top:var(--s2)}
+.cla-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s6);position:relative;margin-top:0}
 .cla-flow::before{content:"";position:absolute;left:22px;right:22px;top:22px;border-top:1px solid var(--l5)}
 .cla-flow .cla-st{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:var(--s2)}
 .cla-flow .cla-sn2{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--l1);background:var(--bg);color:var(--l1);font-size:18px;font-weight:600;margin-bottom:var(--s2)}
