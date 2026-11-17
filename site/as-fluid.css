@@ -165,7 +165,7 @@ body .as-lgv .as-lg-k.k-thin{height:1px}
 body .as-lgv .as-lg-k.k-dash{height:0;background:none;border-top:2px dashed var(--k)}
 body .as-lgv .as-lg-k.k-dot{width:8px;height:8px;border-radius:50%}
 body .as-lgv .as-lg-k.k-bar{width:10px;height:10px;border-radius:2px}
-body .as-ds-p > .as-lgv{margin-bottom:-12px}
+body .as-ds-p > .as-lgv,body .cla-sim > .as-lgv{margin-bottom:-12px}
 @media (max-width:560px){ body .as-lgv{gap:8px 16px} body .as-lgv .as-lg{white-space:normal} }
 
 /* Indexes page (drawn by its embeds), brought onto the same rule set: the vendor type key is a
@@ -181,7 +181,7 @@ body #key .k u{font-size:13px;color:var(--l4);text-decoration:none}
 body .mc{display:flex;flex-direction:column}
 body .mc > .mc-dir{order:1}
 body .mc > .mc-row{order:2}
-body .mc > .mc-rbkey{order:3;justify-content:flex-start}
+body .mc > .mc-rbkey{order:3;align-self:flex-start;justify-content:flex-start;text-align:left;margin-left:0}
 body #atomIC #cg .mc > .mc-rbkey{margin:var(--s5) 0 0}
 body #atomIC #cg .mc > .ix-chw:has(+ .mc-rbkey){margin-top:12px}
 body .mc > .ix-chw{order:4}

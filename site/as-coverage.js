@@ -66,7 +66,7 @@
       st.innerHTML = list.map(function(c, i){ var k = CH[c.channel] || [c.channel, c.channel]; return '<div style="flex:' + c.skus + ';background:' + RAMP[i] + '" title="' + esc(k[1]) + ', ' + Math.round(c.skus / tot * 100) + '%"></div>'; }).join('');
       var old = st.parentNode.querySelector('.cov-stack-l, .as-lgv'); if(old) old.remove();
       var w = document.createElement('div'); w.innerHTML = key(list.map(function(c, i){ var k = CH[c.channel] || [c.channel, c.channel];
-        return { c:RAMP[i], n:esc(k[1]), v:Math.round(c.skus / tot * 100) + '%', note:int(c.skus) + ' SKUs, ' + int(c.vendors) + ' vendors' }; }));
+        return { c:RAMP[i], n:esc(k[1]), v:Math.round(c.skus / tot * 100) + '%' }; }));
       st.parentNode.insertBefore(w.firstChild, st);
     }
     if(box){ var h = '<div class="cov-h">Channel</div><div class="cov-h cov-x">What it sells</div><div class="cov-h cov-r">Vendors</div><div class="cov-h cov-r cov-x">Pricing services</div><div class="cov-h cov-r">SKUs</div>';
