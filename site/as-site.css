@@ -636,7 +636,7 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
    page, as the homepage and inner pages already use; l5 passes AA contrast on the page background.
    The 404 page reads on the site type scale and colours instead of the Webflow default. */
 .utility-page-wrap{display:flex;align-items:center;justify-content:center;min-height:60vh;padding:var(--s7) var(--gutter)}
-.utility-page-content{display:flex;flex-direction:column;align-items:center;gap:var(--s3);text-align:center;max-width:560px}
+.utility-page-content{display:flex;flex-direction:column;align-items:center;gap:var(--s3);text-align:center;width:100%;max-width:560px}
 .utility-page-content img{display:none}
 .utility-page-content h2{margin:0;font-size:36px;font-weight:700;line-height:1.15;color:var(--l1)}
 .utility-page-content > div{font-size:16px;line-height:1.55;color:var(--l2)}

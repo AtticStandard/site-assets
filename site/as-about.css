@@ -226,7 +226,7 @@ select.abo-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .abo-tbl .abo-nm{color:var(--l1);font-weight:500}
 .abo-tbl .abo-sv{color:var(--l1);font-weight:600}
 .abo-tbl .abo-on{}
-.abo-src{font-size:13px;color:var(--l5);line-height:1.5}
+.abo-src{font-size:13px;color:var(--l4);line-height:1.5}
 .abo-ben{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s6)}
 .abo-ben h3{margin:0 0 var(--s3);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5)}
 .abo-ben ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}
@@ -422,7 +422,7 @@ select.abo-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .abo-st6>div{border-top:1px solid var(--border);padding-top:var(--s3);display:flex;flex-direction:column;gap:4px;min-width:0}
 .abo-st6 .abo-n{font-size:24px;font-weight:600;color:var(--l1);line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .abo-st6 .abo-k{font-size:13px;color:var(--l4)}
-.abo-src{font-size:13px;color:var(--l5);margin:0}
+.abo-src{font-size:13px;color:var(--l4);margin:0}
 .abo-pay{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s6)}
 .abo-pay>div{display:flex;flex-direction:column;min-width:0}
 .abo-pay h3{margin:0 0 var(--s2);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5)}

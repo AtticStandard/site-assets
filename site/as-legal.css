@@ -225,7 +225,7 @@ select.lgl-in{appearance:none;-webkit-appearance:none;background-image:linear-gr
 .lgl-tbl .lgl-nm{color:var(--l1);font-weight:500}
 .lgl-tbl .lgl-sv{color:var(--l1);font-weight:600}
 .lgl-tbl .lgl-on{}
-.lgl-src{font-size:13px;color:var(--l5);line-height:1.5}
+.lgl-src{font-size:13px;color:var(--l4);line-height:1.5}
 .lgl-ben{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s6)}
 .lgl-ben h3{margin:0 0 var(--s3);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5)}
 .lgl-ben ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--border)}

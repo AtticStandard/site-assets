@@ -193,6 +193,6 @@ body .mc > .mc-spot ~ .ix-chw{order:6}
 .as-cd-tab,.as-cd-st,.as-cd-n{font-size:13px}
 /* One gap between a section title and its subtitle on every page, 12px; drawer step numbers and the
    page-close link at the UI size, 13px (November 17, 2026). */
-body .as-st + .as-ss{margin-top:12px}
+body .as-st + .as-ss,body h2.as-st + p{margin-top:12px}
 .as-cd-steps b{font-size:13px}
 .as-cl-l{font-size:13px}
