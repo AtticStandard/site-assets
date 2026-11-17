@@ -120,13 +120,16 @@
     var T = function(x, y, s, cls, anchor){ return c.text(x, y, s, { cls:cls || 'as-f-l4', anchor:anchor, size:11 }); };
     /* November 17, 2026: no labels inside the plot; the legend names the lines, and the base, the term
        and any floor or cap are stated beside the chart. */
-    var g = [c.rule(Y(fx), { cls:'as-s-hist', width:1.5 })];
+    var g = [];
     var pts = [];
     for(i = 0; i < S.months.length; i++){
       var a = fmon(S.months[i]), b = i < S.months.length - 1 ? fmon(S.months[i + 1]) : (fmon(nym(S.months[i])) <= S.gate ? fmon(nym(S.months[i])) : S.gate);
       pts.push([AX.x(a), Y(S.pay[i])], [AX.x(b), Y(S.pay[i])]);
     }
     var path = pts.map(function(p){ return p[0].toFixed(1) + ',' + p[1]; }).join(' ');
+    /* The fixed price runs only across the settled months, the same span as the gold area, so no
+       grey line runs on past the last settlement (November 17, 2026). */
+    g.push('<line x1="' + pts[0][0].toFixed(1) + '" x2="' + pts[pts.length - 1][0].toFixed(1) + '" y1="' + Y(fx) + '" y2="' + Y(fx) + '" class="as-s-hist" stroke-width="1.5"></line>');
     g.push('<polygon points="' + pts[0][0].toFixed(1) + ',' + Y(fx) + ' ' + path + ' ' + pts[pts.length - 1][0].toFixed(1) + ',' + Y(fx) + '" style="fill: var(--gold); fill-opacity: .12"></polygon>');
     var lg = [];
     if(S.unl){
