@@ -201,3 +201,5 @@ body #hpClause .as-k5-ch svg{height:62px}
 @media (max-width:599px){
   body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
 }
+/* The contract terms show on every screen, under the name, as on desktop (November 17, 2026). */
+@media (max-width:1199px){ body #hpClause .as-k5-t{display:block;margin-bottom:2px} }
