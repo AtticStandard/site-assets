@@ -124,6 +124,13 @@ body #hpClause .as-pl li:first-child{color:var(--l2)}
 body #hpClause .as-pl li::before{content:none}
 body #hpClause .as-pl li+li::before{content:"\00B7";position:static;display:inline;width:auto;height:auto;background:none;margin:0 12px;color:var(--l5)}
 body #hpClause .as-cl-c{margin-top:var(--s5)}
+/* Legend C: the contract facts as one sentence, and a legend row above the chart whose keys carry each line's latest value, so the chart needs no end labels. */
+body #hpClause .as-cl-t{margin:0;max-width:760px;font-size:15px;line-height:1.6;color:var(--l3)}
+body #hpClause .as-cl-t b{color:var(--l2);font-weight:600}
+body #hpClause .as-cl-lg2{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px 24px;margin-bottom:12px}
+body #hpClause .as-cl-lg2 .as-lg b{font-weight:600;color:var(--l1)}
+body #hpClause .as-cl-lg2 .as-lg-n{color:var(--l4)}
+@media (max-width:560px){ body #hpClause .as-cl-lg2 .as-lg{white-space:normal} }
 @media (max-width:560px){
   body #hpClause .as-pl{flex-direction:column;gap:6px}
   body #hpClause .as-pl li+li::before{content:none}
