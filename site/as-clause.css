@@ -292,3 +292,8 @@
   .cla-mc li .cla-opt{grid-column:2;justify-self:start}
   .cla-vtw{overflow:hidden;-webkit-mask-image:linear-gradient(to right,#000 85%,transparent);mask-image:linear-gradient(to right,#000 85%,transparent)}
 }
+
+/* Simulated contracts (November 17, 2026): the term sheet sits under the saved figure, in one left
+   column, so the section reads top to bottom as on the homepage: figure, terms, legend, chart. */
+.cla-simtop{grid-template-columns:minmax(0,1fr);gap:var(--s5);max-width:760px}
+.cla-kt{grid-template-columns:120px minmax(0,1fr)}

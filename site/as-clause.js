@@ -117,7 +117,11 @@
     LIST = ids.map(function(id){ return model(by[id]); });
     var tabs = $('clTabs');
     if(tabs){ tabs.innerHTML = LIST.map(function(C, i){ return '<button class="cla-vt-b" type="button" role="tab" data-i="' + i + '">' + esc(C.c.tab) + '</button>'; }).join(''); }
-    table(); show(0);
+    /* /clause?contract=product-team#cla-s opens that contract (the homepage links here). */
+    var want = new URLSearchParams(location.search).get('contract'), start = 0;
+    if(want) LIST.forEach(function(C, i){ if(String(C.c.tab).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === want) start = i; });
+    table(); show(start);
+    if(want && location.hash === '#cla-s'){ var s = $('cla-s'); if(s) setTimeout(function(){ var h = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 102; window.scrollTo(0, s.getBoundingClientRect().top + window.scrollY - h - 16); }, 60); }
   }
 
   /* ---------- page behaviour ---------- */
