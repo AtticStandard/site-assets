@@ -182,3 +182,11 @@ body #hpClause .as-k5-m i{flex:1 1 0;min-width:0;font-style:normal;font-size:11p
   body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
   body #hpClause .as-k5-m i{font-size:10px}
 }
+/* The five columns line up row by row (name, terms, figure, share, chart) even when a name or the
+   terms wrap: each column shares the section's rows (subgrid). */
+@media (min-width:992px){
+  body #hpClause .as-k5{grid-template-rows:repeat(5,auto);row-gap:6px}
+  body #hpClause .as-k5-c{display:grid;grid-row:span 5;grid-template-rows:subgrid;row-gap:6px;align-content:start}
+  body #hpClause .as-k5-c .as-lbl{align-self:end}
+  body #hpClause .as-k5-ch{align-self:end}
+}
