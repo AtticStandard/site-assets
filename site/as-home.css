@@ -230,3 +230,12 @@ body #hpHm .as-hm-lg{margin-bottom:var(--s4)}
 body #hpHeat .as-mk-live > #hpHmKey{display:flex;flex-direction:column;margin:0 0 0 auto;align-self:center}
 body #hpHeat #hpHmKey .as-hm-k.as-hm-gk{margin-left:0}
 @media (max-width:767px){body #hpHeat .as-mk-live > #hpHmKey{flex-basis:100%;margin:var(--s2) 0 0}}
+/* Five drivers, option B (November 17, 2026): each tab is the driver's name with its context, its
+   headline figure and the breakdown in brackets, in the sizes of the Simulated contracts columns. */
+body #hpDrivers #hpDsText{display:none}
+body #hpDrivers .as-ds-t{gap:6px}
+body #hpDrivers .as-ds-n{font-size:var(--fs-ui);font-weight:600;line-height:var(--lh-ui);color:var(--l3)}
+body #hpDrivers .as-ds-v{font-size:24px;font-weight:600;line-height:1.15;color:var(--l3);font-variant-numeric:tabular-nums;margin-top:2px}
+body #hpDrivers .as-ds-t[aria-selected="true"] .as-ds-v{color:var(--l1)}
+body #hpDrivers .as-ds-s{font-size:var(--fs-ui);line-height:var(--lh-ui);color:var(--l4)}
+@media (max-width:767px){body #hpDrivers .as-ds-v{font-size:20px}}
