@@ -181,7 +181,9 @@ body #key .k u{font-size:13px;color:var(--l4);text-decoration:none}
 body .mc{display:flex;flex-direction:column}
 body .mc > .mc-dir{order:1}
 body .mc > .mc-row{order:2}
-body .mc > .mc-rbkey{order:3;justify-content:flex-start;margin:0 0 4px}
+body .mc > .mc-rbkey{order:3;justify-content:flex-start}
+body #atomIC #cg .mc > .mc-rbkey{margin:var(--s5) 0 0}
+body #atomIC #cg .mc > .ix-chw:has(+ .mc-rbkey){margin-top:12px}
 body .mc > .ix-chw{order:4}
 body .mc > .mc-spot{order:5}
 body .mc > .mc-spot ~ .ix-chw{order:6}
