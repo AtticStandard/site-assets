@@ -622,3 +622,8 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
   .atom-header .ticker-label { display: flex !important; font-size: 0; letter-spacing: 0; gap: 0; padding-left: var(--s1); padding-right: var(--s3); }
   .atom-header .ticker-label .tk-date { display: none; }
 }
+/* Once the reader scrolls on a phone, the header is the stacked name, the readings and the menu,
+   with nothing between the name and the readings; the dot shows on landing only (November 17, 2026). */
+@media (max-width: 767px) {
+  .atom-header.as-compact .ticker-label { display: none !important; }
+}
