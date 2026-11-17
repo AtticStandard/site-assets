@@ -105,7 +105,7 @@
      price), months (settled months, YYYY-MM), pay (monthly payments), unl (payments without the floor
      or cap, as % of fx, or null), lim ('floor'|'cap'), ann ([month index, text]), end ('May 2027'),
      note ('November to date'), gate (published date), from (first month name), min (minimum spend) }.
-     Returns { svg, legend }. The fixed price sits 28px under the top edge on every contract; the
+     Returns { svg, legend }. The fixed price sits 6px under the top edge on every contract; the
      legend carries every value, so the plot has no labels at line ends. */
   function fmon(ym){ var d = new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1)); while(d.getUTCDay() !== 1) d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); }
   function nym(ym){ var y = +ym.slice(0, 4), m = +ym.slice(5, 7) + 1; if(m > 12){ m = 1; y++; } return y + '-' + (m < 10 ? '0' : '') + m; }

@@ -304,6 +304,6 @@
 .cla-drv .cla-n{font-size:24px;margin-top:2px}
 .cla-drv .cla-t{color:var(--l4)}
 .cla-tbl>.cla-x:not(.cla-r){white-space:normal}
-.cla-tbl{grid-template-columns:auto minmax(0,1fr) repeat(3,auto)}
+@media (min-width:768px){.cla-tbl{grid-template-columns:auto minmax(0,1fr) repeat(3,auto)}}
 .cla-bigt{font-size:15px;color:var(--l3)}
 @media (max-width:767px){.cla-drv .cla-n{font-size:20px}}
