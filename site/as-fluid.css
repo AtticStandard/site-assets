@@ -131,7 +131,9 @@ html.as-has-cd .atom-footer{padding-bottom:calc(var(--s5) + 52px)}
 .as-close-w{padding:0 var(--gutter)}
 .as-close{border-top:1px solid var(--border);padding:var(--s7) 0 calc(var(--s7) + var(--s6));display:flex;flex-direction:column;gap:var(--s6);margin:0}
 .as-close-t{margin:0 0 var(--s2);font-size:36px;font-weight:700;line-height:1.25;color:var(--l1);text-wrap:balance}
-.as-close-p{margin:0;font-size:var(--fs-body);line-height:var(--lh-prose);color:var(--l2);text-wrap:pretty}
+.as-close-p{margin:0;font-size:15px;line-height:var(--lh-prose);color:var(--l2);text-wrap:pretty}
+/* The line under every close headline: 15px in the lead grey on every page (November 17, 2026). */
+body :has(> .as-cl-a) > div > p.as-prose{color:var(--l2)}
 @media (max-width:767px){.as-close-t{font-size:28px}}
 
 /* The MCP is retired: hide any link to it until the menu and footer markup are rebuilt
