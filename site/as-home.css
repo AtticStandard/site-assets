@@ -163,4 +163,6 @@ body #hpClause .as-k5-c:focus-visible{outline:2px solid var(--accent);outline-of
   body #hpClause .as-k5-v{font-size:20px;margin-top:2px}
   body #hpClause .as-k5-t,body #hpClause .as-k5-n{display:none}
   body #hpClause .as-k5-go{padding-top:4px}
+  body #hpClause .as-k5-c:first-child{padding-top:0}
+  body #hpClause .as-k5-c:last-child{border-bottom:0}
 }
