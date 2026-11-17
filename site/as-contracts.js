@@ -37,22 +37,27 @@
     var c = COPY[ct.id] || { tab:ct.id, terms:ct.label || '' };
     out = Math.round(out);
     return { tab:c.tab, terms:c.terms, min:min, out:out, share:base ? out / base * 100 : 0, kind:min ? 'more usage' : out >= 0 ? 'saved' : 'paid above',
-      pay:st.map(function(m){ return m.ix / m.fx * 100; }), note:note };
+      pay:st.map(function(m){ return m.ix / m.fx * 100; }), mons:st.map(function(m){ return MON3[+String(m.ym).slice(5, 7) - 1]; }), note:note };
   }
 
-  /* One small chart: the bill as a share of the fixed price, month by month, on the shared scale. */
-  function spark(p, lo, hi){
-    var W = 220, H = 56, n = p.length, i, pts = [];
-    function x(k){ return 2 + (W - 8) * k / n; }
-    function y(v){ return 4 + (hi - v) / (hi - lo) * (H - 8); }
+  /* One small chart: the bill as a share of the fixed price, month by month, on the shared scale,
+     with a tick at each month boundary; the month names sit under it as text, so they stay sharp. */
+  var MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function spark(p, lo, hi, mons){
+    var W = 220, H = 62, n = p.length, i, pts = [], ax = 56;
+    function x(k){ return W * k / n; }
+    function y(v){ return 4 + (hi - v) / (hi - lo) * 46; }
     for(i = 0; i < n; i++) pts.push([x(i), y(p[i])], [x(i + 1), y(p[i])]);
     var yF = y(100).toFixed(1), path = pts.map(function(q){ return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
-    var e = pts[pts.length - 1];
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">'
+    var e = pts[pts.length - 1], tk = '';
+    for(i = 0; i <= n; i++) tk += '<line x1="' + x(i).toFixed(1) + '" x2="' + x(i).toFixed(1) + '" y1="' + ax + '" y2="' + (ax + 4) + '" class="as-s-axis" vector-effect="non-scaling-stroke"></line>';
+    return '<span class="as-k5-ch"><svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false" style="overflow:visible">'
       + '<line x1="0" x2="' + W + '" y1="' + yF + '" y2="' + yF + '" class="as-s-hist" stroke-width="1.2" vector-effect="non-scaling-stroke"></line>'
-      + '<polygon points="' + x(0).toFixed(1) + ',' + yF + ' ' + path + ' ' + x(n).toFixed(1) + ',' + yF + '" style="fill: var(--gold); fill-opacity: .12"></polygon>'
+      + '<polygon points="0,' + yF + ' ' + path + ' ' + W + ',' + yF + '" style="fill: var(--gold); fill-opacity: .12"></polygon>'
       + '<polyline points="' + path + '" fill="none" style="stroke: var(--gold)" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></polyline>'
-      + '<circle cx="' + e[0].toFixed(1) + '" cy="' + e[1].toFixed(1) + '" r="3" style="fill: var(--gold)"></circle></svg>';
+      + '<circle cx="' + e[0].toFixed(1) + '" cy="' + e[1].toFixed(1) + '" r="3" style="fill: var(--gold)"></circle>'
+      + '<line x1="0" x2="' + W + '" y1="' + ax + '" y2="' + ax + '" class="as-s-axis" vector-effect="non-scaling-stroke"></line>' + tk + '</svg>'
+      + '<span class="as-k5-m">' + mons.map(function(m){ return '<i>' + m + '</i>'; }).join('') + '</span></span>';
   }
 
   function draw(p){
@@ -67,7 +72,7 @@
         + '<span class="as-lbl">' + esc(c.tab) + '</span><span class="as-k5-t">' + esc(c.terms) + '</span>'
         + '<span class="as-k5-v">' + money(Math.abs(c.out)) + '</span>'
         + '<span class="as-k5-d">' + esc(c.kind) + ' &middot; <b>' + Math.abs(c.share).toFixed(1) + '%</b></span>'
-        + spark(c.pay, lo, hi)
+        + spark(c.pay, lo, hi, c.mons)
         + '<span class="as-k5-n">' + esc(c.note) + '</span><span class="as-k5-go">See the contract &rarr;</span></a>';
     }).join('');
     var saved = L.filter(function(c){ return !c.min; }).reduce(function(a, c){ return a + c.out; }, 0);

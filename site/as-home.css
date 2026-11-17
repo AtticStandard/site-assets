@@ -171,3 +171,14 @@ body #hpClause .as-k5-c:focus-visible{outline:2px solid var(--accent);outline-of
 body #hpClause .as-k5-n,body #hpClause .as-k5-go{display:none}
 body #hpClause .as-k5-c:hover .as-lbl,body #hpClause .as-k5-c:focus-visible .as-lbl{color:var(--l2)}
 body #hpClause .as-k5-c svg{margin-bottom:0}
+/* The small charts end where the contract's settled months end: the fixed price line no longer runs
+   past them. A tick at every month boundary and the month names under the axis (November 17, 2026). */
+body #hpClause .as-k5-ch{display:flex;flex-direction:column;gap:4px;margin:8px 0 0}
+body #hpClause .as-k5-ch svg{display:block;width:100%;height:auto;margin:0}
+body #hpClause .as-k5-m{display:flex}
+body #hpClause .as-k5-m i{flex:1 1 0;min-width:0;font-style:normal;font-size:11px;line-height:1;color:var(--l4);text-align:center}
+@media (max-width:991px){
+  body #hpClause .as-k5-c .as-k5-ch{grid-column:2;grid-row:1 / span 4;align-self:center;margin:0}
+  body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
+  body #hpClause .as-k5-m i{font-size:10px}
+}
