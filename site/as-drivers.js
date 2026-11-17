@@ -58,7 +58,7 @@ var g = [];
 [100, 50, -50, -100].forEach(function(v){ g.push(c.rule(Y(v), { cls:'as-s-grid' })); if(Math.abs(v) === 100) g.push(T(c.X0, Y(v) - 4, H.minus((v > 0 ? '+' : '') + v + '%'), 'as-f-l4', 'start', 10)); });
 g.push(c.rule(zero)); g.push(T(c.X0, zero - 4, '0%', 'as-f-l4', 'start', 10));
 g.push(c.band(AX, from, 'Last 13 weeks'));
-var byw = {}, labs = [c.X0 + 20]; ev.forEach(function(e){ (byw[e[0]] = byw[e[0]] || []).push(+e[1]); });
+var byw = {}, labs = [c.X0 + 20, c.X1 + 8]; ev.forEach(function(e){ (byw[e[0]] = byw[e[0]] || []).push(+e[1]); });
 Object.keys(byw).forEach(function(d){
 var cx = AX.x(d), recent = d >= from, vals = byw[d].sort(function(a, b){ return a - b; }), seen = {}, tot = {};
 vals.forEach(function(v){ var k = Math.round(Y(v) / 6); tot[k] = (tot[k] || 0) + 1; });
@@ -137,15 +137,17 @@ var g = [c.rule(c.TA), T(c.X0, 10, 'Price per 1,000 tokens, one model')];
 for(var t = lo; t <= hi + 1e-9; t += stepMaj / 4){
 var major = Math.abs(Math.round(t / stepMaj) * stepMaj - t) < 1e-9;
 g.push('<line x1="' + X(t).toFixed(1) + '" y1="' + c.TA + '" x2="' + X(t).toFixed(1) + '" y2="' + (c.TA + (major ? 8 : 4)) + '" class="as-s-axis"></line>');
-if(major) g.push(T(X(t), c.TA + 22, '$' + t.toFixed(3), 'as-f-l4', 'middle', 10));
+/* The end labels sit inside the frame: the first starts at its tick, the last ends at its tick. */
+if(major) g.push(T(X(t), c.TA + 22, '$' + t.toFixed(3), 'as-f-l4', t - lo < 1e-9 ? 'start' : hi - t < 1e-9 ? 'end' : 'middle', 10));
 }
 /* Prices within a twentieth of a cent of each other share a column. */
 var cols = []; p.forEach(function(v){ var q = cols.filter(function(cc){ return Math.abs(cc.v - v) < 0.00005; })[0]; if(q) q.n++; else cols.push({ v:v, n:1 }); });
 var base = c.TA - 12, st = 14, medCol = cols.filter(function(cc){ return Math.abs(cc.v - med) < 0.00005; })[0];
 cols.forEach(function(cc){ for(var j = 0; j < cc.n; j++) g.push('<circle cx="' + X(cc.v).toFixed(1) + '" cy="' + (base - j * st).toFixed(1) + '" r="6" class="' + ((cc === cols[0] || cc === cols[cols.length - 1]) ? 'as-f-series' : 'as-f-bar3') + '"></circle>'); });
 var ratio = p[p.length - 1] / p[0];
-g.push(T(X(p[0]), base - 22, 'Lowest, 1×', 'as-f-l2', 'middle'));
-g.push(T(X(p[p.length - 1]), base - 22, 'Highest, ' + ratio.toFixed(1) + '×', 'as-f-l2', 'middle'));
+var an = function(x){ return x - c.X0 < 60 ? 'start' : c.X1 - x < 60 ? 'end' : 'middle'; }, ax = function(x){ return x - c.X0 < 60 ? x - 6 : c.X1 - x < 60 ? x + 6 : x; };
+g.push(T(ax(X(p[0])), base - 22, 'Lowest, 1×', 'as-f-l2', an(X(p[0]))));
+g.push(T(ax(X(p[p.length - 1])), base - 22, 'Highest, ' + ratio.toFixed(1) + '×', 'as-f-l2', an(X(p[p.length - 1]))));
 if(medCol && medCol.n > 1) g.push(T(X(medCol.v) + 14, base - (medCol.n - 1) * st + 4, medCol.n + ' vendors at the median'));
 LGD.spread = [{ k:'dot', c:'var(--series)', n:'Lowest and highest', v:'$' + p[0].toFixed(4) + ' and $' + p[p.length - 1].toFixed(4) }, { k:'dot', c:'var(--bar-3)', n:'Other vendors', v:String(p.length - 2) }];
 TXT.spread = 'Across the ' + p.length + ' vendors that sell the same model, the highest price is <strong>' + ratio.toFixed(1) + ' times</strong> the lowest.';
