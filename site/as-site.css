@@ -621,8 +621,13 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
   .atom-header .ticker-label { display: flex !important; padding-left: var(--s1); padding-right: var(--s4); }
   .atom-header .ticker-label .tk-date { display: none; }
 }
-/* Once the reader scrolls on a phone, the header is the stacked name, the readings and the menu,
-   with nothing between the name and the readings; the dot shows on landing only (November 17, 2026). */
+/* Once the reader scrolls on a phone, the header is the name on one line and the menu, with no
+   ticker; the readings show on landing only (November 17, 2026). */
 @media (max-width: 767px) {
-  .atom-header.as-compact .ticker-label { display: none !important; }
+  .atom-header.as-compact .ticker-container { display: none !important; }
+  .atom-header.as-compact .as-band-rule { display: none !important; }
+  .atom-header.as-compact .as-band-logo .as-mark-st { display: none !important; }
+  .atom-header.as-compact .as-band-logo .as-mark-sm { display: block !important; width: 212px; height: 15px; }
+  .atom-header.as-compact .as-band { justify-content: space-between; }
+  .atom-header.as-compact .as-band .menu-toggle { margin-left: auto; }
 }
