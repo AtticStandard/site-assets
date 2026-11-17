@@ -25,9 +25,10 @@
     { k:'mom',  s:'1M', b:'1 month', lg:'% change month over month', lv:[1, 5], sp:[5, 25] },
     { k:'wow',  s:'1W', b:'1 week', lg:'% change week over week', lv:[0.5, 2], sp:[2, 10] }
   ];
+  /* The footnote tail, cut to what a reader needs to read the table (November 17, 2026). */
   var TAIL = {
-    levels:'Base: May 2026 = 100, regional indexes October 19, 2026 = 100. Year to date runs from the first publication of 2026 or, for a younger index, from its first publication. A dashed cell is a component not priced separately.',
-    spot:'Spot price: the median list price across the models in each index, in its own unit and currency; its change also reflects models arriving and leaving. A dashed cell is a component not priced separately.' };
+    levels:'Base: May 2026 = 100; regional indexes, October 19, 2026.',
+    spot:'Spot price: the median list price in each index.' };
   var STEP = 6000, BY = {}, view = 'levels', per = 0, auto = true, timer = null, t0 = 0, paused = false, seen = true;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
