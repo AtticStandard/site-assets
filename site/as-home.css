@@ -239,3 +239,6 @@ body #hpDrivers .as-ds-v{font-size:24px;font-weight:600;line-height:1.15;color:v
 body #hpDrivers .as-ds-t[aria-selected="true"] .as-ds-v{color:var(--l1)}
 body #hpDrivers .as-ds-s{font-size:var(--fs-ui);line-height:var(--lh-ui);color:var(--l4)}
 @media (max-width:767px){body #hpDrivers .as-ds-v{font-size:20px}}
+
+/* Five drivers: the line on top of the selected tab fills in white as the tabs rotate (November 17, 2026). */
+body #hpDrivers .as-ds-fill{background:var(--l1);animation:none !important;transition:none}

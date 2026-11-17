@@ -31,7 +31,9 @@ function pct(v, dp){ var a = Math.abs(v).toFixed(dp); return (Number(a) === 0 ? 
 function drift(){
 var c = C(), ser = P.series, keys = Object.keys(ser), hl = keys[0];
 /* The line drawn in white is the index leg that has moved most since May (November 17, 2026). */
-keys.forEach(function(k){ var a = ser[k], b = ser[hl]; if(Math.abs(+a[a.length - 1][1] - 100) > Math.abs(+b[b.length - 1][1] - 100)) hl = k; });
+/* Cached input is left to Component shifts, so drift shows the most-moved input or output leg. */
+var cand = keys.filter(function(k){ return k.split('|')[1] !== 'cached'; }); if(!cand.length) cand = keys; hl = cand[0];
+cand.forEach(function(k){ var a = ser[k], b = ser[hl]; if(Math.abs(+a[a.length - 1][1] - 100) > Math.abs(+b[b.length - 1][1] - 100)) hl = k; });
 var all = []; keys.forEach(function(k){ ser[k].forEach(function(p){ all.push(+p[1]); }); });
 var lo = Math.min(85, Math.floor(Math.min.apply(null, all) - 1)), hi = Math.max(103, Math.ceil(Math.max.apply(null, all) + 1));
 var Y = function(v){ return c.PB - (v - lo) / (hi - lo) * (c.PB - c.PT); };
@@ -161,12 +163,31 @@ var el = document.getElementById('hpDsTabs');
 el.innerHTML = DRV.map(function(d, i){
 return '<button class="as-ds-t" role="tab" type="button" aria-selected="false" data-i="' + i + '"><span class="as-ds-bar"><span class="as-ds-fill"></span></span><span class="as-ds-n">' + d.name + '</span><span class="as-ds-v">&nbsp;</span><span class="as-ds-s">&nbsp;</span></button>';
 }).join('');
-el.addEventListener('click', function(e){ var b = e.target.closest('.as-ds-t'); if(!b) return; show(+b.getAttribute('data-i')); });
+el.addEventListener('click', function(e){ var b = e.target.closest('.as-ds-t'); if(!b) return; stop(); show(+b.getAttribute('data-i')); });
 el.addEventListener('keydown', function(e){
-if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault();
+if(e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); stop();
 show((sel + (e.key === 'ArrowRight' ? 1 : DRV.length - 1)) % DRV.length); el.querySelectorAll('.as-ds-t')[sel].focus();
 });
+/* Hovering the tabs or the chart pauses the rotation, as on the index table. */
+var w = el.closest('.as-dsw') || el;
+w.addEventListener('mouseenter', function(){ paused = true; }); w.addEventListener('mouseleave', function(){ paused = false; });
+if(window.IntersectionObserver) new IntersectionObserver(function(es){ seen = es[0].isIntersecting; }, { threshold:0.35 }).observe(document.getElementById('hpDrivers'));
 }
+/* The tabs step on their own every six seconds, like the index table; the line on top of the
+   selected tab fills as its time runs. Picking a tab stops the rotation there for good
+   (November 17, 2026). It runs only while the section is on screen, and never for readers
+   who ask for reduced motion. */
+var STEP = 6000, auto = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches), paused = false, seen = !window.IntersectionObserver, el0 = 0, last = null;
+function loop(ts){
+if(!auto) return;
+if(last != null && !paused && seen && !document.hidden) el0 += ts - last;
+last = ts;
+var f = document.querySelector('#hpDsTabs .as-ds-t[aria-selected="true"] .as-ds-fill');
+if(f) f.style.width = Math.min(100, el0 / STEP * 100).toFixed(2) + '%';
+if(el0 >= STEP){ el0 = 0; show((sel + 1) % DRV.length); }
+requestAnimationFrame(loop);
+}
+function stop(){ auto = false; }
 function show(i){
 sel = i;
 var bs = document.querySelectorAll('#hpDsTabs .as-ds-t');
@@ -174,8 +195,7 @@ bs.forEach(function(b, n){
 var on = n === i, f = b.querySelector('.as-ds-fill'), nm = b.querySelector('.as-ds-n');
 b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1;
 nm.style.color = on ? 'var(--l1)' : '';
-f.style.animation = ''; f.style.width = '';
-if(on) f.style.width = '100%';
+f.style.animation = 'none'; f.style.width = on && !auto ? '100%' : '0';
 });
 var k = DRV[i].k;
 var tx = document.getElementById('hpDsText'); if(tx) tx.hidden = true;
@@ -213,6 +233,7 @@ AX = AS.chart.axis(WEEKS[0], WEEKS[WEEKS.length - 1]);
 try { if(f[1]()) CH[f[0]] = f[1]; } catch(e){ console.error('Attic Standard driver chart ' + f[0] + ':', e); }
 });
 figs(); show(sel);
+if(auto) requestAnimationFrame(loop);
 }).catch(function(){});
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
