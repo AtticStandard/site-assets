@@ -6,16 +6,16 @@
 (function(){
 var AS = window.AS || {}, H = AS.home;
 var DRV = [
-{ k:'spread', name:'Vendor spread, one model' },
-{ k:'reprice', name:'Vendor repricing, 13 weeks' },
-{ k:'drift', name:'Price drift since May' },
-{ k:'components', name:'Component shifts since May' },
-{ k:'turnover', name:'Model turnover, 13 weeks' }];
+{ k:'spread', name:'Vendor spread' },
+{ k:'reprice', name:'Vendor repricing' },
+{ k:'drift', name:'Price drift' },
+{ k:'components', name:'Component shifts' },
+{ k:'turnover', name:'Model turnover' }];
 /* Option B (November 17, 2026): each tab carries its driver's headline figure and, in brackets,
    what it is made of; the chart's legend names the marks only; what the chart measures is the
    last line of the footnote, after the standard source line, as "Label: note." */
 var FN = { spread:'Unit: price per 1,000 tokens.', reprice:'Scale: size of each lasting list price change, capped at \u00b1100%.',
-  drift:'Base: May 2026 = 100.', components:'Base: May 2026 = 100, text indexes.', turnover:'Scale: listings added and withdrawn each week.' };
+  drift:'Base: May 2026 = 100.', components:'Base: May 2026 = 100, text indexes.', turnover:'Listing: one model sold by one vendor, so a model sold by five vendors is five listings.' };
 var FIG = {}, SRC = '';
 var NAMES = { FLG:'Flagship', CMP:'Compact', COR:'Core', TXT:'Text', DEV:'Model developers', EMB:'Embeddings', MML:'Multimodal', CLD:'Cloud marketplaces', PLT:'Inference platforms', NCL:'Neoclouds' };
 var LEGS = { input:'input', output:'output', cached:'cached input' };
@@ -29,8 +29,9 @@ function pct(v, dp){ var a = Math.abs(v).toFixed(dp); return (Number(a) === 0 ? 
 /* Index levels since May for the legs the Clause page follows. Legend with values above the chart
 (site rule C); each line names itself on hover. */
 function drift(){
-var c = C(), ser = P.series, keys = Object.keys(ser), hl = 'AIPI TXT GLB|output';
-if(!ser[hl]) hl = keys[0];
+var c = C(), ser = P.series, keys = Object.keys(ser), hl = keys[0];
+/* The line drawn in white is the index leg that has moved most since May (November 17, 2026). */
+keys.forEach(function(k){ var a = ser[k], b = ser[hl]; if(Math.abs(+a[a.length - 1][1] - 100) > Math.abs(+b[b.length - 1][1] - 100)) hl = k; });
 var all = []; keys.forEach(function(k){ ser[k].forEach(function(p){ all.push(+p[1]); }); });
 var lo = Math.min(85, Math.floor(Math.min.apply(null, all) - 1)), hi = Math.max(103, Math.ceil(Math.max.apply(null, all) + 1));
 var Y = function(v){ return c.PB - (v - lo) / (hi - lo) * (c.PB - c.PT); };
@@ -48,7 +49,7 @@ g.push(AX.svg());
 var mx = 0; keys.forEach(function(k){ mx = Math.max(mx, Math.abs(chg(k))); });
 var nmh = nm(hl); nmh = nmh.charAt(0).toUpperCase() + nmh.slice(1);
 LGD.drift = [{ k:'line', c:'var(--series)', n:nmh + ' index' }, { k:'thin', c:'var(--bar-3)', n:'Other indexes' }];
-FIG.drift = { v:pct(tl, 2), d:'(' + nm(hl).toLowerCase() + ' index; others to ' + pct(mn, 1) + ')' };
+FIG.drift = { v:pct(tl, 2), d:'(' + nm(hl).toLowerCase() + ' index since May)' };
 TXT.drift = 'The text output index is <strong>' + Math.abs(tl).toFixed(2) + '%</strong> ' + (tl <= 0 ? 'below' : 'above') + ' its May level, and other indexes have moved by as much as ' + mx.toFixed(1) + '%.';
 return svg(g.join(''), 'Index legs since May: text output is ' + Math.abs(tl).toFixed(2) + '% ' + (tl <= 0 ? 'below' : 'above') + ' its May level; others have moved by as much as ' + mx.toFixed(1) + '%');
 }
@@ -81,7 +82,7 @@ g.push('<path d="M' + (x - 4).toFixed(1) + ',' + (top + 4) + ' L' + x.toFixed(1)
 });
 g.push(AX.svg());
 LGD.reprice = [{ k:'dot', c:'var(--series)', n:'List price change' }];
-FIG.reprice = { v:H.int(r.n), d:'(price changes: ' + H.int(r.down) + ' cuts, ' + H.int(r.up) + ' rises)' };
+FIG.reprice = { v:H.int(r.n), d:'(price changes in 13 weeks: ' + H.int(r.down) + ' cuts, ' + H.int(r.up) + ' rises)' };
 return svg(g.join(''), 'Every lasting price change since May, by week and size; in the last 13 weeks ' + r.n + ' changes, ' + r.down + ' cuts with a median of ' + r.med_down + ' percent and ' + r.up + ' rises with a median of ' + r.med_up + ' percent');
 }
 
@@ -97,8 +98,8 @@ g.push('<rect x="' + x.toFixed(1) + '" y="' + (mid - ha).toFixed(1) + '" width="
 g.push('<rect x="' + x.toFixed(1) + '" y="' + (mid + 1).toFixed(1) + '" width="' + bar.toFixed(1) + '" height="' + hb.toFixed(1) + '" rx="1.5" class="as-f-bar3" fill-opacity="' + (recent ? 1 : 0.4) + '"></rect>');
 });
 g.push(AX.svg());
-LGD.turnover = [{ k:'bar', c:'var(--series)', n:'Listings added' }, { k:'bar', c:'var(--bar-3)', n:'Listings withdrawn' }];
-FIG.turnover = { v:H.int(+L.added_13w + +L.gone_13w), d:'(listings: ' + H.int(L.added_13w) + ' added, ' + H.int(L.gone_13w) + ' withdrawn)' };
+LGD.turnover = [{ k:'bar', c:'var(--series)', n:'Model listings added' }, { k:'bar', c:'var(--bar-3)', n:'Model listings withdrawn' }];
+FIG.turnover = { v:H.int(+L.added_13w + +L.gone_13w), d:'(model listings in 13 weeks: ' + H.int(L.added_13w) + ' added, ' + H.int(L.gone_13w) + ' withdrawn)' };
 TXT.turnover = 'In 13 weeks, vendors added <strong>' + H.int(L.added_13w) + '</strong> listings and withdrew <strong>' + H.int(L.gone_13w) + '</strong>, with ' + H.int(L.live) + ' on sale today.';
 return svg(g.join(''), 'Model listings added and withdrawn each week since May; in the last 13 weeks ' + L.added_13w + ' were added and ' + L.gone_13w + ' withdrawn');
 }
@@ -120,7 +121,7 @@ g.push('<circle cx="' + AX.x(sc[sc.length - 1][0]).toFixed(1) + '" cy="' + Y(las
 g.push(AX.svg());
 LGD.components = [{ k:'line', c:'var(--series)', n:'Cached input' }, { k:'line', c:'var(--series-history)', n:'Input and output' }];
 var di = 100 - last('input'), dc = 100 - last('cached');
-FIG.components = (di > 0.05 && dc > 0) ? { v:(dc / di).toFixed(1) + '\u00d7', d:'(cached input ' + pct(-dc, 2) + ' vs input ' + pct(-di, 2) + ')' }
+FIG.components = (di > 0.05 && dc > 0) ? { v:(dc / di).toFixed(1) + '\u00d7', d:'(cached input ' + pct(-dc, 2) + ' vs input ' + pct(-di, 2) + ' since May)' }
   : { v:pct(-dc, 2), d:'(cached input; input ' + pct(-di, 2) + ')' };
 TXT.components = (di > 0.05 && dc > 0)
 ? 'Since May, cached input prices have fallen <strong>' + (dc / di).toFixed(1) + ' times</strong> as fast as standard input prices.'
@@ -148,7 +149,7 @@ var base = c.TA - 12, st = 14, medCol = cols.filter(function(cc){ return Math.ab
 cols.forEach(function(cc){ for(var j = 0; j < cc.n; j++) g.push('<circle cx="' + X(cc.v).toFixed(1) + '" cy="' + (base - j * st).toFixed(1) + '" r="6" class="' + ((cc === cols[0] || cc === cols[cols.length - 1]) ? 'as-f-series' : 'as-f-bar3') + '"></circle>'); });
 var ratio = p[p.length - 1] / p[0];
 LGD.spread = [{ k:'dot', c:'var(--series)', n:'Lowest and highest price' }, { k:'dot', c:'var(--bar-3)', n:'Other vendors' }];
-FIG.spread = { v:ratio.toFixed(1) + '\u00d7', d:'(highest price over lowest, ' + p.length + ' vendors)' };
+FIG.spread = { v:ratio.toFixed(1) + '\u00d7', d:'(highest price over lowest for one model, ' + p.length + ' vendors)' };
 TXT.spread = 'Across the ' + p.length + ' vendors that sell the same model, the highest price is <strong>' + ratio.toFixed(1) + ' times</strong> the lowest.';
 return svg(g.join(''), 'One model priced by ' + p.length + ' vendors: the highest price is ' + ratio.toFixed(1) + ' times the lowest');
 }
