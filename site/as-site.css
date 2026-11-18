@@ -640,3 +640,7 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
 .utility-page-content img{display:none}
 .utility-page-content h2{margin:0;font-size:36px;font-weight:700;line-height:1.15;color:var(--l1)}
 .utility-page-content > div{font-size:16px;line-height:1.55;color:var(--l2)}
+
+/* Ticker label: "Price Indexes" alone, no publication date (November 18, 2026). The date is
+   in each page footnote. as-site.js stops writing it at its next pin. */
+.ticker-label .tk-date{display:none !important}
