@@ -208,16 +208,8 @@
 
     if (!html) { ticker.innerHTML = '<div class="ticker-item">No index data</div>'; return; }
 
-    /* The label carries the publication date of the figures: "Price Indexes · November 16". */
-    var dt = rows.reduce(function(m, r) { return r.date && r.date > m ? r.date : m; }, '');
-    var lab = document.querySelector('.ticker-label');
-    if (lab && dt && !lab.querySelector('.tk-date')) {
-      var MON = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      var dd = String(dt).slice(0, 10).split('-');
-      var sp = document.createElement('span'); sp.className = 'tk-date';
-      sp.textContent = '\u00b7 ' + MON[+dd[1] - 1] + ' ' + (+dd[2]);
-      lab.appendChild(sp);
-    }
+    /* The label reads "Price Indexes" alone; the publication date is in each page's footnote,
+       not in the header (November 18, 2026). */
 
     requestAnimationFrame(function() {
       ticker.innerHTML = html + html;
