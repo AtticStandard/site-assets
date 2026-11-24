@@ -8,7 +8,7 @@
   --l3:#A6ACB6;--l5:#7D848F;--tp-top:160px;
   padding:0 var(--gutter);font-family:var(--font-sans);font-size:var(--fs-body);line-height:var(--lh-ui);color:var(--l3);-webkit-font-smoothing:antialiased}
 .tp *{box-sizing:border-box}
-.tp h1,.tp h2,.tp h3,.tp p,.tp dl,.tp dd,.tp dt,.tp ul{margin:0}
+:where(.tp) :where(h1,h2,h3,p,dl,dd,dt,ul){margin:0}
 .tp [hidden]{display:none !important}
 .tp a{color:var(--accent);text-decoration:none}
 .tp a:hover{color:var(--accent-hover)}

@@ -250,11 +250,12 @@ var CS = (function(){
     $('csLegs').innerHTML = h;
   }
   function pickLeg(k){ if(!k || k === leg) return; leg = k; legRows(); seg(); levels(); card(); }
-  /* One line, only when a leg has settled within 2% of its floor or cap. */
+  /* One line, only when a leg settled at its floor or cap, or within 2% of it. */
   function notice(){
     var m = last(), fl = num(D.c.floor_level), cp = num(D.c.cap_level), el = $('csNote'), h = '';
-    if(m) D.legs.some(function(k){ var v = num(m.L[k].settled_level), w = D.W[k][D.W[k].length-1], t = '';
-      if(fl != null && (v-fl)/v*100 < NEAR) t = LEG[k]+' settled '+((v-fl)/v*100).toFixed(1)+'% above its floor.';
+    if(m) D.legs.some(function(k){ var r = m.L[k], v = num(r.settled_level), w = D.W[k][D.W[k].length-1], t = '';
+      if(r.limit_applied === 'floor' || r.limit_applied === 'cap') t = LEG[k]+' settled at its '+r.limit_applied+' in '+MN[+m.ym.slice(5,7)-1]+', '+lv(v)+' against an index average of '+lv(r.index_level)+'.';
+      else if(fl != null && (v-fl)/v*100 < NEAR) t = LEG[k]+' settled '+((v-fl)/v*100).toFixed(1)+'% above its floor.';
       else if(cp != null && (cp-v)/v*100 < NEAR) t = LEG[k]+' settled '+((cp-v)/v*100).toFixed(1)+'% below its cap.';
       if(!t) return false;
       h = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="4.5" x2="8" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.9" fill="currentColor"/></svg><p>'+t+(w ? ' <span>The week of '+ldate(w.d)+' closed at '+lv(w.v)+'.</span>' : '')+'</p>';
