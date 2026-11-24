@@ -27,10 +27,9 @@
 .tp-lbl{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l4);line-height:var(--lh-ui)}
 
 /* The dashboard switch: the site toggle, held under the site header while the page scrolls. */
-/* No rules of its own at rest: the toggle's frame is the edge, as on the Indexes page. Once it is
-   held under the header, one hairline below it separates it from the content scrolling under it. */
-.tp-bar{position:sticky;top:var(--tp-bar,102px);z-index:20;background:var(--bg);padding:var(--s3) 0;border-bottom:1px solid transparent}
-.tp-bar.stuck{border-bottom-color:var(--border)}
+/* One rule under the switch, full width, at rest and while it is held under the header: the rule
+   that separates the header from the content on every inner page. No rule above it. */
+.tp-bar{position:sticky;top:var(--tp-bar,102px);z-index:20;background:var(--bg);padding:var(--s3) 0;border-bottom:1px solid var(--border)}
 .tp-bar .as-vt{margin:0}
 .tp .as-vt-b[aria-selected="true"]{color:var(--l1);background:var(--surface-chip)}
 
