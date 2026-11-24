@@ -41,7 +41,8 @@ function flash(b, t){ var o = b.textContent; b.textContent = t; setTimeout(funct
 function copy(b, t){ (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ flash(b, 'Copied'); }).catch(function(){ window.prompt('Copy the citation', t); }); }
 /* Public copy counts Microsoft's Azure services as one vendor. */
 function vgroup(n){ return /azure/i.test(n || '') ? 'Microsoft Azure' : n; }
-var CHANNEL = { 'Inference Platform':'Inference platform', 'Model Developer':'Model developer', 'Cloud Marketplace':'Cloud marketplace', 'Neocloud':'Neocloud' };
+var CHANNEL = { 'Inference Platform':'Inference platform', 'Model Developer':'Model developer', 'Cloud Marketplace':'Cloud marketplace', 'Neocloud':'Neocloud',
+  'Inference platforms':'Inference platform', 'Model developers':'Model developer', 'Cloud marketplaces':'Cloud marketplace', 'Neoclouds':'Neocloud' };
 function channel(t){ return CHANNEL[t] || (t ? String(t).charAt(0).toUpperCase()+String(t).slice(1).toLowerCase() : ''); }
 function mark(){ var m = document.querySelector('#atomHeader svg.as-mark'); return m ? m.outerHTML.replace('class="as-mark"', '') : ''; }
 function waiting(el){ el.className = 'tp-wait'; el.innerHTML = mark()+'<i></i>'; el.setAttribute('role','status'); el.setAttribute('aria-label','Loading'); el.hidden = false; }
@@ -230,7 +231,7 @@ var IX = (function(){
     var first = !D; if(first) waiting($('ixMsg')); else { $('ixBody').classList.add('busy'); $('ixProg').hidden = false; }
     fetch(c, l).then(function(d){ if(my !== reqN) return; D = d; wk = null; open = {}; more = {}; $('ixFind').value = '';
       try{ localStorage.setItem('atIxLeg', l); }catch(e){}
-      render(); $('ixMsg').hidden = true; $('ixBody').hidden = false; done(); })
+      render(); $('ixMsg').hidden = true; $('ixBody').hidden = false; done(); requestAnimationFrame(SPY); })
     .catch(function(e){ if(my !== reqN) return; console.error('[Indexes]', e); done();
       if(first) message($('ixMsg'), 'This index could not be loaded. Refresh the page, or log in again if the problem persists.');
       else { $('ixProg').hidden = true; flash($('ixName'), 'Could not load '+c); } });
@@ -381,6 +382,7 @@ var IX = (function(){
   function clean(r){ r = String(r || '');
     r = r.replace(/\s*\([^)]*(AUDIT|sweep|previously)[^)]*\)/gi, '').replace(/;?\s*admitted elsewhere under R\d+[^.]*/gi, '');
     r = r.replace(/^Same (basis|treatment) as [^:]+:\s*/i, '').replace(/\s*Same (basis|treatment) as [^.]*\./gi, '');
+    r = r.replace(/\s*Tracked in AIPI [A-Z]{3} [A-Z]{3}\.?/g, '').replace(/\s*\((?:[A-Z]\d+|R\d+[A-Z-]*)\)/g, '').replace(/\s*under R\d+[A-Z-]*/g, '');
     r = r.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, function(x){ return ldate(x); });
     return r.trim(); }
   function adm(){
@@ -409,8 +411,9 @@ var IX = (function(){
       S.forEach(function(s){ if(s.getBoundingClientRect().top <= top) pick = s; });
       if(window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 4) pick = S[S.length-1];
       if(pick !== on){ on = pick; nav.querySelectorAll('a').forEach(function(a){ a.classList.toggle('on', a.dataset.s === pick.id); }); } }
-    window.addEventListener('scroll', function(){ requestAnimationFrame(spy); }, { passive:true }); spy();
+    window.addEventListener('scroll', function(){ requestAnimationFrame(spy); }, { passive:true }); SPY = spy;
   }
+  var SPY = function(){};
   function go(el){ if(!el) return; var top = (parseInt(ROOT.style.getPropertyValue('--tp-bar'), 10) || 102) + ($('tpBar') ? $('tpBar').offsetHeight : 56) + 24;
     window.scrollTo({ top:Math.max(0, window.pageYOffset + el.getBoundingClientRect().top - top), behavior:'smooth' }); }
 

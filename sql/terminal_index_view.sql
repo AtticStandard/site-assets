@@ -32,13 +32,14 @@ comp as (select coalesce(jsonb_agg(x.j order by x.n desc, x.nm), '[]') j from (
               'k', jsonb_agg(jsonb_build_object('s', m.sku_id, 'v', m.vendor_name, 't', m.vendor_type, 'pl', sk.pl, 'p', sk.pr, 'u', sk.u, 'f', sk.f, 'lcd', lc.d, 'lcp', lc.pc) order by sk.pr nulls last, m.vendor_name)) j
           from mem m left join sk on sk.sku_id = m.sku_id left join lc on lc.sku_id = m.sku_id
             left join nm on nm.anchor_id = m.anchor_id
-            left join (select anchor_id, model_name, creator from v_fair_value_models where anchor_id in (select anchor_id from mem)) fv on fv.anchor_id = m.anchor_id
+            left join model_registry fv on fv.model_id = m.anchor_id
           group by m.anchor_id) x),
 rep as (select coalesce(jsonb_agg(jsonb_build_object('d', c.d, 'v', m.vendor_name, 'a', m.anchor_id, 'from', c.prev, 'to', c.pr) order by c.d desc, abs(c.pr / c.prev - 1) desc), '[]') j
         from chg c join mem m on m.sku_id = c.sku_id, g where c.d > (g.dd - 182)::text),
+one as (select anchor_id from mem group by anchor_id having count(distinct vendor_name) = 1),
 ven as (select coalesce(jsonb_agg(jsonb_build_object('v', v.vendor_name, 't', v.t, 'k', v.k, 'm', v.mo, 'so', v.so) order by v.k desc, v.vendor_name), '[]') j from (
           select m.vendor_name, max(m.vendor_type) t, count(*) k, count(distinct m.anchor_id) mo,
-            count(distinct m.anchor_id) filter (where (select count(distinct x.vendor_name) from mem x where x.anchor_id = m.anchor_id) = 1) so
+            count(distinct m.anchor_id) filter (where m.anchor_id in (select anchor_id from one)) so
           from mem m group by m.vendor_name) v),
 adm as (select coalesce(jsonb_agg(jsonb_build_object('a', a.anchor_id, 'nm', coalesce(r.model_name, a.anchor_id), 'st', a.status, 'r', a.reason, 'rc', a.rule_code, 'dt', a.decided_at::date::text, 'vf', a.valid_from, 'vt', a.valid_to) order by a.decided_at desc), '[]') j
         from (select * from model_index_admission where index_code = p_code and anchor_id is not null and vendor_id is null order by decided_at desc limit 80) a

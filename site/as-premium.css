@@ -152,7 +152,7 @@
 .tp-pos s{position:absolute;top:7px;width:7px;height:7px;border-radius:50%;background:var(--series);transform:translate(-50%,-50%)}
 .tp-tbl tr.sel .tp-pos s{background:var(--l1)}
 .tp-x{display:inline-block;width:14px;margin-right:var(--s2);color:var(--l4)}
-.tp-dt td{background:var(--surface-chip);padding:0 var(--s3) var(--s4) !important;cursor:default}
+.tp-dt>td{background:var(--surface-chip);padding:0 var(--s3) var(--s4) !important;cursor:default}
 .tp-dtt{width:100%;border-collapse:collapse;font-size:var(--fs-ui);font-variant-numeric:tabular-nums}
 .tp-dtt th{font-size:var(--fs-label);font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5);text-align:right;padding:var(--s3) 0 var(--s2) var(--s4)}
 .tp-dtt td{padding:6px 0 6px var(--s4);text-align:right;border:0;color:var(--l3)}
