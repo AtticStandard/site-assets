@@ -1,12 +1,15 @@
 /* TERMINAL (/premium). The subscriber dashboards, moved out of the page embeds into the shared
    library on November 24, 2026 and rebuilt on the site system (styles in as-premium.css):
      Header      the inner-page header: title, tagline, header rows (Published, Covers, For).
-     Switch      the site toggle, Contracts and Pricing intelligence, as on the Terminal page;
-                 held under the site header while the page scrolls.
+     Switch      the site toggle, Indexes, Models and Contracts; held under the site header while
+                 the page scrolls.
+     Indexes     one page per index (added November 24, 2026): what moved the level each week and
+                 which models moved it, the basket down to every SKU, repricing, vendors and the
+                 admission record, from one signed-in call (terminal_index_view).
      Contracts   every contract under the Clause: settled value and legs, terms, the monthly bill
                  (the same chart as the Clause page), the index and settled level, the history and
                  the rate card.
-     Pricing     every model sold by two or more vendors: market median and every vendor's price,
+     Models      every model sold by two or more vendors: market median and every vendor's price,
                  the model profile, the price by week, the vendor table.
    Every chart is drawn on the shared chart frame (AS.chart, as-fluid.js) with the legend above it
    (site rule C) and no names or values inside the plot. Every dashboard ends on the standard source
@@ -68,9 +71,10 @@ function mount(box, draw){ var c = C(); if(c && c.mount) c.mount(box, draw); els
 
 /* ═══ SHELL ═══ */
 var DASH = [
-  { key:'contracts', label:'Contracts', el:'tpContracts' },
-  { key:'pricing', label:'Pricing intelligence', el:'tpPricing' }];
-var ALIAS = { clause:'contracts', value:'pricing' };
+  { key:'indexes', label:'Indexes', el:'tpIndexes' },
+  { key:'models', label:'Models', el:'tpPricing' },
+  { key:'contracts', label:'Contracts', el:'tpContracts' }];
+var ALIAS = { clause:'contracts', value:'models', pricing:'models', index:'indexes' };
 var cur = null, started = {};
 
 function shell(){
@@ -81,7 +85,7 @@ function shell(){
   + '<div class="tp-r"><dt class="tp-lbl">Covers</dt><dd id="tpCov">&nbsp;</dd></div>'
   + '<div class="tp-r"><dt class="tp-lbl">For</dt><dd>Procurement, finance, legal and analysts, on both sides</dd></div></dl></header>'
   + '<div class="tp-bar" id="tpBar"><div class="as-vt" role="tablist" aria-label="Terminal dashboards" id="tpTabs"></div></div>'
-  + contractsHTML() + pricingHTML() + '</div>';
+  + indexesHTML() + pricingHTML() + contractsHTML() + '</div>';
   var d = document.createElement('div'); d.innerHTML = h; ROOT = d.firstChild;
   document.body.insertBefore(ROOT, document.body.firstChild);
   var row = $('tpTabs');
@@ -94,7 +98,7 @@ function shell(){
   });
   window.addEventListener('scroll', place, { passive:true }); window.addEventListener('resize', place);
   window.addEventListener('hashchange', function(){ var k = key(location.hash.slice(1)); if(k && k !== cur) show(k, false); });
-  waiting($('csMsg')); waiting($('moMsg'));
+  waiting($('ixMsg')); waiting($('csMsg')); waiting($('moMsg'));
   place();
   show(key(location.hash.slice(1)) || DASH[0].key, false);
 }
@@ -112,7 +116,7 @@ function show(k, push){
     var b = $('tpTabs').querySelector('[data-k="'+t.key+'"]'); b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; });
   if(push && history.replaceState) history.replaceState(null, '', '#'+k);
   if(was && was !== k){ var bar = $('tpBar'), y = window.pageYOffset + bar.getBoundingClientRect().top - (parseInt(ROOT.style.getPropertyValue('--tp-bar'), 10) || 102); if(window.pageYOffset > y) window.scrollTo(0, Math.max(0, y)); }
-  if(!started[k]){ started[k] = true; (k === 'contracts' ? CS : MO).start(); }
+  if(!started[k]){ started[k] = true; (k === 'contracts' ? CS : k === 'models' ? MO : IX).start(); }
   place();
 }
 /* Header rows: the published date, what the Terminal covers, who is signed in. */
@@ -121,10 +125,341 @@ function header(s){
   if(!sb) return;
   Promise.all([
     sb.from('clause_contract').select('contract_id', { count:'exact', head:true }),
-    sb.from('v_fair_value_models').select('anchor_id', { count:'exact', head:true }).gte('vendors', 2)
-  ]).then(function(r){ var c = r[0].count, m = r[1].count; if(c == null || m == null) return;
-    $('tpCov').innerHTML = '<b>'+int(c)+'</b> contract'+(c === 1 ? '' : 's')+' under the Clause, <b>'+int(m)+'</b> models sold by two or more vendors'; }).catch(function(){});
+    sb.from('v_fair_value_models').select('anchor_id', { count:'exact', head:true }).gte('vendors', 2),
+    sb.from('index_registry').select('index_code', { count:'exact', head:true }).eq('is_published', true)
+  ]).then(function(r){ var c = r[0].count, m = r[1].count, x = r[2].count; if(c == null || m == null) return;
+    $('tpCov').innerHTML = (x ? '<b>'+int(x)+'</b> indexes, ' : '')+'<b>'+int(m)+'</b> models sold by two or more vendors, <b>'+int(c)+'</b> contract'+(c === 1 ? '' : 's')+' under the Clause'; }).catch(function(){});
 }
+
+/* ═══ INDEXES ═══ */
+/* One page per index, the spine of the Terminal: pick an index with the same Family, Index and
+   Market rows as the public page, then read it top to bottom. What moved the level each week and
+   which models moved it; the basket down to every SKU; every lasting repricing; who supplies it;
+   every model admitted, left or turned away, with the rule. One signed-in call per index and leg
+   (terminal_index_view), kept in memory, so going back to an index is instant; an index is fetched
+   ahead when the pointer rests on it. While a new index loads the current one stays in place,
+   dimmed, so nothing on the page jumps. */
+function indexesHTML(){
+  return '<section class="tp-dash" id="tpIndexes" role="tabpanel" aria-label="Indexes" hidden>'
+  + '<div class="tp-sel" id="ixSel"><span class="tp-lbl">Family</span><div class="as-vt" id="ixFam" role="group" aria-label="Family"></div>'
+  + '<span class="tp-lbl">Index</span><div class="as-vt" id="ixSeg" role="group" aria-label="Index"></div>'
+  + '<span class="tp-lbl">Market</span><div class="as-vt" id="ixMkt" role="group" aria-label="Market"></div></div>'
+  + '<div id="ixMsg"></div><div class="tp-ix" id="ixBody" hidden><div class="tp-prog" id="ixProg" hidden></div>'
+  + '<div class="tp-ixh"><div class="tp-ixt"><p class="tp-code" id="ixCode"></p><h2 class="tp-h" id="ixName"></h2><p class="tp-q" id="ixQ"></p></div><div class="as-vt" id="ixLegs" role="group" aria-label="Price leg"></div></div>'
+  + '<div class="tp-figs" id="ixFigs"></div>'
+  + '<div class="tp-lay"><div class="tp-secs">'
+  + '<section class="tp-xs" id="ixS1" data-n="What moved"><div class="tp-sech"><div><h3 class="tp-st">What moved the index</h3><p class="tp-ss">Each week’s change in the index level, and the models that caused it. Select a week.</p></div></div>'
+  + '<div class="tp-chw"><div class="as-lgv" id="ixMvLg"></div><div class="tp-ch" id="ixMvW"><div id="ixMv"></div><div class="tp-hv" hidden></div><div class="tp-tip" hidden></div></div></div>'
+  + '<div class="tp-mv"><div><p class="tp-lbl" id="ixWkT"></p><div class="tp-wf" id="ixWf"></div></div><div><p class="tp-lbl">How to read it</p><p class="tp-note tp-rd">Every model in the basket counts once. A model’s part of the week’s change is its own price move across the vendors that sell it, shared out among the models priced in both weeks, so the parts add up to the change in the level.</p><p class="tp-rd" id="ixWkGo"></p></div></div></section>'
+  + '<section class="tp-xs" id="ixS2" data-n="Composition"><div class="tp-sech"><div><h3 class="tp-st">Composition</h3><p class="tp-ss" id="ixCoN"></p></div><div class="tp-tools"><input class="tp-in tp-find" id="ixFind" type="search" autocomplete="off" spellcheck="false" placeholder="Find a model, vendor or SKU" aria-label="Find a model, vendor or SKU"><div class="as-vt" id="ixCoV" role="group" aria-label="View"><button type="button" class="as-vt-b" data-v="m" aria-selected="true">By model</button><button type="button" class="as-vt-b" data-v="s" aria-selected="false">By SKU</button></div></div></div>'
+  + '<div class="tp-tw"><table class="tp-tbl tp-sort" id="ixCoT"><thead id="ixCoH"></thead><tbody id="ixCo"></tbody></table></div><p class="tp-note tp-more" id="ixCoM"></p></section>'
+  + '<section class="tp-xs" id="ixS3" data-n="Repricing"><div class="tp-sech"><div><h3 class="tp-st">Repricing</h3><p class="tp-ss">Every lasting list price change on a SKU in this index over the last six months, newest first. Select one to see its week in What moved.</p></div></div>'
+  + '<div class="tp-tw"><table class="tp-tbl"><thead><tr><th>Week</th><th>Vendor</th><th>Model</th><th class="r">Before</th><th class="r">After</th><th class="r">Change</th></tr></thead><tbody id="ixRp"></tbody></table></div><p class="tp-note tp-more" id="ixRpM"></p></section>'
+  + '<section class="tp-xs" id="ixS4" data-n="Vendors"><div class="tp-sech"><div><h3 class="tp-st">Vendors</h3><p class="tp-ss" id="ixVnN"></p></div></div>'
+  + '<div class="tp-tw"><table class="tp-tbl tp-sort" id="ixVnT"><thead id="ixVnH"></thead><tbody id="ixVn"></tbody></table></div><p class="tp-note tp-more" id="ixVnM"></p></section>'
+  + '<section class="tp-xs" id="ixS5" data-n="Admissions"><div class="tp-sech"><div><h3 class="tp-st">Admissions</h3><p class="tp-ss">Every model that left the basket or was turned away, with the rule applied. The record a contract party can audit.</p></div></div>'
+  + '<div class="tp-tw"><table class="tp-tbl"><thead><tr><th>Week</th><th>Model</th><th>Decision</th><th>Rule</th><th class="tp-wrap-h">Reason</th></tr></thead><tbody id="ixAd"></tbody></table></div><p class="tp-note tp-more" id="ixAdM"></p></section>'
+  + '<div class="tp-foot"><p class="as-note" id="ixSrc"></p><div class="tp-ln"><button class="tp-link" id="ixCite" type="button">Copy citation</button><a class="tp-link" id="ixPub" href="/indexes">Open on the Indexes page &rarr;</a><a class="tp-link" href="/methodology">Read the methodology &rarr;</a></div></div>'
+  + '</div><nav class="tp-toc" id="ixToc" aria-label="On this index"><p class="tp-lbl">On this index</p></nav></div></div></section>';
+}
+
+var IX = (function(){
+  var SEG = { TXT:'Text', MML:'Multimodal', IMG:'Image', IMP:'Image by area', VID:'Video', VDC:'Video by clip', AUD:'Speech to text', VOC:'Text to speech',
+    EMB:'Embeddings', DEV:'Model developers', CLD:'Cloud marketplaces', PLT:'Inference platforms', NCL:'Neoclouds', FLG:'Flagship', COR:'Core',
+    CMP:'Compact', PRP:'Unpublished weights', OSS:'Published weights', OWC:'Restricted weights', USA:'United States', CHN:'China', RSN:'Reasoning', COD:'Coding' };
+  var MKT = { GLB:'Global', EUR:'Europe', CNY:'China' }, MKO = ['GLB','EUR','CNY'];
+  var FAMO = ['Modality','Channel','Tier','License','Origin','Use case'];
+  var LEGN = { input:'Input', cached:'Cached input', output:'Output' }, LEGO = ['input','cached','output'];
+  var SYM = { USD:'$', EUR:'€', CNY:'¥' };
+  var RULE = { 'R2-SUPER':'Superseded', 'R3-SERVE':'Serving variant', 'R4-VARIANT':'Variant', 'R5-DERIV':'Third-party derivative', 'R7-LINEUP':'Not in the lineup',
+    'R8-TASK':'Task-specific', 'R11-QUANT':'Quantized copy', 'R12-ALIAS':'Alias', 'R13-METER':'Metering band', 'R14-SIZE':'Sibling size', 'R16-UNVERIFIED':'Unverified',
+    'R17-NOHOME':'No index home', 'R18-NOTAMODEL':'Not a model', 'R20-PROCESS':'Processing tool', 'R21-TASK':'Task-specific', 'R6-CURRENT':'Current model', 'R19-PRODUCT':'Priced product' };
+  var L = [], BY = {}, cur = null, leg = null, D = null, reqN = 0, cache = {}, inflight = {}, wk = null, view = 'm', open = {}, more = {}, sortS = { m:['n',-1], s:['p',1], v:['k',-1] };
+  var famLast = {};
+
+  function seg(c){ return c.split(' ')[1]; }
+  function mkt(c){ return c.split(' ')[2]; }
+  function sym(){ return SYM[(BY[cur] || {}).cur] || '$'; }
+  function fx(v){ v = Number(v); if(!(v > 0)) return '0'; if(v >= 1) return v.toFixed(v >= 100 ? 2 : 4); var d = Math.max(6, Math.ceil(-Math.log10(v))+1); return v.toFixed(Math.min(d, 10)); }
+  function px(v){ return v == null ? '' : sym()+fx(v); }
+  function pct(v, dp){ return (v < 0 ? '&minus;' : v > 0 ? '+' : '')+Math.abs(v).toFixed(dp == null ? 2 : dp)+'%'; }
+  function vsMed(p, m){ var d = (p/m-1)*100; return Math.abs(d) < 0.05 ? 'At median' : Math.abs(d).toFixed(1)+'% '+(d > 0 ? 'above' : 'below'); }
+  function name(c){ var s = SEG[seg(c)] || seg(c); return s+(mkt(c) !== 'GLB' ? ', '+MKT[mkt(c)] : ''); }
+  function vt(items, on){ return items.map(function(it){ return '<button type="button" class="as-vt-b" data-k="'+esc(it[0])+'" aria-selected="'+(it[0] === on)+'">'+it[1]+'</button>'; }).join(''); }
+  function cd(s){ return ' <span class="tp-cd">'+esc(s)+'</span>'; }
+
+  /* ── Selector ── */
+  function selector(){
+    var x = BY[cur], f = x.fam, sg = seg(cur), mk = mkt(cur);
+    var fams = FAMO.filter(function(k){ return L.some(function(i){ return i.fam === k; }); });
+    L.forEach(function(i){ if(fams.indexOf(i.fam) < 0) fams.push(i.fam); });
+    $('ixFam').innerHTML = vt(fams.map(function(k){ return [k, esc(k)]; }), f);
+    var segs = []; L.forEach(function(i){ if(i.fam === f && segs.indexOf(seg(i.code)) < 0) segs.push(seg(i.code)); });
+    $('ixSeg').innerHTML = vt(segs.map(function(s){ return [s, esc(SEG[s] || s)+cd(s)]; }), sg);
+    var mks = MKO.filter(function(m){ return BY['AIPI '+sg+' '+m] && BY['AIPI '+sg+' '+m].fam === f; });
+    $('ixMkt').innerHTML = vt(mks.map(function(m){ return [m, MKT[m]+cd(m)]; }), mk);
+  }
+  function pickCode(c){ if(!BY[c] || c === cur) return; cur = c; famLast[BY[c].fam] = c; try{ localStorage.setItem('atIxCode', c); }catch(e){} selector(); load(); }
+
+  /* ── Data ── */
+  function key(c, l){ return c+'|'+l; }
+  function fetch(c, l){
+    var k = key(c, l); if(cache[k]) return Promise.resolve(cache[k]); if(inflight[k]) return inflight[k];
+    inflight[k] = sb.rpc('terminal_index_view', { p_code:c, p_dir:l }).then(function(r){ delete inflight[k]; if(r.error) throw r.error; if(!r.data) throw new Error('No data'); cache[k] = prep(r.data); return cache[k]; },
+      function(e){ delete inflight[k]; throw e; });
+    return inflight[k];
+  }
+  function legsOf(c){ var g = (BY[c] || {}).legs || {}; return LEGO.filter(function(l){ return g[l]; }); }
+  function legFor(c){ var ls = legsOf(c); return ls.indexOf(leg) > -1 ? leg : ls.indexOf('output') > -1 ? 'output' : ls[0]; }
+  function prefetch(c){ if(!sb || !BY[c]) return; var l = legFor(c); if(l) fetch(c, l).catch(function(){}); }
+  /* Per model: vendors, median, range; per SKU its model; contributions for each week. */
+  function prep(d){
+    var A = {};
+    d.comp.forEach(function(m){ A[m.a] = m; var ps = m.k.map(function(k){ return Number(k.p); }).filter(function(p){ return p > 0; }).sort(function(a, b){ return a-b; });
+      var vs = {}; m.k.forEach(function(k){ vs[vgroup(k.v)] = 1; k.m = m; }); m.nv = Object.keys(vs).length; m.ns = m.k.length;
+      m.md = med(ps); m.lo = ps[0]; m.hi = ps[ps.length-1]; m.sp = m.lo > 0 ? m.hi/m.lo : null; });
+    d.A = A;
+    var W = {}; d.series.forEach(function(s, i){ s.w = s.w == null ? null : Number(s.w); s.l = Number(s.l); s.i = i; W[s.d] = s; }); d.W = W;
+    var M = {}; d.moved.forEach(function(w){ M[w.d] = w; }); d.M = M;
+    d.rep.forEach(function(r){ r.pc = (r.to/r.from-1)*100; });
+    d.skus = []; d.comp.forEach(function(m){ m.k.forEach(function(k){ d.skus.push(k); }); });
+    return d;
+  }
+  function load(){
+    var c = cur, l = legFor(c), my = ++reqN; leg = l;
+    var first = !D; if(first) waiting($('ixMsg')); else { $('ixBody').classList.add('busy'); $('ixProg').hidden = false; }
+    fetch(c, l).then(function(d){ if(my !== reqN) return; D = d; wk = null; open = {}; more = {}; $('ixFind').value = '';
+      try{ localStorage.setItem('atIxLeg', l); }catch(e){}
+      render(); $('ixMsg').hidden = true; $('ixBody').hidden = false; done(); })
+    .catch(function(e){ if(my !== reqN) return; console.error('[Indexes]', e); done();
+      if(first) message($('ixMsg'), 'This index could not be loaded. Refresh the page, or log in again if the problem persists.');
+      else { $('ixProg').hidden = true; flash($('ixName'), 'Could not load '+c); } });
+    function done(){ $('ixBody').classList.remove('busy'); $('ixProg').hidden = true; }
+  }
+
+  /* ── Header and figures ── */
+  function render(){
+    var x = BY[cur], ls = legsOf(cur);
+    $('ixCode').textContent = cur; $('ixName').textContent = name(cur); $('ixQ').textContent = D.q || D.desc || '';
+    var lg = $('ixLegs'); lg.hidden = ls.length < 2; lg.innerHTML = ls.length > 1 ? vt(ls.map(function(l){ return [l, LEGN[l]]; }), leg) : '';
+    $('ixPub').href = '/indexes?index='+cur.toLowerCase().replace(/\s+/g, '-')+'#atom-index-card';
+    figs(); defWeek(); moved(); comp(); rep(); ven(); adm(); foot();
+  }
+  function figs(){
+    var S = D.series, l = S[S.length-1], f = S[0], b4 = S[Math.max(0, S.length-5)], F = D.fig || {};
+    var h = [
+      ['Index level', l ? l.l.toFixed(2) : '', l && f && S.length > 1 ? chg((l.l/f.l-1)*100)+' since '+sdate(f.d) : 'first week'],
+      ['Last 4 weeks', l && S.length > 4 ? chg((l.l/b4.l-1)*100) : '', l && S.length > 4 ? 'from '+b4.l.toFixed(2)+' on '+mdate(b4.d) : 'four weeks not yet published'],
+      ['Spot price', F.spot != null ? px(F.spot) : '', esc(D.unit)+', median'],
+      ['Models', D.comp.length ? String(D.comp.length) : '', 'in the basket'],
+      ['Vendors', String(D.ven.length), int(D.skus.length)+' SKUs on this leg']];
+    $('ixFigs').innerHTML = h.map(function(k){ return '<div><p class="tp-lbl">'+k[0]+'</p><p class="v">'+k[1]+'</p><p class="s">'+k[2]+'</p></div>'; }).join('');
+  }
+
+  /* ── What moved ── */
+  function weeks(){ return D.series.slice(-14); }
+  /* The default week: the latest whose change has a breakdown and is not flat, else the latest. */
+  function defWeek(){
+    var ws = weeks(); wk = null;
+    for(var i = ws.length-1; i >= 0; i--){ var w = ws[i]; if(D.M[w.d] && w.w != null && Math.abs(w.w) >= 0.005){ wk = w.d; break; } }
+    if(!wk && ws.length) wk = ws[ws.length-1].d;
+  }
+  /* Each model's part of the week's change: its log price move over the sum, times the published
+     change, so the parts add up to the change in the level. */
+  function parts(w){
+    var m = D.M[w.d], W = w.w; if(!m || W == null) return null;
+    var s = Number(m.s), n = m.n, rows = (m.m || []).map(function(x){ var lr = Number(x.lr);
+      return { a:x.a, nm:(D.A[x.a] && D.A[x.a].nm) || x.nm, v:Math.abs(s) > 1e-9 ? W*lr/s : lr/n*100 }; });
+    rows.sort(function(a, b){ return Math.abs(b.v) - Math.abs(a.v); });
+    return { n:n, rows:rows, W:W };
+  }
+  function cause(a, d){
+    var R = D.rep.filter(function(r){ return r.a === a && r.d === d; });
+    if(!R.length) return '';
+    if(R.length === 1){ var r = R[0]; return esc(vgroup(r.v))+' '+(r.pc < 0 ? 'cut' : 'raised')+' its price '+Math.abs(r.pc).toFixed(1)+'%'; }
+    var vs = {}; R.forEach(function(r){ vs[vgroup(r.v)] = 1; }); var n = Object.keys(vs).length;
+    return n === 1 ? esc(Object.keys(vs)[0])+' repriced '+R.length+' SKUs' : n+' vendors repriced';
+  }
+  function moved(){
+    var ws = weeks(), box = $('ixMv');
+    C().legend($('ixMvLg'), [{ k:'bar', c:'var(--series)', n:'Weekly change in the index level' }, { k:'bar', c:'var(--l1)', n:'Selected week' }]);
+    if(ws.length < 2){ box._geo = null; box.innerHTML = '<p class="tp-note tp-empty">Published for one week so far. Weekly changes start with the second week.</p>'; }
+    else mount(box, function(){
+      var ch = C(), a = iso(utc(ws[0].d) - 7*864e5), b = iso(utc(ws[ws.length-1].d) + 7*864e5), AX = ch.axis(a, b);
+      var mx = Math.max.apply(null, ws.map(function(w){ return Math.abs(w.w || 0); }).concat([0.5])), tk = ticks(-mx*1.1, mx*1.1, 4), lo = Math.min(tk[0], -mx*1.1), hi = Math.max(tk[tk.length-1], mx*1.1);
+      var Y = ch.y(lo, hi), g = [], sp = (AX.x(ws[1].d) - AX.x(ws[0].d)), bw = Math.min(44, sp*0.56);
+      tk.forEach(function(v){ if(v === 0) return; g.push(ch.rule(Y(v), { cls:'as-s-grid' })); g.push(T(ch.X0, Y(v)-4, (v > 0 ? '+' : v < 0 ? '−' : '')+Math.abs(v)+'%')); });
+      g.push(ch.rule(Y(0), { cls:'as-s-axis' }));
+      ws.forEach(function(w){ var x = AX.x(w.d), v = w.w || 0, y0 = Y(0), y1 = Y(v), on = w.d === wk, h = Math.max(1.5, Math.abs(y1-y0));
+        g.push('<rect x="'+(x-bw/2).toFixed(1)+'" y="'+(v > 0 ? y1 : y0).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2" '+(on ? 'fill="var(--l1)"' : 'class="as-f-series" fill-opacity=".5"')+'></rect>'); });
+      g.push(AX.svg());
+      box._geo = { axis:ch.TA/ch.H, pts:ws.map(function(w){ return { f:AX.x(w.d)/ch.W, w:w }; }) };
+      return ch.svg(g.join(''), name(cur)+' '+LEGN[leg].toLowerCase()+': weekly change in the index level over the last '+ws.length+' weeks');
+    });
+    week();
+  }
+  function week(){
+    var w = D.W[wk], P = w ? parts(w) : null, h = '', go = '';
+    $('ixWkT').textContent = w ? 'Week of '+ldate(w.d)+': what moved it' : '';
+    if(!w){ $('ixWf').innerHTML = ''; $('ixWkGo').innerHTML = ''; return; }
+    if(!P) h = '<p class="tp-note tp-wfn">'+(w.w != null && Math.abs(w.w) < 0.005 ? 'No model moved the index this week.' : 'The breakdown for this week is published with the next update.')+'</p>';
+    else {
+      var shown = P.rows.slice(0, 7), rest = P.rows.slice(7), same = P.n - P.rows.length, mx = Math.max.apply(null, shown.map(function(r){ return Math.abs(r.v); }).concat([Math.abs(P.W), 0.01]));
+      function bar(v){ var wd = Math.min(50, Math.abs(v)/mx*50); return '<span class="tp-trk"><i></i><b style="'+(v < 0 ? 'right' : 'left')+':50%;width:'+wd.toFixed(1)+'%"></b></span>'; }
+      shown.forEach(function(r){ var c = cause(r.a, w.d);
+        h += '<div class="tp-wr"><span class="t">'+esc(r.nm)+(c ? '<em>'+c+'</em>' : '')+'</span>'+bar(r.v)+'<span class="v">'+pct(r.v)+'</span></div>'; });
+      if(rest.length){ var rv = rest.reduce(function(s, r){ return s + r.v; }, 0); h += '<div class="tp-wr"><span class="t">'+rest.length+' other model'+(rest.length === 1 ? '' : 's')+'<em>smaller moves</em></span>'+bar(rv)+'<span class="v">'+pct(rv)+'</span></div>'; }
+      if(same > 0) h += '<div class="tp-wr"><span class="t">'+same+' model'+(same === 1 ? '' : 's')+'<em>no change at any vendor</em></span>'+bar(0)+'<span class="v d">'+pct(0)+'</span></div>';
+      h += '<div class="tp-wr tot"><span class="t">Index level, week of '+mdate(w.d)+'</span><span></span><span class="v">'+chg(P.W, 2)+'</span></div>';
+      var top = shown[0]; if(top && Math.abs(top.v) >= 0.005 && D.A[top.a] && D.A[top.a].nv >= 2) go = '<button class="tp-link" type="button" data-go="'+esc(top.a)+'">Open '+esc(top.nm)+' in Models &rarr;</button>';
+    }
+    $('ixWf').innerHTML = h; $('ixWkGo').innerHTML = go;
+  }
+  function pickWeek(d){ if(!d || d === wk || !D.W[d]) return; wk = d; moved(); }
+
+  /* ── Composition ── */
+  function findT(){ return $('ixFind').value.trim().toLowerCase(); }
+  function hit(k, t){ return !t || (k.m.nm+' '+(k.m.c || '')+' '+k.v+' '+(k.pl || '')+' '+k.s).toLowerCase().indexOf(t) > -1; }
+  function sorter(which, rows, get){ var s = sortS[which], f = s[0], dir = s[1];
+    return rows.sort(function(a, b){ var x = get(a, f), y = get(b, f); if(x == null && y == null) return 0; if(x == null) return 1; if(y == null) return -1;
+      return (typeof x === 'string' ? x.localeCompare(y) : x - y)*dir; }); }
+  function th(which, f, label, r){ var s = sortS[which], on = s[0] === f;
+    return '<th class="'+(r ? 'r ' : '')+'tp-th'+(on ? ' on' : '')+'" data-sort="'+f+'" aria-sort="'+(on ? (s[1] > 0 ? 'ascending' : 'descending') : 'none')+'"><button type="button">'+label+'<i aria-hidden="true">'+(on ? (s[1] > 0 ? '&#9650;' : '&#9660;') : '')+'</i></button></th>'; }
+  function lastChange(k){ return k.lcd ? '<td class="r">'+sdate(k.lcd)+'</td><td class="r">'+chg(Number(k.lcp))+'</td>' : '<td class="r d">No change</td><td class="r d"></td>'; }
+  function comp(){
+    var t = findT(), N = 12;
+    $('ixCoN').textContent = 'Every model in the basket on '+ldate(D.date)+' and every SKU behind it. '+(view === 'm' ? 'Open a model to see the SKU each vendor sells.' : 'One row per SKU, '+esc(D.unit)+'.');
+    $('ixCoV').querySelectorAll('[data-v]').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.v === view)); });
+    if(view === 'm'){
+      $('ixCoH').innerHTML = '<tr>'+th('m','nm','Model')+th('m','c','Developer')+th('m','nv','Vendors',1)+th('m','n','SKUs',1)+th('m','md','Median',1)+th('m','lo','Lowest',1)+th('m','hi','Highest',1)+th('m','sp','Spread',1)+'</tr>';
+      var R = D.comp.filter(function(m){ return !t || m.k.some(function(k){ return hit(k, t); }); });
+      sorter('m', R, function(m, f){ return f === 'n' ? m.ns : f === 'c' ? (m.c || '') : m[f]; });
+      var lim = more.co || t ? R.length : N, h = '';
+      R.slice(0, lim).forEach(function(m){ var o = !!open[m.a] || (!!t && R.length <= 3);
+        h += '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-a="'+esc(m.a)+'" aria-expanded="'+o+'"><td><span class="tp-x" aria-hidden="true">'+(o ? '&minus;' : '+')+'</span>'+esc(m.nm)+'</td><td class="d">'+esc(m.c || '')+'</td><td class="r">'+m.nv+'</td><td class="r">'+m.ns+'</td><td class="r w">'+px(m.md)+'</td><td class="r d">'+px(m.lo)+'</td><td class="r d">'+px(m.hi)+'</td><td class="r">'+(m.sp ? m.sp.toFixed(1)+'&times;' : '')+'</td></tr>';
+        if(o){
+          var ks = m.k.filter(function(k){ return hit(k, t) || !t || (m.nm+' '+(m.c || '')).toLowerCase().indexOf(t) > -1; });
+          h += '<tr class="tp-dt"><td colspan="8"><table class="tp-dtt tp-sku"><thead><tr><th>Vendor</th><th>Channel</th><th>SKU as listed</th><th class="r">Price</th><th class="r">Vs median</th><th class="r">First priced</th><th class="r">Last change</th><th class="r">Change</th></tr></thead><tbody>'
+            + ks.map(function(k){ return '<tr><td>'+esc(vgroup(k.v))+'</td><td class="d">'+esc(channel(k.t))+'</td><td><span class="tp-pl">'+esc(k.pl || k.s)+'</span></td><td class="r w">'+px(k.p)+'</td><td class="r">'+(k.p > 0 && m.md ? vsMed(k.p, m.md) : '')+'</td><td class="r d">'+(k.f ? sdate(k.f) : '')+'</td>'+lastChange(k)+'</tr>'; }).join('')
+            + '</tbody></table>'+(m.nv >= 2 ? '<button class="tp-link tp-dgo" type="button" data-go="'+esc(m.a)+'">Open '+esc(m.nm)+' in Models: price by week and every vendor &rarr;</button>' : '')+'</td></tr>';
+        }
+      });
+      $('ixCo').innerHTML = h || '<tr><td colspan="8" class="d">No model or SKU matches that search.</td></tr>';
+      $('ixCoM').innerHTML = R.length > lim ? 'Showing '+lim+' of '+R.length+' models. <button class="tp-link" type="button" data-more="co">Show all '+R.length+'</button>' : (t ? R.length+' of '+D.comp.length+' models match.' : '');
+    } else {
+      $('ixCoH').innerHTML = '<tr>'+th('s','v','Vendor')+th('s','t','Channel')+th('s','nm','Model')+th('s','pl','SKU as listed')+th('s','p','Price',1)+th('s','vm','Vs model median',1)+th('s','lcd','Last change',1)+th('s','lcp','Change',1)+'</tr>';
+      var S = D.skus.filter(function(k){ return hit(k, t); });
+      sorter('s', S, function(k, f){ return f === 'nm' ? k.m.nm : f === 'v' ? vgroup(k.v) : f === 't' ? channel(k.t) : f === 'vm' ? (k.p > 0 && k.m.md ? k.p/k.m.md : null) : f === 'p' ? (k.p > 0 ? Number(k.p) : null) : f === 'lcp' ? (k.lcp == null ? null : Number(k.lcp)) : (k[f] == null ? null : k[f]); });
+      var lim2 = more.co || t ? S.length : 25;
+      $('ixCo').innerHTML = S.slice(0, lim2).map(function(k){ return '<tr><td>'+esc(vgroup(k.v))+'</td><td class="d">'+esc(channel(k.t))+'</td><td>'+esc(k.m.nm)+'</td><td><span class="tp-pl">'+esc(k.pl || k.s)+'</span></td><td class="r w">'+px(k.p)+'</td><td class="r">'+(k.p > 0 && k.m.md ? vsMed(k.p, k.m.md) : '')+'</td>'+lastChange(k)+'</tr>'; }).join('')
+        || '<tr><td colspan="8" class="d">No SKU matches that search.</td></tr>';
+      $('ixCoM').innerHTML = S.length > lim2 ? 'Showing '+lim2+' of '+int(S.length)+' SKUs. <button class="tp-link" type="button" data-more="co">Show all '+int(S.length)+'</button>' : (t ? S.length+' of '+int(D.skus.length)+' SKUs match.' : '');
+    }
+  }
+
+  /* ── Repricing ── */
+  function rep(){
+    var R = D.rep, lim = more.rp ? R.length : 10, inWin = {}; weeks().forEach(function(w){ inWin[w.d] = 1; });
+    $('ixRp').innerHTML = R.slice(0, lim).map(function(r){ var m = D.A[r.a], ok = inWin[r.d];
+      return '<tr'+(ok ? ' class="pick" tabindex="0" data-wk="'+esc(r.d)+'"' : '')+'><td class="d">'+sdate(r.d)+'</td><td>'+esc(vgroup(r.v))+'</td><td>'+esc(m ? m.nm : r.a)+'</td><td class="r d">'+px(r.from)+'</td><td class="r">'+px(r.to)+'</td><td class="r">'+chg(r.pc)+'</td></tr>'; }).join('')
+      || '<tr><td colspan="6" class="d">No SKU in this index has changed its list price in the last six months.</td></tr>';
+    $('ixRpM').innerHTML = R.length > lim ? 'Showing the '+lim+' most recent of '+R.length+' changes. <button class="tp-link" type="button" data-more="rp">Show all '+R.length+'</button>' : (R.length ? 'A change counts when a SKU’s list price moves more than 0.5% from its previous published week.' : '');
+  }
+
+  /* ── Vendors ── */
+  function ven(){
+    var V = D.ven.slice(), tot = D.skus.length || 1, top = V.reduce(function(a, v){ return Math.max(a, v.k); }, 0);
+    $('ixVnN').textContent = 'Who supplies the basket, how much of it, and the models no other vendor sells. '+(top ? 'The largest vendor holds '+(top/tot*100).toFixed(1)+'% of the SKUs on this leg.' : '');
+    $('ixVnH').innerHTML = '<tr>'+th('v','v','Vendor')+th('v','t','Channel')+th('v','k','SKUs',1)+th('v','sh','Share of the basket',1)+th('v','m','Models',1)+th('v','so','Sold only here',1)+'</tr>';
+    sorter('v', V, function(v, f){ return f === 'sh' ? v.k : f === 't' ? channel(v.t) : v[f]; });
+    var lim = more.vn ? V.length : 10;
+    $('ixVn').innerHTML = V.slice(0, lim).map(function(v){ return '<tr><td>'+esc(vgroup(v.v))+'</td><td class="d">'+esc(channel(v.t))+'</td><td class="r">'+v.k+'</td><td class="r">'+(v.k/tot*100).toFixed(1)+'%</td><td class="r">'+v.m+'</td><td class="r'+(v.so ? '' : ' d')+'">'+(v.so || 'None')+'</td></tr>'; }).join('');
+    $('ixVnM').innerHTML = V.length > lim ? 'Showing '+lim+' of '+V.length+' vendors. <button class="tp-link" type="button" data-more="vn">Show all '+V.length+'</button>' : '';
+  }
+
+  /* ── Admissions ── */
+  function clean(r){ r = String(r || '');
+    r = r.replace(/\s*\([^)]*(AUDIT|sweep|previously)[^)]*\)/gi, '').replace(/;?\s*admitted elsewhere under R\d+[^.]*/gi, '');
+    r = r.replace(/^Same (basis|treatment) as [^:]+:\s*/i, '').replace(/\s*Same (basis|treatment) as [^.]*\./gi, '');
+    r = r.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, function(x){ return ldate(x); });
+    return r.trim(); }
+  function adm(){
+    var A = D.adm.filter(function(a){ return a.st !== 'admitted' || a.vt; }), lim = more.ad ? A.length : 10;
+    $('ixAd').innerHTML = A.slice(0, lim).map(function(a){ var left = a.st === 'excluded' && a.vf, d = left ? a.vf : a.vt || a.dt;
+      var lab = a.st === 'admitted' ? 'Left' : left ? 'Left' : 'Not admitted';
+      return '<tr><td class="d">'+sdate(d)+'</td><td>'+esc(a.nm)+'</td><td><span class="tp-tag2'+(lab === 'Left' ? ' on' : '')+'">'+lab+'</span></td><td class="d">'+esc(RULE[a.rc] || '')+'</td><td class="tp-wrap-c">'+esc(clean(a.r))+'</td></tr>'; }).join('')
+      || '<tr><td colspan="5" class="d">No model has left this basket or been turned away so far.</td></tr>';
+    $('ixAdM').innerHTML = A.length > lim ? 'Showing the '+lim+' most recent of '+A.length+' decisions. <button class="tp-link" type="button" data-more="ad">Show all '+A.length+'</button>' : '';
+  }
+
+  /* ── Close ── */
+  function foot(){
+    $('ixSrc').textContent = 'Source: Attic Standard, index levels and basket published '+ldate(D.date)+'. Figures update with each index publication. Unit: '+(sym() === '$' ? 'USD ' : sym() === '€' ? 'EUR ' : 'CNY ')+D.unit+'. Price: each SKU’s list price; the median counts each SKU once.';
+  }
+  function cite(b){ if(!D) return; var l = D.series[D.series.length-1], F = D.fig || {};
+    copy(b, 'Attic Standard, '+cur+' ('+name(cur)+'), '+LEGN[leg].toLowerCase()+' leg, '+ldate(D.date)+': index level '+(l ? l.l.toFixed(2) : '')+(F.spot != null ? ', spot price '+sym()+fx(F.spot)+' '+D.unit : '')+'. atticstandard.com'); }
+
+  /* ── Contents: the sections on the right, the one in view marked. ── */
+  function toc(){
+    var nav = $('ixToc'), S = [].slice.call(document.querySelectorAll('#tpIndexes .tp-xs'));
+    nav.insertAdjacentHTML('beforeend', S.map(function(s, i){ return '<a href="#'+s.id+'" data-s="'+s.id+'"><b>'+(i+1)+'</b>'+esc(s.dataset.n)+'</a>'; }).join(''));
+    nav.addEventListener('click', function(e){ var a = e.target.closest('a[data-s]'); if(!a) return; e.preventDefault(); go($(a.dataset.s)); });
+    var on = null;
+    function spy(){ if($('tpIndexes').hidden) return; var top = (parseInt(ROOT.style.getPropertyValue('--tp-top'), 10) || 160) + 40, pick = S[0];
+      S.forEach(function(s){ if(s.getBoundingClientRect().top <= top) pick = s; });
+      if(window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 4) pick = S[S.length-1];
+      if(pick !== on){ on = pick; nav.querySelectorAll('a').forEach(function(a){ a.classList.toggle('on', a.dataset.s === pick.id); }); } }
+    window.addEventListener('scroll', function(){ requestAnimationFrame(spy); }, { passive:true }); spy();
+  }
+  function go(el){ if(!el) return; var top = (parseInt(ROOT.style.getPropertyValue('--tp-bar'), 10) || 102) + ($('tpBar') ? $('tpBar').offsetHeight : 56) + 24;
+    window.scrollTo({ top:Math.max(0, window.pageYOffset + el.getBoundingClientRect().top - top), behavior:'smooth' }); }
+
+  function start(){
+    waiting($('ixMsg'));
+    function row(id, fn){ var el = $(id);
+      el.addEventListener('click', function(e){ var b = e.target.closest('[data-k]'); if(b) fn(b.dataset.k); });
+      el.addEventListener('pointerover', function(e){ var b = e.target.closest('[data-k]'); if(b && b._pf !== 1){ b._pf = 1; var c = target(id, b.dataset.k); if(c) prefetch(c); } }); }
+    function target(id, k){ var x = BY[cur]; if(!x) return null;
+      if(id === 'ixFam') return famLast[k] || (L.filter(function(i){ return i.fam === k; })[0] || {}).code;
+      if(id === 'ixSeg'){ var c = 'AIPI '+k+' '+mkt(cur); return BY[c] ? c : (L.filter(function(i){ return seg(i.code) === k && i.fam === x.fam; })[0] || {}).code; }
+      return 'AIPI '+seg(cur)+' '+k; }
+    row('ixFam', function(k){ pickCode(target('ixFam', k)); });
+    row('ixSeg', function(k){ pickCode(target('ixSeg', k)); });
+    row('ixMkt', function(k){ pickCode(target('ixMkt', k)); });
+    $('ixLegs').addEventListener('click', function(e){ var b = e.target.closest('[data-k]'); if(!b || b.dataset.k === leg) return; leg = b.dataset.k; load(); });
+    $('ixLegs').addEventListener('pointerover', function(e){ var b = e.target.closest('[data-k]'); if(b) fetch(cur, b.dataset.k).catch(function(){}); });
+    hover($('ixMvW'), $('ixMv'), function(p){ var w = p.w, m = D.M[w.d];
+      return '<div class="t">Week of '+ldate(w.d)+'</div>Index '+(w.w == null ? 'first week' : chg(w.w, 2))+' <span class="t">to</span> <b>'+w.l.toFixed(2)+'</b>'+(m ? '<br>'+m.n+' models priced in both weeks' : '')+(w.d === wk ? '' : '<br><span class="t">Select to see what moved it</span>'); });
+    $('ixMvW').addEventListener('click', function(e){ var G = $('ixMv')._geo; if(!G) return; var r = $('ixMv').getBoundingClientRect(), f = (e.clientX - r.left)/r.width, best = null, bd = 1e9;
+      G.pts.forEach(function(p){ var d = Math.abs(p.f - f); if(d < bd){ bd = d; best = p; } }); if(best) pickWeek(best.w.d); });
+    $('ixMvW').addEventListener('keydown', function(e){ if(e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); var ws = weeks(), i = ws.findIndex(function(w){ return w.d === wk; }), n = ws[i + (e.key === 'ArrowRight' ? 1 : -1)]; if(n) pickWeek(n.d); });
+    $('ixMvW').tabIndex = 0; $('ixMvW').setAttribute('aria-label', 'Weekly change chart. Use the left and right arrow keys to choose a week.');
+    $('ixFind').addEventListener('input', function(){ more.co = false; comp(); });
+    $('ixCoV').addEventListener('click', function(e){ var b = e.target.closest('[data-v]'); if(!b || b.dataset.v === view) return; view = b.dataset.v; more.co = false; comp(); });
+    function toggle(tr){ open[tr.dataset.a] = !open[tr.dataset.a]; comp(); }
+    $('ixCo').addEventListener('click', function(e){ var tr = e.target.closest('tr[data-a]'); if(tr) toggle(tr); });
+    $('ixCo').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var tr = e.target.closest('tr[data-a]'); if(!tr) return; e.preventDefault(); toggle(tr); var n = $('ixCo').querySelector('tr[data-a="'+tr.dataset.a+'"]'); if(n) n.focus(); });
+    [['ixCoH','co'],['ixVnH','vn']].forEach(function(p){ $(p[0]).addEventListener('click', function(e){ var h = e.target.closest('[data-sort]'); if(!h) return; var w = p[1] === 'vn' ? 'v' : view, s = sortS[w];
+      sortS[w] = s[0] === h.dataset.sort ? [s[0], -s[1]] : [h.dataset.sort, /^(nm|c|v|t|pl)$/.test(h.dataset.sort) ? 1 : -1]; p[1] === 'vn' ? ven() : comp(); }); });
+    $('ixRp').addEventListener('click', function(e){ var tr = e.target.closest('tr[data-wk]'); if(!tr) return; pickWeek(tr.dataset.wk); go($('ixS1')); });
+    $('ixRp').addEventListener('keydown', function(e){ if(e.key !== 'Enter') return; var tr = e.target.closest('tr[data-wk]'); if(!tr) return; pickWeek(tr.dataset.wk); go($('ixS1')); });
+    $('tpIndexes').addEventListener('click', function(e){
+      var m = e.target.closest('[data-more]'); if(m){ more[m.dataset.more] = true; ({ co:comp, rp:rep, vn:ven, ad:adm })[m.dataset.more](); return; }
+      var g = e.target.closest('[data-go]'); if(g){ try{ localStorage.setItem('atMoModel', g.dataset.go); }catch(x){} MO.open(g.dataset.go); show('models', true); } });
+    $('ixCite').addEventListener('click', function(){ cite(this); });
+    toc();
+    if(!sb){ message($('ixMsg'), 'Indexes load once you are logged in.'); return; }
+    sb.rpc('terminal_index_list').then(function(r){
+      if(r.error) throw r.error; L = r.data || []; if(!L.length){ message($('ixMsg'), 'No index is published yet.'); return; }
+      L.forEach(function(i){ BY[i.code] = i; });
+      var keep = null, kl = null; try{ keep = localStorage.getItem('atIxCode'); kl = localStorage.getItem('atIxLeg'); }catch(e){}
+      cur = BY[keep] ? keep : (BY['AIPI TXT GLB'] ? 'AIPI TXT GLB' : L[0].code); leg = kl; famLast[BY[cur].fam] = cur;
+      selector(); load();
+    }).catch(function(e){ console.error('[Indexes]', e); message($('ixMsg'), 'Indexes could not be loaded. Refresh the page, or log in again if the problem persists.'); });
+  }
+  function count(){ return L.length; }
+  return { start:start, count:count };
+})();
 
 /* ═══ CONTRACTS ═══ */
 function contractsHTML(){
@@ -335,7 +670,7 @@ var CS = (function(){
         var rows = D.legs.filter(function(k){ return x.r[k]; }).map(function(k){ var r = x.r[k], sv = r.signed*num(m.L[k].settled_level)/100, mk = r.mkt;
           return '<tr><td>'+LEG[k]+'</td><td>'+rate(r.signed)+'</td><td class="w">'+rate(sv)+'</td><td>'+(mk ? rate(mk.med) : '&mdash;')+'</td><td>'+(mk ? (mk.lo === mk.hi ? 'Single price' : rate(mk.lo)+' to '+rate(mk.hi)) : '&mdash;')+'</td><td>'+(mk ? mk.n : '&mdash;')+'</td><td>'+(mk ? chg2((sv/mk.med-1)*100) : '&mdash;')+'</td></tr>'; }).join('');
         h += '<tr class="tp-dt"><td colspan="'+(D.legs.length+5)+'"><table class="tp-dtt"><thead><tr><th>Leg</th><th>Signed rate</th><th>Settled rate</th><th>Market median</th><th>Market range</th><th>Vendors</th><th>Settled vs median</th></tr></thead><tbody>'+rows+'</tbody></table>'
-          + (x.vendors >= 2 ? '<button class="tp-link" type="button" style="margin-top:var(--s3)" data-go="'+esc(x.id)+'">Open '+esc(x.name)+' in Pricing intelligence &rarr;</button>' : '')+'</td></tr>';
+          + (x.vendors >= 2 ? '<button class="tp-link" type="button" style="margin-top:var(--s3)" data-go="'+esc(x.id)+'">Open '+esc(x.name)+' in Models &rarr;</button>' : '')+'</td></tr>';
       }
     });
     $('csRc').innerHTML = h;
@@ -353,7 +688,7 @@ var CS = (function(){
     $('csSeg').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(b) pickLeg(b.dataset.leg); });
     $('csRc').addEventListener('click', function(e){
       var g = e.target.closest('[data-go]');
-      if(g){ try{ localStorage.setItem('atMoModel', g.dataset.go); }catch(x){} MO.open(g.dataset.go); show('pricing', true); return; }
+      if(g){ try{ localStorage.setItem('atMoModel', g.dataset.go); }catch(x){} MO.open(g.dataset.go); show('models', true); return; }
       var r = e.target.closest('tr[data-id]'); if(!r) return; open = open === r.dataset.id ? null : r.dataset.id; card(); });
     $('csRc').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var r = e.target.closest('tr[data-id]'); if(!r) return; e.preventDefault(); open = open === r.dataset.id ? null : r.dataset.id; card(); });
     hover($('csLvW'), $('csLv'), function(p){ var w = p.w, m = D.months.filter(function(s){ return s.ym === w.d.slice(0,7); })[0], isBase = w.d.slice(0,7) === D.c.base_period;
@@ -372,7 +707,7 @@ var CS = (function(){
 
 /* ═══ PRICING INTELLIGENCE ═══ */
 function pricingHTML(){
-  return '<section class="tp-dash" id="tpPricing" role="tabpanel" aria-label="Pricing intelligence" hidden><div class="tp-wrap">'
+  return '<section class="tp-dash" id="tpPricing" role="tabpanel" aria-label="Models" hidden><div class="tp-wrap">'
   + '<aside class="tp-rail"><label class="tp-lbl" for="moQ">Models</label>'
   + '<input class="tp-in" id="moQ" type="text" autocomplete="off" spellcheck="false" placeholder="Search models">'
   + '<div class="tp-g2"><div class="tp-dd" id="moVen"></div><div class="tp-dd" id="moMod"></div></div>'
@@ -608,9 +943,10 @@ var ready = new Promise(function(res){
     sb.from('site_config').select('active_date').eq('id', 1).then(function(r){ var d = r && r.data && r.data[0] && r.data[0].active_date; if(d) GATE = String(d).slice(0,10); else sb = null; res(); }, function(){ sb = null; res(); });
   });
 });
-var _start = { contracts:CS.start, pricing:MO.start };
+var _start = { contracts:CS.start, models:MO.start, indexes:IX.start };
 CS.start = function(){ ready.then(_start.contracts); };
-MO.start = function(){ ready.then(_start.pricing); };
+MO.start = function(){ ready.then(_start.models); };
+IX.start = function(){ ready.then(_start.indexes); };
 function go(){ if($('atomTP')) return; shell(); ready.then(function(){ header(SESSION); }); }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
 })();
