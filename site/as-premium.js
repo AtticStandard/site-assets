@@ -98,6 +98,9 @@ function shell(){
     show(n.key, true); row.querySelector('[data-k="'+n.key+'"]').focus();
   });
   window.addEventListener('scroll', place, { passive:true }); window.addEventListener('resize', place);
+  /* The site header shrinks a moment after the page starts to scroll; follow its size as well, so
+     the switch always sits flush under it. */
+  var hd = $('atomHeader'); if(hd){ hd.addEventListener('transitionend', place); if(window.ResizeObserver) new ResizeObserver(place).observe(hd); }
   window.addEventListener('hashchange', function(){ var k = key(location.hash.slice(1)); if(k && k !== cur) show(k, false); });
   waiting($('ixMsg')); waiting($('csMsg')); waiting($('moMsg'));
   place();
