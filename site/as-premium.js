@@ -104,7 +104,8 @@ function key(h){ h = ALIAS[h] || h; return DASH.some(function(t){ return t.key =
 var tick = false;
 function place(){ if(tick) return; tick = true; requestAnimationFrame(function(){ tick = false;
   var hd = $('atomHeader'), hb = hd ? Math.max(0, Math.round(hd.getBoundingClientRect().bottom)) : 102, bar = $('tpBar');
-  ROOT.style.setProperty('--tp-bar', hb+'px'); ROOT.style.setProperty('--tp-top', (hb + (bar ? bar.offsetHeight : 56) + 24)+'px'); }); }
+  ROOT.style.setProperty('--tp-bar', hb+'px'); ROOT.style.setProperty('--tp-top', (hb + (bar ? bar.offsetHeight : 56) + 24)+'px');
+  if(bar) bar.classList.toggle('stuck', bar.getBoundingClientRect().top <= hb + 1 && window.pageYOffset > 0); }); }
 function show(k, push){
   var was = cur; cur = k;
   DASH.forEach(function(t){ var on = t.key === k; $(t.el).hidden = !on;
