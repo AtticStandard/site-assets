@@ -306,8 +306,8 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 .tp-bar{border-top:1px solid var(--border)}
 
 /* ── Indexes, the journey (November 25, 2026) ── */
-.tp-ixh{flex-wrap:wrap;align-items:flex-end}
-.tp-cg{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s3) var(--s5)}
+.tp-ixh{flex-direction:column;align-items:flex-start;gap:0}
+.tp-cg{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s3) var(--s5);margin-top:var(--s4)}
 .tp-cgl{display:inline-flex;align-items:center;flex-wrap:wrap;gap:var(--s2)}
 .tp-cgl .tp-lbl{margin-right:var(--s1)}
 .tp-np{padding:2px var(--s2);border:1px solid var(--border);border-radius:var(--radius);font-size:var(--fs-label);line-height:15.4px;color:var(--l4);white-space:nowrap}

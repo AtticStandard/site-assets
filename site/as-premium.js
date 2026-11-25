@@ -306,7 +306,7 @@ var IX = (function(){
   function chips(t, v, m, b, k){ return '<span class="tp-cgl"><span class="tp-lbl">'+t+'</span><span class="tp-np"><b>'+int(v)+'</b> vendors</span><span class="tp-np"><b>'+int(m)+'</b> models'+(b ? ' ('+int(b)+' at base)' : '')+'</span><span class="tp-np"><b>'+int(k)+'</b> SKUs</span></span>'; }
   function head(){
     var n = D.n || {};
-    $('ixCode').textContent = cur; $('ixName').textContent = ixName(cur); $('ixQ').textContent = D.q || D.desc || '';
+    $('ixCode').textContent = cur; $('ixName').textContent = ixName(cur); $('ixQ').textContent = [D.q, D.desc].filter(function(t, i, A){ return t && A.indexOf(t) === i; }).join(' ');
     $('ixCg').innerHTML = (n.models != null ? chips('All models', n.vendors, n.models, n.base, n.skus) : '')
       + (D.coh.length && n.cmodels ? '<span class="tp-cgd" aria-hidden="true"></span>'+chips('Caching cohort', n.cvendors, n.cmodels, n.cbase, n.cskus) : '');
     $('ixPub').href = '/indexes?index='+cur.toLowerCase().replace(/\s+/g, '-')+'#atom-index-card';
