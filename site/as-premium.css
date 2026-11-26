@@ -564,3 +564,18 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
     .tp-ld .tp-gr .hn{display:block;margin:4px 0 0}
   .tp-was{display:block;margin:0 0 2px}
 }
+
+/* ── Terminal views in the masthead (November 26, 2026) ── */
+/* The site links leave the masthead on the Terminal (they stay in the menu button); Indexes, Models and
+   Contracts take their place, marked like any selected link on the site. The switch bar remains only on
+   a phone, where the masthead has no room, restyled as the same text links. */
+html.tp-page .as-nav > a:not(.tp-nv):not(.as-login){display:none}
+html.tp-page .as-nav a.tp-nv{cursor:pointer}
+.tp-bar{display:none}
+@media (max-width:767px){
+  .tp-bar{display:block}
+  .tp-bar{padding-top:var(--s2);padding-bottom:0}
+  .tp-bar .as-vt{border:0;padding:4px 0 12px;gap:var(--s5);background:none}
+  .tp-bar .as-vt-b{height:auto;padding:4px 0;border-radius:0;background:none !important;font-size:var(--fs-body);font-weight:400;color:var(--l4)}
+  .tp-bar .as-vt-b[aria-selected="true"]{color:var(--l1);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:7px;text-decoration-color:var(--l1)}
+}

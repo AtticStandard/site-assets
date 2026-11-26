@@ -114,9 +114,11 @@ function place(){ if(tick) return; tick = true; requestAnimationFrame(function()
 function show(k, push){
   var was = cur; cur = k;
   DASH.forEach(function(t){ var on = t.key === k; $(t.el).hidden = !on;
-    var b = $('tpTabs').querySelector('[data-k="'+t.key+'"]'); b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; });
+    var b = $('tpTabs').querySelector('[data-k="'+t.key+'"]'); b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1;
+    var n = document.querySelector('.as-nav .tp-nv[data-k="'+t.key+'"]'); if(n){ n.classList.toggle('as-on', on); if(on) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current'); } });
   if(push && history.replaceState) history.replaceState(null, '', '#'+k);
-  if(was && was !== k){ var bar = $('tpBar'), y = window.pageYOffset + bar.getBoundingClientRect().top - (parseInt(ROOT.style.getPropertyValue('--tp-bar'), 10) || 102); if(window.pageYOffset > y) window.scrollTo(0, Math.max(0, y)); }
+  if(was && was !== k && !$('tpBar').offsetHeight){ window.scrollTo(0, 0); }
+  else if(was && was !== k){ var bar = $('tpBar'), y = window.pageYOffset + bar.getBoundingClientRect().top - (parseInt(ROOT.style.getPropertyValue('--tp-bar'), 10) || 102); if(window.pageYOffset > y) window.scrollTo(0, Math.max(0, y)); }
   if(!started[k]){ started[k] = true; (k === 'contracts' ? CS : k === 'models' ? MO : IX).start(); }
   place();
 }
@@ -127,6 +129,12 @@ function masthead(){
   if(!a || m.querySelector('.tp-mk')) return;
   a.insertAdjacentHTML('afterend', '<span class="tp-mk-d" aria-hidden="true"></span><a class="tp-mk" href="/premium">Terminal</a>');
   document.documentElement.classList.add('tp-page');
+  /* On the Terminal the masthead carries the Terminal's views where the site links sit; the site links
+     stay in the menu button, and the account stays after the divider. Phones keep the strip under it. */
+  var nav = m.querySelector('.as-nav');
+  if(nav){ var first = nav.querySelector('.as-rule') || nav.firstChild;
+    DASH.forEach(function(t){ var l = document.createElement('a'); l.className = 'tp-nv'; l.href = '#'+t.key; l.dataset.k = t.key; l.textContent = t.label;
+      l.addEventListener('click', function(e){ e.preventDefault(); show(t.key, true); }); nav.insertBefore(l, first); }); }
 }
 
 /* ═══ INDEXES ═══ */

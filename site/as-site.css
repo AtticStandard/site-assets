@@ -235,6 +235,13 @@ body { padding-top: var(--header-h) !important; background: var(--bg) !important
     text-decoration: none; white-space: nowrap; transition: color .18s ease;
   }
   .as-nav a:hover { color: var(--accent); }
+  /* The page you are on: bright, with a short line just under the word, well clear of the
+     masthead rule. One marker for the site menu and the Terminal's views (November 26, 2026). */
+  .as-nav a.as-on, .as-nav a[aria-current="page"] {
+    color: var(--l1); text-decoration: underline; text-decoration-thickness: 2px;
+    text-underline-offset: 7px; text-decoration-color: var(--l1);
+  }
+  .as-nav a.as-on:hover { color: var(--l1); }
   .as-nav a.as-login { color: var(--accent); }
   .as-nav a.as-login:hover { color: var(--accent-hover); }
 
