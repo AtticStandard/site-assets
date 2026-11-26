@@ -442,8 +442,8 @@ var IX = (function(){
     function on(g){ return g === cur2 ? ' on' : ' off'; }
     function pz(v){ return v == null ? '' : esc(px(v)); }
     function sub(r){ return '<em>'+(r.dev ? esc(r.dev)+'<span class="tp-dot"> &middot; </span>' : '')+r.nv+(r.nv === 1 ? ' vendor' : ' vendors')+'</em>'; }
-    var h = '<thead><tr class="tp-hg"><th class="tp-unit">Prices in '+cy+' '+esc(D.unit || '')+'</th>'+LV.map(function(g){ return '<th class="tp-gp'+on(g)+'"></th><th colspan="3" class="tp-lgh'+on(g)+'"><span>'+NM[g]+'</span></th>'; }).join('')+'</tr>'
-      + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(g){ var o = on(g); return '<th class="tp-gp tp-w0'+o+'"></th><th class="r tp-w1'+o+'">Median</th><th class="r tp-w2'+o+'">1 week</th><th class="r tp-w3'+o+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
+    var h = '<thead><tr class="tp-hg"><th class="tp-unit">Prices in '+cy+' '+esc(D.unit || '')+'; a model&rsquo;s price is the median of its vendors</th>'+LV.map(function(g){ return '<th class="tp-gp'+on(g)+'"></th><th colspan="3" class="tp-lgh'+on(g)+'"><span>'+NM[g]+'</span></th>'; }).join('')+'</tr>'
+      + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(g){ var o = on(g); return '<th class="tp-gp tp-w0'+o+'"></th><th class="r tp-w1'+o+'">Price</th><th class="r tp-w2'+o+'">1 week</th><th class="r tp-w3'+o+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
     /* No index row: the level, the spot price and their weekly change sit in the tiles right above. */
     function cell(r, g){ var x = r.L[g], o = on(g);
       if(!x || !x.n) return '<td class="tp-gp'+o+'"></td><td class="r d'+o+'">Not priced</td><td class="'+o.trim()+'"></td><td class="'+o.trim()+'"></td>';
