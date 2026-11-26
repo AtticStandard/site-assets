@@ -111,3 +111,7 @@ revoke all on function public.propose_display_name(text, text) from public, anon
 --   SELECT * FROM v_display_name_missing;          -- proposed_name per new model; correct any in the statement below
 --   WITH u AS (UPDATE model_registry r SET display_name = m.proposed_name FROM v_display_name_missing m
 --              WHERE r.model_id = m.model_id RETURNING r.model_name, r.display_name) SELECT * FROM u;
+
+-- Pre-flight (November 26, 2026): run_weekly_publish(true) ends its DRY-RUN message with the display-name
+-- check: "Display names: every model named." or "REVIEW B1.42: N models without a display name; SELECT * FROM
+-- v_display_name_missing;". Only the dry-run message changed; the live publish path is untouched.
