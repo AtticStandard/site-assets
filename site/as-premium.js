@@ -462,7 +462,7 @@ var IX = (function(){
           return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(q ? (mv ? '<span class="tp-was">'+pz(q.p0)+'</span>' : '')+pz(q.p) : '')+'</td><td class="r'+o+'">'+(mv ? chg((q.p/q.p0-1)*100, 1) : '')+'</td><td class="'+o.trim()+'"></td>'; }).join('')+'</tr>'; }).join('')
         + '<tr class="tp-vgo"><td colspan="'+N+'">'+(r.nv >= 2 ? '<button class="tp-link" type="button" data-go="'+esc(r.a)+'">Open '+esc(r.nm)+' in Models &rarr;</button>' : '')+'</td></tr>';
     }
-    function mrow(r){ var o = S.open === r.a;
+    function mrow(r){ var o = !!(S.open && S.open[r.a]);
       return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-a="'+esc(r.a)+'" aria-expanded="'+o+'"><td><span class="tp-mn"><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg><b>'+esc(r.nm)+'</b>'+(r.isNew ? '<span class="tp-nw">New</span>' : '')+sub(r)+'</span></td>'
         + LV.map(function(g){ return cell(r, g); }).join('')+'</tr>'+(o ? vrows(r) : ''); }
     function grp(t, n, note, rowsH, fold, tot){
@@ -520,9 +520,9 @@ var IX = (function(){
     row('ixFam', function(k){ pickCode(target('ixFam', k)); });
     row('ixSeg', function(k){ pickCode(target('ixSeg', k)); });
     row('ixMkt', function(k){ pickCode(target('ixMkt', k)); });
-    $('ixMode').addEventListener('click', function(e){ var b = e.target.closest('[data-m]'); if(!b || b.dataset.m === S.mode || !D) return; S.mode = b.dataset.m; S.open = null; S.all = false; controls(); tiles(); chart(); week(); });
+    $('ixMode').addEventListener('click', function(e){ var b = e.target.closest('[data-m]'); if(!b || b.dataset.m === S.mode || !D) return; S.mode = b.dataset.m; controls(); tiles(); chart(); week(); });
     $('ixBk').addEventListener('click', function(e){ var b = e.target.closest('[data-b]'); if(!b || b.dataset.b === S.bk || !D) return; S.leg = SW[S.leg][b.dataset.b]; S.bk = b.dataset.b; fixLeg(); S.open = null; S.all = false; render(); });
-    $('ixTiles').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === S.leg) return; S.leg = b.dataset.leg; S.open = null; S.all = false; beh(); tiles(); chart(); week(); });
+    $('ixTiles').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === S.leg) return; S.leg = b.dataset.leg; beh(); tiles(); chart(); week(); });
     $('ixPrev').addEventListener('click', function(){ if(D && S.K > 0) pickWeek(D.W[S.K-1]); });
     $('ixNext').addEventListener('click', function(){ if(D && S.K < D.W.length-1) pickWeek(D.W[S.K+1]); });
     hover($('ixChW'), $('ixCh'), function(p){ var s = p.w, lv = S.mode === 'lv', inW = D.WI[s.d] != null;
@@ -532,7 +532,8 @@ var IX = (function(){
       G.pts.forEach(function(p){ var x = Math.abs(p.f - f); if(x < bd){ bd = x; best = p; } }); if(best) pickWeek(best.w.d); });
     $('ixChW').tabIndex = 0; $('ixChW').setAttribute('aria-label', 'Chart. Use the left and right arrow keys to choose a week.');
     $('ixChW').addEventListener('keydown', function(e){ if(!D || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return; e.preventDefault(); var n = D.W[S.K + (e.key === 'ArrowRight' ? 1 : -1)]; if(n) pickWeek(n); });
-    function toggle(tr){ S.open = S.open === tr.dataset.a ? null : tr.dataset.a; week(); var n = $('ixT').querySelector('tr[data-a="'+tr.dataset.a+'"]'); if(n) n.focus({ preventScroll:true }); }
+    /* Any number of models can be open at once; a second click closes only that one. */
+    function toggle(tr){ var a = tr.dataset.a; S.open = S.open || {}; if(S.open[a]) delete S.open[a]; else S.open[a] = 1; week(); var n = $('ixT').querySelector('tr[data-a="'+tr.dataset.a+'"]'); if(n) n.focus({ preventScroll:true }); }
     $('ixT').addEventListener('click', function(e){
       var f = e.target.closest('[data-fold]'); if(f){ S.all = !S.all; week(); return; }
       var g = e.target.closest('[data-go]'); if(g){ try{ localStorage.setItem('atMoModel', g.dataset.go); }catch(x){} MO.open(g.dataset.go); show('models', true); return; }
