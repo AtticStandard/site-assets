@@ -438,17 +438,12 @@ var IX = (function(){
     /* The ledger: no fills. The selected leg is marked by brighter figures and a rule under its name; the
        developer and vendor count sit with the model; prices keep their decimals for alignment with the
        trailing zeros dimmed; Effect carries a bar from a zero line, scaled to the week's largest move. */
-    var LV = PHONE.matches ? [cur2] : LS, NL = LV.length, N = 1 + NL*4, cy = sym() === '$' ? 'USD' : sym() === '€' ? 'EUR' : 'CNY', mx = 0;
-    rows.forEach(function(r){ LS.forEach(function(g){ if(r.L[g]) mx = Math.max(mx, Math.abs(r.L[g].ef)); }); });
+    var LV = PHONE.matches ? [cur2] : LS, NL = LV.length, N = 1 + NL*4, cy = sym() === '$' ? 'USD' : sym() === '€' ? 'EUR' : 'CNY';
     function on(g){ return g === cur2 ? ' on' : ' off'; }
-    function pz(v){ if(v == null) return ''; var t = px(v), u = t.indexOf('.') < 0 ? t : t.replace(/0+$/, ''); if(u.slice(-1) === '.') u += '0';
-      return esc(u)+(t.length > u.length ? '<span class="tp-z">'+t.slice(u.length)+'</span>' : ''); }
-    function efb(v){ if(!lv || !(mx > 0) || Math.abs(v) < 0.005) return '<span class="tp-efb"></span>';
-      return '<span class="tp-efb"><i class="'+(v < 0 ? 'n' : 'p')+'" style="width:'+(Math.abs(v)/mx*30).toFixed(1)+'px"></i></span>'; }
+    function pz(v){ return v == null ? '' : esc(px(v)); }
     function sub(r){ return '<em>'+(r.dev ? esc(r.dev)+'<span class="tp-dot"> &middot; </span>' : '')+r.nv+(r.nv === 1 ? ' vendor' : ' vendors')+'</em>'; }
-    var h = '<colgroup><col>'+LV.map(function(g){ var o = on(g); return '<col class="tp-c0'+o+'"><col class="tp-c1'+o+'"><col class="tp-c2'+o+'"><col class="tp-c3'+o+'">'; }).join('')+'</colgroup>'
-      + '<thead><tr class="tp-hg"><th class="tp-unit">Prices in '+cy+' '+esc(D.unit || '')+'</th>'+LV.map(function(g){ return '<th class="tp-gp'+on(g)+'"></th><th colspan="3" class="tp-lgh'+on(g)+'"><span>'+NM[g]+'</span></th>'; }).join('')+'</tr>'
-      + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(g){ var o = on(g); return '<th class="tp-gp'+o+'"></th><th class="r'+o+'">Median</th><th class="r'+o+'">1 week</th><th class="r'+o+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
+    var h = '<thead><tr class="tp-hg"><th class="tp-unit">Prices in '+cy+' '+esc(D.unit || '')+'</th>'+LV.map(function(g){ return '<th class="tp-gp'+on(g)+'"></th><th colspan="3" class="tp-lgh'+on(g)+'"><span>'+NM[g]+'</span></th>'; }).join('')+'</tr>'
+      + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(g){ var o = on(g); return '<th class="tp-gp tp-w0'+o+'"></th><th class="r tp-w1'+o+'">Median</th><th class="r tp-w2'+o+'">1 week</th><th class="r tp-w3'+o+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
     h += '<tr class="tp-ixr"><td>'+esc(ixName(cur))+(lv ? ' index level' : ' spot price')+'<em>'+(lv ? 'Base May 2026 = 100' : 'Median of every SKU')+'</em></td>'
       + LV.map(function(g){ var s = IDX[g], G = D.LG[g], i = G.I[d], p = i > 0 ? G.S[i-1] : null, w = lv ? s.w : (p && p.s && s.s ? (s.s/p.s-1)*100 : null), o = on(g);
         var fr = p ? (lv ? (p.l == null ? '' : p.l.toFixed(2)) : (p.s == null ? '' : px(p.s))) : '';
@@ -457,7 +452,7 @@ var IX = (function(){
       if(!x || !x.n) return '<td class="tp-gp'+o+'"></td><td class="r d'+o+'">Not priced</td><td class="'+o.trim()+'"></td><td class="'+o.trim()+'"></td>';
       var s = IDX[g], dv = s.s ? (x.md/s.s-1)*100 : null, sig = Math.abs(x.ef) >= 0.005;
       var w = x.chg == null || Math.abs(x.chg) < 0.05 ? '' : chg(x.chg, 1);
-      var e = lv ? (sig ? '<span class="tp-ef"><span class="'+(x.ef < 0 ? 'tp-dn' : 'tp-up')+'">'+eff(x.ef)+'</span>'+efb(x.ef)+'</span>' : '')
+      var e = lv ? (sig ? '<span class="'+(x.ef < 0 ? 'tp-dn' : 'tp-up')+'">'+eff(x.ef)+'</span>' : '')
                  : (dv == null ? '' : '<span class="d">'+(Math.abs(dv) < 0.05 ? 'At spot' : Math.abs(dv).toFixed(1)+'% '+(dv > 0 ? 'above' : 'below'))+'</span>');
       return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+pz(x.md)+'</td><td class="r'+o+'">'+w+'</td><td class="r'+o+'">'+e+'</td>'; }
     function vrows(r){
@@ -489,8 +484,7 @@ var IX = (function(){
       var se = function(r){ return r.L[cur2] ? Math.abs(r.L[cur2].ef) : 0; }, by = function(a, b){ return se(b) - se(a) || b.mx - a.mx || b.nv - a.nv || a.nm.localeCompare(b.nm); };
       var mv = rows.filter(function(r){ return r.moved; }).sort(by), nw = rows.filter(function(r){ return !r.moved && r.isNew; }).sort(by);
       var rp = rows.filter(function(r){ return !r.moved && !r.isNew && r.rep; }).sort(by), ns = rows.filter(function(r){ return !r.moved && !r.isNew && !r.rep; }).sort(by);
-      var tot = {}; LV.forEach(function(g){ tot[g] = mv.reduce(function(a, r){ return a + (r.L[g] ? r.L[g].ef : 0); }, 0); });
-      if(mv.length) h += grp('Moved the index', mv.length, 'together they account for the level&rsquo;s change', mv.map(mrow).join(''), '', tot);
+      if(mv.length) h += grp('Moved the index', mv.length, '', mv.map(mrow).join(''));
       if(rp.length) h += grp('Repriced at a vendor', rp.length, 'no effect on the level', rp.map(mrow).join(''));
       if(nw.length) h += grp('Joined the basket', nw.length, 'new this week; they count toward the level from their second priced week', nw.map(mrow).join(''));
       var keep = mv.length || rp.length || nw.length ? 0 : 6, all = S.all;
