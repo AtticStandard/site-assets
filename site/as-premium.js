@@ -444,16 +444,13 @@ var IX = (function(){
     function sub(r){ return '<em>'+(r.dev ? esc(r.dev)+'<span class="tp-dot"> &middot; </span>' : '')+r.nv+(r.nv === 1 ? ' vendor' : ' vendors')+'</em>'; }
     var h = '<thead><tr class="tp-hg"><th class="tp-unit">Prices in '+cy+' '+esc(D.unit || '')+'</th>'+LV.map(function(g){ return '<th class="tp-gp'+on(g)+'"></th><th colspan="3" class="tp-lgh'+on(g)+'"><span>'+NM[g]+'</span></th>'; }).join('')+'</tr>'
       + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(g){ var o = on(g); return '<th class="tp-gp tp-w0'+o+'"></th><th class="r tp-w1'+o+'">Median</th><th class="r tp-w2'+o+'">1 week</th><th class="r tp-w3'+o+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
-    h += '<tr class="tp-ixr"><td>'+esc(ixName(cur))+(lv ? ' index level' : ' spot price')+'<em>'+(lv ? 'Base May 2026 = 100' : 'Median of every SKU')+'</em></td>'
-      + LV.map(function(g){ var s = IDX[g], G = D.LG[g], i = G.I[d], p = i > 0 ? G.S[i-1] : null, w = lv ? s.w : (p && p.s && s.s ? (s.s/p.s-1)*100 : null), o = on(g);
-        var fr = p ? (lv ? (p.l == null ? '' : p.l.toFixed(2)) : (p.s == null ? '' : px(p.s))) : '';
-        return '<td class="tp-gp'+o+'"></td><td class="r'+o+'"><b>'+(s.l == null ? '' : lv ? s.l.toFixed(2) : px(s.s))+'</b>'+(fr ? '<span class="tp-from">from '+esc(fr)+'</span>' : '')+'</td><td class="r'+o+'">'+(w == null ? '' : chg(w, lv ? 2 : 1))+'</td><td class="'+o.trim()+'"></td>'; }).join('')+'</tr>';
+    /* No index row: the level, the spot price and their weekly change sit in the tiles right above. */
     function cell(r, g){ var x = r.L[g], o = on(g);
       if(!x || !x.n) return '<td class="tp-gp'+o+'"></td><td class="r d'+o+'">Not priced</td><td class="'+o.trim()+'"></td><td class="'+o.trim()+'"></td>';
       var s = IDX[g], dv = s.s ? (x.md/s.s-1)*100 : null, sig = Math.abs(x.ef) >= 0.005;
       var w = x.chg == null || Math.abs(x.chg) < 0.05 ? '' : chg(x.chg, 1);
       var e = lv ? (sig ? '<span class="'+(x.ef < 0 ? 'tp-dn' : 'tp-up')+'">'+eff(x.ef)+'</span>' : '')
-                 : (dv == null ? '' : '<span class="d">'+(Math.abs(dv) < 0.05 ? 'At spot' : Math.abs(dv).toFixed(1)+'% '+(dv > 0 ? 'above' : 'below'))+'</span>');
+                 : (dv == null ? '' : '<span class="d">'+(Math.abs(dv) < 0.05 ? 'At spot' : (Math.abs(dv) >= 100 ? Math.round(Math.abs(dv)).toLocaleString('en-US') : Math.abs(dv).toFixed(1))+'% '+(dv > 0 ? 'above' : 'below'))+'</span>');
       return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+pz(x.md)+'</td><td class="r'+o+'">'+w+'</td><td class="r'+o+'">'+e+'</td>'; }
     function vrows(r){
       var V = {}, keys = [];
@@ -480,20 +477,16 @@ var IX = (function(){
     Object.keys(prevAny).forEach(function(a){ if(!curAny[a] && !left.some(function(x){ return x.nm === nm(a); })) left.push({ nm:nm(a), rule:'', why:'Out of the basket from this week.' }); });
     var away = adm.filter(function(a){ return a.st === 'excluded' && !a.vf; }).map(function(a){ return { nm:a.nm, rule:RULE[a.rc] || '', why:clean(a.r) }; });
     function xrows(X){ return X.map(function(x){ return '<tr class="tp-xr"><td><span class="tp-mn"><b>'+esc(x.nm)+'</b></span></td><td colspan="'+(N-1)+'" class="tp-xw">'+(x.rule ? '<span class="tp-tag2">'+esc(x.rule)+'</span>' : '')+esc(x.why)+'</td></tr>'; }).join(''); }
-    if(lv){
-      var se = function(r){ return r.L[cur2] ? Math.abs(r.L[cur2].ef) : 0; }, by = function(a, b){ return se(b) - se(a) || b.mx - a.mx || b.nv - a.nv || a.nm.localeCompare(b.nm); };
-      var mv = rows.filter(function(r){ return r.moved; }).sort(by), nw = rows.filter(function(r){ return !r.moved && r.isNew; }).sort(by);
-      var rp = rows.filter(function(r){ return !r.moved && !r.isNew && r.rep; }).sort(by), ns = rows.filter(function(r){ return !r.moved && !r.isNew && !r.rep; }).sort(by);
-      if(mv.length) h += grp('Moved the index', mv.length, '', mv.map(mrow).join(''));
-      if(rp.length) h += grp('Repriced at a vendor', rp.length, 'no effect on the level', rp.map(mrow).join(''));
-      if(nw.length) h += grp('Joined the basket', nw.length, 'new this week; they count toward the level from their second priced week', nw.map(mrow).join(''));
-      var keep = mv.length || rp.length || nw.length ? 0 : 6, all = S.all;
-      if(ns.length) h += grp('No change', ns.length, 'no price change at any vendor, on any leg', (all ? ns : ns.slice(0, keep)).map(mrow).join(''),
-        ns.length > keep ? '<button class="tp-link tp-fold" type="button" data-fold="1">'+(all ? 'Hide' : keep ? 'Show all '+ns.length : 'Show')+'</button>' : '');
-    } else {
-      var sm = function(r){ return r.L[cur2] ? r.L[cur2].md || -1 : -1; };
-      h += grp('In the basket, by '+NM[cur2].toLowerCase()+' price', rows.length, '', rows.slice().sort(function(a, b){ return sm(b) - sm(a) || a.nm.localeCompare(b.nm); }).map(mrow).join(''));
-    }
+    /* The same groups and order in both measures; only the last column changes (Effect or Vs spot). */
+    var se = function(r){ return r.L[cur2] ? Math.abs(r.L[cur2].ef) : 0; }, by = function(a, b){ return se(b) - se(a) || b.mx - a.mx || b.nv - a.nv || a.nm.localeCompare(b.nm); };
+    var mv = rows.filter(function(r){ return r.moved; }).sort(by), nw = rows.filter(function(r){ return !r.moved && r.isNew; }).sort(by);
+    var rp = rows.filter(function(r){ return !r.moved && !r.isNew && r.rep; }).sort(by), ns = rows.filter(function(r){ return !r.moved && !r.isNew && !r.rep; }).sort(by);
+    if(mv.length) h += grp('Moved the index', mv.length, '', mv.map(mrow).join(''));
+    if(rp.length) h += grp('Repriced at a vendor', rp.length, 'no effect on the level', rp.map(mrow).join(''));
+    if(nw.length) h += grp('Joined the basket', nw.length, 'new this week; they count toward the level from their second priced week', nw.map(mrow).join(''));
+    var keep = mv.length || rp.length || nw.length ? 0 : 6, all = S.all;
+    if(ns.length) h += grp('No change', ns.length, 'no price change at any vendor, on any leg', (all ? ns : ns.slice(0, keep)).map(mrow).join(''),
+      ns.length > keep ? '<button class="tp-link tp-fold" type="button" data-fold="1">'+(all ? 'Hide' : keep ? 'Show all '+ns.length : 'Show')+'</button>' : '');
     if(left.length) h += grp('Left the basket', left.length, '', xrows(left));
     if(away.length) h += grp('Not admitted', away.length, '', xrows(away));
     $('ixT').className = 'tp-ld n'+LV.length;
