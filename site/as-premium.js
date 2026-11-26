@@ -805,44 +805,68 @@ var CS = (function(){
   return { start:start };
 })();
 
-/* ═══ PRICING INTELLIGENCE ═══ */
+/* ═══ MODELS ═══ */
+/* One page per model, read top to bottom like an index (rebuilt November 26, 2026, on the Indexes
+   principles):
+     Pinned       up to five models a subscriber follows: developer, name, every leg with its market
+                  median and change on the week. An x unpins; the dashed card opens the finder to pin.
+     Finder       one search field with the results under it, a modality switch and a vendor list, in
+                  place of the old list on the left.
+     Header       developer, modality and tier; the name; vendors, weeks priced and the published
+                  indexes that hold the model (each opens that index); the profile in one line.
+     Legs         one tile per leg, also the leg selector: market median and its change over a week,
+                  a month and since first priced, with the range across vendors. A unit switch when a
+                  model is priced in more than one unit.
+     Chart        the selected leg: the median and the range from the lowest to the highest vendor;
+                  select a week to see its vendors.
+     The week     every vendor that week, cheapest first on the selected leg, each leg in its own block
+                  (price, change on the week, distance from the median); a vendor opens to its own price
+                  changes. Vendors that priced the model before and not this week close the table.
+   One query per model (v_fair_value, every leg and week), kept in memory. */
 function pricingHTML(){
-  return '<section class="tp-dash" id="tpPricing" role="tabpanel" aria-label="Models" hidden><div class="tp-wrap">'
-  + '<aside class="tp-rail"><label class="tp-lbl" for="moQ">Models</label>'
-  + '<input class="tp-in" id="moQ" type="text" autocomplete="off" spellcheck="false" placeholder="Search models">'
-  + '<div class="tp-g2"><div class="tp-dd" id="moVen"></div><div class="tp-dd" id="moMod"></div></div>'
-  + '<div class="tp-cnt"><span>Model</span><span>Vendors</span></div>'
-  + '<div class="tp-list" id="moList" role="listbox" aria-label="Models"></div><p class="tp-note" id="moListNote"></p></aside>'
-  + '<div class="tp-main"><div id="moMsg"></div><div id="moBody" hidden>'
-  + '<div class="tp-top"><div><h2 class="tp-h" id="moName"></h2><p class="tp-meta" id="moMeta"></p></div><div class="tp-acts"><div class="as-vt" id="moLegs" role="group" aria-label="Price leg"></div><div class="as-vt" id="moUnits" role="group" aria-label="Unit" hidden></div></div></div>'
-  + '<div class="tp-hero"><div class="tp-hl2"><p class="tp-lbl">Market median</p><div class="tp-bigrow"><div class="tp-big" id="moMed"></div><div class="tp-chg" id="moMedSub"></div></div><div class="tp-dist" id="moDist"></div><div class="tp-stats" id="moStats"></div></div>'
-  + '<div class="tp-hr2"><p class="tp-lbl">Model profile</p><dl class="tp-dl" id="moProf"></dl><p class="tp-note" id="moPnote" style="margin-top:var(--s4)"></p></div></div>'
-  + '<section class="tp-sec"><p class="tp-lbl" id="moChT"></p><p class="tp-note sub" id="moChN"></p>'
+  var L = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"></path></svg>', R = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg>';
+  return '<section class="tp-dash" id="tpPricing" role="tabpanel" aria-label="Models" hidden>'
+  + '<section class="tp-pins" id="moPins" aria-label="Pinned models" hidden><div class="tp-bh"><p class="tp-lbl">Pinned models</p><span class="tp-bn" id="moPinN"></span></div><div class="tp-pc" id="moPc"></div></section>'
+  + '<div class="tp-sel tp-fnd"><span class="tp-lbl">Model</span><div class="tp-fr"><div class="tp-fq" id="moFq"><svg class="tp-fi" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"></circle><path d="M10.4 10.4 14 14"></path></svg>'
+  + '<input class="tp-in" id="moQ" type="text" role="combobox" aria-expanded="false" aria-controls="moRes" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Find a model by name or developer">'
+  + '<div class="tp-res" id="moRes" role="listbox" aria-label="Models" hidden></div></div><div class="tp-dd" id="moVen"></div></div>'
+  + '<span class="tp-lbl">Modality</span><div class="as-vt" id="moMod" role="group" aria-label="Modality"></div></div>'
+  + '<div id="moMsg"></div><div class="tp-ix" id="moBody" hidden><div class="tp-prog" id="moProg" hidden></div>'
+  + '<div class="tp-ixh"><div class="tp-mh"><div class="tp-ixt"><p class="tp-code" id="moCode"></p><h2 class="tp-h" id="moName"></h2></div><button type="button" class="tp-pinb" id="moPin" aria-pressed="false"></button></div>'
+  + '<div class="tp-cg" id="moCg"></div><p class="tp-facts" id="moFacts"></p></div>'
+  + '<section class="tp-blk tp-lgs"><div class="tp-ctl"><div class="as-vt" id="moUnits" role="group" aria-label="Unit" hidden></div><span class="tp-bn" id="moCtlN"></span></div>'
+  + '<div class="tp-tiles" id="moTiles" role="group" aria-label="Price leg"></div>'
   + '<div class="tp-chw"><div class="as-lgv" id="moLg"></div><div class="tp-ch" id="moChW"><div id="moCh"></div><div class="tp-hv" hidden></div><div class="tp-tip" hidden></div></div></div></section>'
-  + '<section class="tp-sec"><p class="tp-lbl">Vendors</p><p class="tp-note sub">Each vendor’s lowest published price, low to high. Select a vendor to draw it on the chart.</p>'
-  + '<div class="tp-tw"><table class="tp-tbl"><thead><tr><th>Vendor</th><th>Channel</th><th class="r">Price</th><th class="r">Vs median</th><th class="r">Since first priced</th><th class="r">Last change</th><th>Position</th></tr></thead><tbody id="moTbl"></tbody></table></div>'
-  + '<p class="tp-note" id="moStale" style="margin-top:var(--s4)"></p></section>'
+  + '<section class="tp-wk"><div class="tp-wkh"><button type="button" class="tp-stp" id="moPrev" aria-label="Previous week">'+L+'</button><h3 class="tp-st" id="moWkT"></h3><button type="button" class="tp-stp" id="moNext" aria-label="Next week">'+R+'</button></div>'
+  + '<div class="tp-tw tp-ltw"><table class="tp-ld" id="moT"></table></div></section>'
   + '<div class="tp-foot"><p class="as-note" id="moSrc"></p><div class="tp-ln"><button class="tp-link" id="moCite" type="button">Copy citation</button><a class="tp-link" href="/methodology">Read the methodology &rarr;</a></div></div>'
-  + '</div></div></div></section>';
+  + '</div></section>';
 }
 
 var MO = (function(){
   var TIER = { FTR:'Flagship', FLG:'Flagship', MID:'Core', COR:'Core', BDG:'Compact', CMP:'Compact', TASK:'Task-specific' };
-  var LEGS = [['Input','Input'],['Cached Input','Cached input'],['Output','Output']];
-  var WEIGHTS = { open:'Published', 'open-weight':'Published, restricted license', 'non-commercial':'Published, non-commercial', proprietary:'Unpublished' };
-  var MODELS = [], PUB = {}, model = null, ROWS = [], leg = null, unit = null, selV = null, CUR = null, reqN = 0, IDX = null, pending = null, ddVen, ddMod;
+  var LEGS = [['Input','Input'],['Cached Input','Cached input'],['Output','Output']], LK = { 'Input':'Input', 'Cached Input':'Cached', 'Output':'Output' };
+  var WEIGHTS = { open:'Published weights', 'open-weight':'Published weights, restricted license', 'non-commercial':'Published weights, non-commercial', proprietary:'Unpublished weights' };
+  var MODO = ['Text','Multimodal','Image','Video','Voice','Audio'];
+  var MODELS = [], BYA = {}, PUB = {}, model = null, ROWS = [], CUR = null, reqN = 0, pending = null, ddVen, mod = '', act = -1, pinMode = false, PINR = null;
+  var S = { leg:null, unit:null, K:null, open:{} }, PHONE = window.matchMedia('(max-width: 767px)');
   function fx(v){ v = Number(v); if(!(v > 0)) return '0'; if(v >= 1) return v.toFixed(v >= 100 ? 2 : 4); var d = Math.max(6, Math.ceil(-Math.log10(v))+1); return v.toFixed(Math.min(d, 10)); }
-  function px(v){ return v == null ? '&mdash;' : '$'+fx(v); }
-  function ax$(v){ return '$'+Number(v).toFixed(10).replace(/0+$/,'').replace(/\.$/,''); }
+  function px(v){ return v == null ? '' : '$'+fx(v); }
+  /* On a pinned card, three significant figures keep three legs side by side. */
+  function pc(v){ v = Number(v); if(!(v > 0)) return '$0'; return '$'+(v >= 1 ? v.toFixed(2) : String(+v.toPrecision(3))); }
+  function ax$(v, dp){ return '$'+Number(v).toFixed(dp); }
   function legName(l){ for(var i = 0; i < LEGS.length; i++) if(LEGS[i][0] === l) return LEGS[i][1]; return l; }
+  function c1(v){ return v == null || isNaN(v) ? '' : chg(Number(v), 1); }
+  function vs(p, M){ var d = (p/M-1)*100; return Math.abs(d) < 0.05 ? 'At median' : (Math.abs(d) >= 100 ? Math.round(Math.abs(d)).toLocaleString('en-US') : Math.abs(d).toFixed(1))+'% '+(d > 0 ? 'above' : 'below'); }
+  function prevWeek(d){ return iso(utc(d) - 7*864e5); }
   var CARET = '<svg width="11" height="7" viewBox="0 0 11 7" aria-hidden="true"><path d="M1 1 L5.5 5.5 L10 1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function DD(el, label, onChange){
     var d = { val:'', opts:[['', label]] };
     el.innerHTML = '<button type="button" class="tp-ddb" aria-haspopup="listbox" aria-expanded="false"><span></span>'+CARET+'</button><div class="tp-ddl" role="listbox" hidden></div>';
-    var b = el.firstChild, Lb = el.lastChild, act = -1;
+    var b = el.firstChild, Lb = el.lastChild, ac = -1;
     function paint(){ b.firstChild.textContent = (d.opts.filter(function(o){ return o[0] === d.val; })[0] || d.opts[0])[1]; }
     function open(){ Lb.innerHTML = d.opts.map(function(o, i){ return '<button type="button" role="option" data-i="'+i+'" aria-selected="'+(o[0] === d.val)+'">'+esc(o[1])+'</button>'; }).join('');
-      Lb.hidden = false; el.classList.add('open'); b.setAttribute('aria-expanded','true'); act = -1; var s = Lb.querySelector('[aria-selected=true]'); if(s) Lb.scrollTop = s.offsetTop - Lb.clientHeight/2; }
+      Lb.hidden = false; el.classList.add('open'); b.setAttribute('aria-expanded','true'); ac = -1; var s = Lb.querySelector('[aria-selected=true]'); if(s) Lb.scrollTop = s.offsetTop - Lb.clientHeight/2; }
     function close(){ Lb.hidden = true; el.classList.remove('open'); b.setAttribute('aria-expanded','false'); }
     function set(i){ d.val = d.opts[i][0]; paint(); close(); onChange(); }
     b.addEventListener('click', function(){ Lb.hidden ? open() : close(); });
@@ -850,187 +874,274 @@ var MO = (function(){
     el.addEventListener('keydown', function(e){ if(Lb.hidden){ if(e.key === 'ArrowDown'){ e.preventDefault(); open(); } return; }
       var bs = Lb.querySelectorAll('button');
       if(e.key === 'Escape'){ close(); b.focus(); }
-      else if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); act = Math.max(0, Math.min(bs.length-1, act + (e.key === 'ArrowDown' ? 1 : -1))); bs.forEach(function(x, i){ x.classList.toggle('act', i === act); }); bs[act].scrollIntoView({ block:'nearest' }); }
-      else if(e.key === 'Enter' && act > -1){ e.preventDefault(); set(act); b.focus(); } });
+      else if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); ac = Math.max(0, Math.min(bs.length-1, ac + (e.key === 'ArrowDown' ? 1 : -1))); bs.forEach(function(x, i){ x.classList.toggle('act', i === ac); }); bs[ac].scrollIntoView({ block:'nearest' }); }
+      else if(e.key === 'Enter' && ac > -1){ e.preventDefault(); set(ac); b.focus(); } });
     document.addEventListener('click', function(e){ if(!el.contains(e.target)) close(); });
     d.setOptions = function(o){ d.opts = [['', label]].concat(o); paint(); };
     paint(); return d;
   }
-  function list(){
-    var t = $('moQ').value.trim().toLowerCase().replace(/[-._\s/]/g,''), md = ddMod.val, vn = ddVen.val;
-    var r = MODELS.filter(function(m){ return (!md || m.modality === md) && (!vn || m._v.indexOf(vn) > -1) && (!t || m._k.indexOf(t) > -1); });
-    var shown = r.slice(0, 300);
-    $('moList').innerHTML = shown.length ? shown.map(function(m){ return '<button type="button" role="option" aria-selected="'+(model && m.anchor_id === model.anchor_id)+'" class="tp-row'+(model && m.anchor_id === model.anchor_id ? ' on' : '')+'" data-id="'+esc(m.anchor_id)+'" title="'+esc(m.model_name)+'"><span>'+esc(m.model_name)+'</span><b>'+m.vendors+'</b></button>'; }).join('')
-      : '<p class="tp-note" style="padding:var(--s3) var(--s2)">No model matches that search.</p>';
-    $('moListNote').textContent = r.length > shown.length ? 'Showing 300 of '+int(r.length)+'. Search to narrow the list.' : int(r.length)+' model'+(r.length === 1 ? '' : 's')+(vn ? ' sold by '+vn : '')+(md ? ', '+md.toLowerCase() : '')+', each sold by two or more vendors.';
+
+  /* ── Pinned models ── */
+  var PMAX = 5;
+  function pins(){ var p = null; try{ p = JSON.parse(localStorage.getItem('atMoPins') || 'null'); }catch(e){}
+    if(!Array.isArray(p)) p = MODELS.slice(0, 4).map(function(m){ return m.anchor_id; });
+    return p.filter(function(a){ return BYA[a]; }).slice(0, PMAX); }
+  function putPins(p){ try{ localStorage.setItem('atMoPins', JSON.stringify(p)); }catch(e){} PINR = null; }
+  /* The cards need each pinned model's median on every leg, this week and last: one query for all. */
+  function pinData(P){
+    if(PINR && PINR.k === P.join('|')) return PINR.p;
+    var pw = prevWeek(GATE);
+    var p = all(function(){ return sb.from('v_fair_value').select('anchor_id,gate_date,direction,unit,price').in('anchor_id', P).in('gate_date', [GATE, pw]); })
+      .then(function(rows){ var O = {};
+        P.forEach(function(a){ var R = rows.filter(function(r){ return r.anchor_id === a; }), L = {};
+          LEGS.forEach(function(l){ var now = R.filter(function(r){ return r.direction === l[0] && String(r.gate_date) === GATE; }); if(!now.length) return;
+            var cnt = {}; now.forEach(function(r){ cnt[r.unit] = (cnt[r.unit] || 0)+1; }); var u = Object.keys(cnt).sort(function(x, y){ return cnt[y] - cnt[x]; })[0];
+            var m1 = med(now.filter(function(r){ return r.unit === u; }).map(function(r){ return Number(r.price); })),
+                m0 = med(R.filter(function(r){ return r.direction === l[0] && r.unit === u && String(r.gate_date) === pw; }).map(function(r){ return Number(r.price); }));
+            L[l[0]] = [m1, m0 ? (m1/m0-1)*100 : null]; });
+          O[a] = L; });
+        return O; });
+    PINR = { k:P.join('|'), p:p }; return p;
   }
+  function drawPins(){
+    var box = $('moPins'), el = $('moPc'); if(!el) return; var P = pins(), full = P.length >= PMAX;
+    $('moPinN').textContent = P.length+' of '+PMAX; box.hidden = false;
+    function card(a, L){ var m = BYA[a], sel = model && model.anchor_id === a;
+      return '<div class="tp-pcd'+(sel ? ' on' : '')+'" role="button" tabindex="0" data-pin="'+esc(a)+'" aria-pressed="'+sel+'">'
+        + '<button type="button" class="tp-unpin" data-unpin="'+esc(a)+'" aria-label="Unpin '+esc(m.model_name)+'"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6"></path></svg></button>'
+        + '<p class="tp-code">'+esc(m.creator || '')+'</p><p class="tp-pn">'+esc(m.model_name)+'</p><p class="tp-pd tp-pd1">'+esc([m.modality, m.vendors+' vendors'].filter(Boolean).join(' · '))+'</p>'
+        + '<div class="tp-plg">'+(L ? LEGS.filter(function(l){ return L[l[0]]; }).map(function(l){ var v = L[l[0]];
+            return '<span class="tp-pk">'+LK[l[0]]+'</span><b>'+pc(v[0])+'</b>'+(v[1] == null || Math.abs(v[1]) < 0.05 ? '<span></span>' : chg(v[1], 1)); }).join('') : '')+'</div></div>'; }
+    function paint(D){ el.innerHTML = P.map(function(a){ return card(a, D && D[a]); }).join('') + (full ? '' : '<button type="button" class="tp-padd'+(pinMode ? ' on' : '')+'" data-open="1">+ Pin a model</button>'); }
+    paint(null);
+    if(P.length) pinData(P).then(function(D){ if(pins().join('|') === P.join('|')) paint(D); }).catch(function(){});
+  }
+  function togglePin(a){ var p = pins(), i = p.indexOf(a); if(i > -1) p.splice(i, 1); else if(p.length < PMAX) p.push(a); putPins(p); drawPins(); pinBtn(); }
+  function pinBtn(){ if(!model) return; var b = $('moPin'), on = pins().indexOf(model.anchor_id) > -1, full = pins().length >= PMAX;
+    b.setAttribute('aria-pressed', String(on)); b.disabled = !on && full; b.textContent = on ? 'Pinned' : full ? 'Five pinned' : 'Pin'; b.title = !on && full ? 'Unpin a model to pin this one' : ''; }
+
+  /* ── Finder ── */
+  function norm(s){ return String(s || '').toLowerCase().replace(/[-._\s/]/g, ''); }
+  function matches(){
+    var t = norm($('moQ').value), vn = ddVen.val;
+    return MODELS.filter(function(m){ return (!mod || m.modality === mod) && (!vn || m._v.indexOf(vn) > -1) && (!t || m._k.indexOf(t) > -1); });
+  }
+  function results(){
+    var r = matches(), shown = r.slice(0, 12), t = $('moQ').value.trim(), el = $('moRes');
+    var head = pinMode ? 'Choose a model to pin' : (!t && !mod && !ddVen.val ? 'Most widely sold' : int(r.length)+' model'+(r.length === 1 ? '' : 's'));
+    act = Math.min(act, shown.length-1);
+    el.innerHTML = '<div class="tp-rh"><span class="tp-lbl">'+head+'</span><span class="tp-bn">'+(r.length > shown.length ? 'Showing 12 of '+int(r.length)+'. Type to narrow.' : 'Each sold by two or more vendors.')+'</span></div>'
+      + (shown.length ? shown.map(function(m, i){ var on = model && m.anchor_id === model.anchor_id, pn = pins().indexOf(m.anchor_id) > -1;
+          return '<button type="button" role="option" id="moRo'+i+'" class="tp-ri'+(i === act ? ' act' : '')+'" data-id="'+esc(m.anchor_id)+'" aria-selected="'+(i === act)+'"><span class="n"><b>'+esc(m.model_name)+'</b><em>'+esc([m.creator, m.modality, TIER[m.tier]].filter(Boolean).join(' · '))+'</em></span>'
+            + '<span class="v">'+m.vendors+' vendors</span><span class="p">'+(pinMode ? (pn ? 'Pinned' : 'Pin') : on ? 'Open' : '')+'</span></button>'; }).join('')
+        : '<p class="tp-note tp-rn">No model matches. Try the developer&rsquo;s name, or clear the filters.</p>');
+    $('moQ').setAttribute('aria-activedescendant', act > -1 ? 'moRo'+act : '');
+    return shown;
+  }
+  function openRes(){ var el = $('moRes'); results(); el.hidden = false; $('moQ').setAttribute('aria-expanded', 'true'); }
+  function closeRes(){ $('moRes').hidden = true; $('moQ').setAttribute('aria-expanded', 'false'); act = -1; if(pinMode){ pinMode = false; drawPins(); } }
+  function choose(id){ var m = BYA[id]; if(!m) return;
+    if(pinMode){ var p = pins(); if(p.indexOf(id) < 0 && p.length < PMAX){ p.push(id); putPins(p); } }
+    closeRes(); $('moQ').value = ''; $('moQ').blur(); drawPins(); if(m !== model) pick(m); else pinBtn(); }
+  function modRow(){ var ms = MODO.filter(function(k){ return MODELS.some(function(m){ return m.modality === k; }); });
+    MODELS.forEach(function(m){ if(m.modality && ms.indexOf(m.modality) < 0) ms.push(m.modality); });
+    $('moMod').innerHTML = [['', 'All']].concat(ms.map(function(k){ return [k, k]; })).map(function(it){ return '<button type="button" class="as-vt-b" data-k="'+esc(it[0])+'" aria-selected="'+(it[0] === mod)+'">'+esc(it[1])+'</button>'; }).join(''); }
+
+  /* ── One model ── */
   function pick(m){
-    model = m; selV = null; IDX = null; var my = ++reqN; list();
-    waiting($('moMsg')); $('moBody').hidden = true;
-    $('moName').textContent = m.model_name;
-    profile(m);
+    model = m; var my = ++reqN, first = !CUR;
+    if(first){ waiting($('moMsg')); $('moBody').hidden = true; } else { $('moBody').classList.add('busy'); $('moProg').hidden = false; }
     try{ localStorage.setItem('atMoModel', m.anchor_id); }catch(e){}
-    q(sb.from('index_membership_snapshot').select('index_code').eq('anchor_id', m.anchor_id).eq('in_basket', true).limit(1000))
-      .then(function(r){ if(my !== reqN) return; var s = {}; r.forEach(function(x){ if(PUB[x.index_code]) s[x.index_code] = 1; }); IDX = Object.keys(s).length; if(CUR) stats(); }).catch(function(){});
-    all(function(){ return sb.from('v_fair_value').select('gate_date,vendor_id,vendor_name,vendor_type,direction,unit,price').eq('anchor_id', m.anchor_id).order('gate_date'); })
-      .then(function(rows){ if(my !== reqN) return; ROWS = rows;
-        var legs = LEGS.filter(function(l){ return rows.some(function(r){ return r.direction === l[0] && String(r.gate_date) === GATE; }); });
-        if(!legs.length){ message($('moMsg'), 'This model has no price in the latest publication.'); return; }
-        if(!leg || !legs.some(function(l){ return l[0] === leg; })) leg = legs[0][0];
-        $('moLegs').innerHTML = legs.map(function(l){ return '<button type="button" class="as-vt-b" data-leg="'+esc(l[0])+'" aria-selected="'+(l[0] === leg)+'">'+l[1]+'</button>'; }).join('');
-        $('moLegs').hidden = legs.length < 2;
-        unit = null; render(); })
-      .catch(function(e){ if(my !== reqN) return; console.error('[Pricing]', e); message($('moMsg'), 'Prices for this model could not be loaded. Refresh the page, or log in again if the problem persists.'); });
+    drawPins();
+    var mem = q(sb.from('index_membership_snapshot').select('index_code').eq('anchor_id', m.anchor_id).eq('in_basket', true).limit(1000)).catch(function(){ return []; });
+    Promise.all([all(function(){ return sb.from('v_fair_value').select('gate_date,vendor_id,vendor_name,vendor_type,direction,unit,price').eq('anchor_id', m.anchor_id).order('gate_date'); }), mem])
+      .then(function(r){ if(my !== reqN) return; ROWS = r[0]; var s = {}; r[1].forEach(function(x){ if(PUB[x.index_code]) s[x.index_code] = 1; }); m._ix = Object.keys(s).sort();
+        S.open = {}; S.unit = null; S.K = null; done();
+        if(!ROWS.some(function(x){ return String(x.gate_date) === GATE; })){ $('moBody').hidden = true; message($('moMsg'), 'This model has no price in the latest publication.'); return; }
+        render(); $('moMsg').hidden = true; $('moBody').hidden = false; })
+      .catch(function(e){ if(my !== reqN) return; done(); console.error('[Models]', e);
+        if(first) message($('moMsg'), 'Prices for this model could not be loaded. Refresh the page, or log in again if the problem persists.'); else flash($('moName'), 'Could not load '+m.model_name); });
+    function done(){ $('moBody').classList.remove('busy'); $('moProg').hidden = true; }
   }
-  function ctx(n){ n = Number(n); if(!(n > 0)) return null; if(n >= 1e6) return (Math.round(n/1e5)/10).toString().replace(/\.0$/,'')+'M tokens'; if(n >= 1000) return Math.round(n/1000)+'K tokens'; return n+' tokens'; }
-  function cap(a){ return (a || []).map(function(x){ x = String(x); return x.charAt(0).toUpperCase()+x.slice(1); }).join(', '); }
-  function ym(t){ var m = /^(\d{4})-(\d{2})/.exec(String(t || '')); return m ? MN[+m[2]-1]+' '+m[1] : (t || null); }
-  function yn(b){ return b == null ? null : (b ? 'Yes' : 'No'); }
-  function profile(m){
-    var P = [['Developer', m.creator], ['Family', m.model_family], ['Parameters', m.parameter_count], ['Context window', ctx(m.context_window)], ['Max output', ctx(m.max_output_tokens)],
-      ['Inputs', cap(m.modality_input) || null], ['Outputs', cap(m.modality_output) || null], ['Weights', WEIGHTS[m.license_class] || null], ['License', m.license_type], ['Origin', m.creator_country],
-      ['Reasoning model', yn(m.is_reasoning)], ['Tool calling', yn(m.tool_calling)], ['JSON mode', yn(m.json_mode)], ['Training data to', ym(m.training_cutoff)]]
-      .filter(function(x){ return x[1] != null && x[1] !== ''; });
-    $('moProf').innerHTML = P.map(function(x){ return '<div><dt>'+x[0]+'</dt><dd>'+esc(x[1])+'</dd></div>'; }).join('');
-    $('moPnote').textContent = P.length ? 'As published by the model’s developer.' : 'No profile on record for this model yet.';
-  }
-  function stats(){
-    var Cc = CUR, now = Cc.now, f = Cc.env[0];
-    $('moStats').innerHTML = [
-      ['Vendors', String(now.length), 'pricing it now'],
-      ['Spread', now.length > 1 && Cc.lo > 0 ? (Cc.hi/Cc.lo).toFixed(1)+'×' : '&mdash;', 'highest over lowest'],
-      ['Repriced', Cc.moved+' of '+now.length, 'since first priced'],
-      ['Indexes', IDX == null ? '&mdash;' : String(IDX), 'published, in the basket'],
-      ['Weeks priced', String(Cc.env.length), 'since '+sdate(f.d)]
-    ].map(function(k){ return '<div><p class="tp-lbl">'+k[0]+'</p><div class="v">'+k[1]+'</div><p class="s">'+k[2]+'</p></div>'; }).join('');
-  }
-  function dist(){
-    var Cc = CUR, now = Cc.now, lo = Cc.lo, hi = Cc.hi; if(!now.length){ $('moDist').innerHTML = ''; return; }
-    var L0 = Math.log(lo), L1 = Math.log(hi), SP = (L1-L0) || 1, pad = lo === hi ? 50 : 0;
-    function P(v){ return pad || ((Math.log(v)-L0)/SP*96+2); }
-    var bins = {}, h = '';
-    now.forEach(function(v){ var x = P(v.s[GATE]), k = Math.round(x/1.6), n = bins[k] = (bins[k] || 0)+1; v._x = x; v._y = n-1; });
-    var maxN = Math.max.apply(null, Object.keys(bins).map(function(k){ return bins[k]; })), stepY = Math.min(10, 60/Math.max(1, maxN)), dsz = Math.max(5, Math.min(9, stepY+0.5));
-    h += '<div class="tp-dpl"><div class="ax"></div><div class="md" style="left:'+P(Cc.M).toFixed(2)+'%"></div><div class="mdl" style="left:'+P(Cc.M).toFixed(2)+'%">Median</div>';
-    now.forEach(function(v){ var s = bins[Math.round(v._x/1.6)] > 1 ? dsz : 9;
-      h += '<button type="button" data-v="'+esc(v.id)+'" class="'+(v.id === selV ? 'on' : '')+'" style="left:'+v._x.toFixed(2)+'%;bottom:'+(v._y*stepY+1).toFixed(1)+'px;width:'+s+'px;height:'+s+'px" aria-label="'+esc(vgroup(v.name))+' '+fx(v.s[GATE])+'"></button>'; });
-    h += '<div class="tp-tip tp-dtip" hidden></div></div>';
-    h += '<div class="tp-dends"><div>Lowest <b>'+px(lo)+'</b><br>'+esc(vgroup(now[0].name))+'</div><div>Highest <b>'+px(hi)+'</b><br>'+esc(vgroup(now[now.length-1].name))+'</div></div>';
-    $('moDist').innerHTML = h;
-  }
-  function render(){
-    var R = ROWS.filter(function(r){ return r.direction === leg; });
-    var cnt = {}; R.forEach(function(r){ if(String(r.gate_date) === GATE) cnt[r.unit] = (cnt[r.unit] || 0)+1; });
+  /* Units: the one most vendors use first. Legs: those priced in that unit in the latest week. */
+  function prep(){
+    var cnt = {}; ROWS.forEach(function(r){ if(String(r.gate_date) === GATE) cnt[r.unit] = (cnt[r.unit] || 0)+1; });
     var units = Object.keys(cnt).sort(function(a, b){ return cnt[b] - cnt[a]; });
-    if(!unit || !cnt[unit]) unit = units[0];
-    var U = $('moUnits'); U.hidden = units.length < 2;
-    U.innerHTML = units.length > 1 ? units.map(function(u){ return '<button type="button" class="as-vt-b" data-u="'+esc(u)+'" aria-selected="'+(u === unit)+'">'+esc(u)+'</button>'; }).join('') : '';
-    R = R.filter(function(r){ return r.unit === unit; });
-    var dates = [], ds = {}, V = {};
-    R.forEach(function(r){ var d = String(r.gate_date); if(!ds[d]){ ds[d] = 1; dates.push(d); }
-      var v = V[r.vendor_id] || (V[r.vendor_id] = { id:r.vendor_id, name:r.vendor_name, type:r.vendor_type, s:{} }); v.s[d] = Number(r.price); });
-    dates.sort();
+    if(!S.unit || !cnt[S.unit]) S.unit = units[0];
+    var R = ROWS.filter(function(r){ return r.unit === S.unit; }), V = {}, ds = {};
+    R.forEach(function(r){ var d = String(r.gate_date); ds[d] = 1;
+      var v = V[r.vendor_id] || (V[r.vendor_id] = { id:r.vendor_id, name:vgroup(r.vendor_name), type:channel(r.vendor_type), P:{} });
+      (v.P[r.direction] = v.P[r.direction] || {})[d] = Number(r.price); });
+    var W = Object.keys(ds).sort(), legs = LEGS.map(function(l){ return l[0]; }).filter(function(l){ return R.some(function(r){ return r.direction === l && String(r.gate_date) === GATE; }); });
     var vs = Object.keys(V).map(function(k){ return V[k]; });
-    var now = vs.filter(function(v){ return v.s[GATE] > 0; }).sort(function(a, b){ return a.s[GATE] - b.s[GATE] || a.name.localeCompare(b.name); });
-    var stale = vs.filter(function(v){ return !(v.s[GATE] > 0); });
-    var prices = now.map(function(v){ return v.s[GATE]; }), M = med(prices), lo = prices[0], hi = prices[prices.length-1];
-    /* Per vendor: first week priced, and the latest week its price moved by more than half a
-       percent from its previous published week. */
-    var rp = {};
-    vs.forEach(function(v){ var prev = null; v.last = null; v.first = null; dates.forEach(function(d){ var p = v.s[d]; if(p > 0){ if(!v.first) v.first = d; if(prev != null && Math.abs(p/prev-1) > 0.005){ v.last = d; rp[d] = 1; } prev = p; } }); });
-    var env = dates.map(function(d){ var a = []; vs.forEach(function(v){ var p = v.s[d]; if(p > 0) a.push(p); });
-      return a.length ? { d:d, lo:Math.min.apply(null, a), hi:Math.max.apply(null, a), m:med(a), n:a.length } : null; }).filter(Boolean);
-    CUR = { V:V, dates:dates, env:env, now:now, M:M, lo:lo, hi:hi, rp:rp, moved:now.filter(function(v){ return v.last; }).length };
-    $('moMeta').textContent = [model.modality || '', TIER[model.tier] || '', unit].filter(Boolean).join(' · ');
-    $('moMed').innerHTML = px(M);
-    var f = env[0], l = env[env.length-1];
-    $('moMedSub').innerHTML = env.length > 1 ? chg((l.m/f.m-1)*100)+'<em>since '+mdate(f.d)+'</em>' : '<em>first week priced</em>';
-    stats(); dist();
-    var L0 = Math.log(lo*0.85), L1 = Math.log(hi*1.15), SP = (L1-L0) || 1;
-    function P(v){ return ((Math.log(v)-L0)/SP*100).toFixed(2); }
-    $('moTbl').innerHTML = now.map(function(v){ var p = v.s[GATE], d = (p/M-1)*100;
-      return '<tr class="pick'+(v.id === selV ? ' sel' : '')+'" tabindex="0" data-v="'+esc(v.id)+'"><td>'+esc(vgroup(v.name))+'</td><td class="d">'+esc(channel(v.type))+'</td><td class="r">'+px(p)+'</td><td class="r">'+(Math.abs(d) < 0.05 ? 'At median' : Math.abs(d).toFixed(1)+'% '+(d > 0 ? 'above' : 'below'))+'</td>'
-        + '<td class="r">'+(v.first < GATE ? chg((p/v.s[v.first]-1)*100) : '<span class="d">New</span>')+'</td>'
-        + '<td class="r'+(v.last ? '' : ' d')+'">'+(v.last ? sdate(v.last) : v.first > dates[0] ? 'Listed '+sdate(v.first) : 'No change on record')+'</td>'
-        + '<td><div class="tp-pos"><i></i><b style="left:'+P(M)+'%"></b><s style="left:'+P(p)+'%"></s></div></td></tr>'; }).join('');
-    $('moStale').textContent = stale.length ? stale.length+' vendor'+(stale.length === 1 ? '' : 's')+' that priced this model before published no price on '+ldate(GATE)+' and '+(stale.length === 1 ? 'is' : 'are')+' left out: '+stale.map(function(v){ var x = Object.keys(v.s).sort().pop(); return vgroup(v.name)+' (last priced '+sdate(x)+')'; }).join(', ')+'.' : 'Every vendor above published this price on '+ldate(GATE)+'.';
-    $('moSrc').textContent = 'Source: Attic Standard, prices published '+ldate(GATE)+'. Figures update with each index publication. Unit: price '+unit+'. Price: each vendor’s lowest list price for the model; the median counts each vendor once.';
-    chart();
-    $('moMsg').hidden = true; $('moBody').hidden = false;
+    /* Each leg by week: median, lowest, highest, vendors. */
+    var E = {}; legs.forEach(function(l){ E[l] = W.map(function(d){ var a = []; vs.forEach(function(v){ var p = v.P[l] && v.P[l][d]; if(p > 0) a.push(p); }); return a.length ? { d:d, m:med(a), lo:Math.min.apply(null, a), hi:Math.max.apply(null, a), n:a.length } : null; }); });
+    vs.forEach(function(v){ var f = null; W.forEach(function(d){ if(f) return; if(legs.some(function(l){ return v.P[l] && v.P[l][d] > 0; })) f = d; }); v.first = f; });
+    if(!S.leg || legs.indexOf(S.leg) < 0) S.leg = legs.indexOf('Output') > -1 ? 'Output' : legs[0];
+    if(S.K == null || S.K > W.length-1) S.K = W.length-1;
+    CUR = { units:units, legs:legs, W:W, V:V, vs:vs, E:E };
   }
-  function pickV(id){ selV = selV === id ? null : id; render(); }
-  /* Price by week on the shared frame: the band from the lowest to the highest vendor, the median,
-     a dotted line at each week a vendor repriced, the selected vendor in white. */
+  function render(){ prep(); head(); controls(); tiles(); chart(); week(); foot(); }
+  function head(){
+    var m = model, C = CUR, now = C.vs.filter(function(v){ return C.legs.some(function(l){ return v.P[l] && v.P[l][GATE] > 0; }); }).length;
+    $('moCode').textContent = [m.creator, m.modality, TIER[m.tier]].filter(Boolean).join(' · ');
+    $('moName').textContent = m.model_name; pinBtn();
+    var ix = m._ix || [];
+    $('moCg').innerHTML = '<span class="tp-cgl"><span class="tp-np"><b>'+now+'</b> vendors</span><span class="tp-np"><b>'+C.W.length+'</b> weeks priced, since '+esc(ldate(C.W[0]))+'</span></span>'
+      + (ix.length ? '<span class="tp-cgd" aria-hidden="true"></span><span class="tp-cgl"><span class="tp-lbl">In '+ix.length+' published '+(ix.length === 1 ? 'index' : 'indexes')+'</span>'
+        + ix.map(function(c){ var p = c.split(' '); return '<button type="button" class="tp-np tp-ixl" data-ix="'+esc(c)+'" title="'+esc(ixName(c))+'">'+esc(p[1]+(p[2] !== 'GLB' ? ' '+p[2] : ''))+'</button>'; }).join('')+'</span>' : '');
+    $('moFacts').textContent = facts(m);
+  }
+  function ctx(n){ n = Number(n); if(!(n > 0)) return null; if(n >= 1e6) return (Math.round(n/1e5)/10).toString().replace(/\.0$/,'')+'M'; if(n >= 1000) return Math.round(n/1000)+'K'; return String(n); }
+  function list2(a){ a = (a || []).map(function(x){ return String(x).toLowerCase(); }); return a.length ? a.join(', ') : null; }
+  function ym(t){ var x = /^(\d{4})-(\d{2})/.exec(String(t || '')); return x ? MN[+x[2]-1]+' '+x[1] : null; }
+  function params(p){ p = String(p || '').trim(); if(!p || /^not/i.test(p) || /^\d{1,3}$/.test(p)) return null; if(/^\d{9,}$/.test(p)) return Math.round(Number(p)/1e9)+'B parameters'; return p+(/param/i.test(p) ? '' : ' parameters'); }
+  /* The profile in one line, as published by the developer; missing facts are left out. */
+  function facts(m){
+    var io = list2(m.modality_input), oo = list2(m.modality_output), c = ctx(m.context_window), o = ctx(m.max_output_tokens);
+    var a = [io && oo ? (io.charAt(0).toUpperCase()+io.slice(1))+' in, '+oo+' out' : null, c ? c+' context' : null, o ? o+' max output' : null, params(m.parameter_count),
+      WEIGHTS[m.license_class] ? WEIGHTS[m.license_class]+(m.license_type && !/proprietary|open-source/i.test(m.license_type) ? ' ('+m.license_type+')' : '') : null,
+      m.creator_country ? 'Developed in '+m.creator_country : null, m.is_reasoning ? 'Reasoning' : null, m.tool_calling ? 'Tool calling' : null, m.json_mode ? 'JSON mode' : null,
+      ym(m.training_cutoff) ? 'Training data to '+ym(m.training_cutoff) : null].filter(Boolean);
+    return a.join(' · ');
+  }
+  function controls(){
+    var U = $('moUnits'); U.hidden = CUR.units.length < 2;
+    U.innerHTML = CUR.units.length > 1 ? CUR.units.map(function(u){ return '<button type="button" class="as-vt-b" data-u="'+esc(u)+'" aria-selected="'+(u === S.unit)+'">'+esc(u.replace(/^per /, 'Per '))+'</button>'; }).join('') : '';
+    $('moCtlN').textContent = 'Market median, the middle vendor price, '+S.unit;
+  }
+  function tiles(){
+    var C = CUR, K = S.K;
+    $('moTiles').className = 'tp-tiles n'+C.legs.length;
+    $('moTiles').innerHTML = C.legs.map(function(l){ var A = C.E[l], e = A[K], on = l === S.leg;
+      function back(n){ for(var i = K-n; i >= 0; i--) if(A[i]) return A[i]; return null; }
+      var f = null; for(var i = 0; i <= K; i++) if(A[i]){ f = A[i]; break; }
+      var w = K > 0 && A[K-1] && e ? (e.m/A[K-1].m-1)*100 : null, mo = K >= 4 && back(4) && e ? (e.m/back(4).m-1)*100 : null, sf = f && e && f !== e ? (e.m/f.m-1)*100 : null;
+      return '<button type="button" class="tp-leg'+(on ? ' on' : '')+'" data-leg="'+esc(l)+'" aria-pressed="'+on+'"><span class="tp-lbl">'+legName(l)+'</span>'
+        + '<span class="tp-lv">'+(e ? px(e.m) : '&mdash;')+'</span><span class="tp-c3">'+[['1 week', w], ['1 month', mo], ['Since '+(f ? sdate(f.d).replace(/, \d{4}$/, '') : 'first priced'), sf]].map(function(c){ return '<span><span class="tp-lbl">'+c[0]+'</span>'+(c1(c[1]) || '<span class="d">&mdash;</span>')+'</span>'; }).join('')+'</span>'
+        + (e ? '<span class="tp-ls">'+e.n+' vendor'+(e.n === 1 ? '' : 's')+(e.n > 1 ? ', '+px(e.lo)+' to '+px(e.hi) : '')+'</span>' : '')+'</button>'; }).join('');
+  }
+  /* The selected leg by week: the median, the band from the lowest to the highest vendor, the selected week. */
   function chart(){
-    var Cc = CUR, env = Cc.env, V = Cc.V;
-    $('moChT').textContent = legName(leg)+' price by week';
-    $('moChN').textContent = env.length ? 'Since '+ldate(env[0].d)+', '+env.length+' week'+(env.length === 1 ? '' : 's')+', '+unit+'.' : '';
-    var sv = selV ? V[selV] : null, rps = Object.keys(Cc.rp).filter(function(d){ return env.length && d !== env[0].d; });
-    var lg = [{ k:'line', c:sv ? 'var(--series-history)' : 'var(--series)', n:'Market median' }, { k:'bar', c:'rgba(198,203,211,.22)', n:'Lowest to highest vendor' }];
-    if(rps.length) lg.push({ k:'thin', c:'var(--l5)', n:'A vendor repriced' });
-    if(sv) lg.push({ k:'line', c:'var(--l1)', n:vgroup(sv.name) });
-    C().legend($('moLg'), lg);
-    var box = $('moCh');
-    if(env.length < 2){ box._geo = null; if(box._asro){ box._asdraw = null; } box.innerHTML = '<p class="tp-note" style="padding:var(--s6) 0;text-align:center">Priced for one week so far. The chart starts with the second week.</p>'; return; }
+    var Cc = CUR, A = Cc.E[S.leg].map(function(e, i){ return e ? { e:e, i:i } : null; }).filter(Boolean), box = $('moCh'), l = A[A.length-1].e;
+    C().legend($('moLg'), [{ k:'line', c:'var(--series)', n:legName(S.leg)+' market median', v:px(l.m) }, { k:'bar', c:'rgba(198,203,211,.3)', n:'Lowest to highest vendor' }, { k:'thin', c:'var(--l1)', n:'Selected week' }]);
+    if(A.length < 2){ box._geo = null; box.innerHTML = '<p class="tp-note tp-empty">Priced for one week so far.</p>'; return; }
     mount(box, function(){
-      var ch = C(), AX = ch.axis(env[0].d, env[env.length-1].d), vals = [];
-      env.forEach(function(e){ vals.push(e.lo, e.hi); });
-      if(sv) Cc.dates.forEach(function(d){ if(sv.s[d] > 0) vals.push(sv.s[d]); });
-      var vmin = Math.min.apply(null, vals), vmax = Math.max.apply(null, vals), pad = (vmax-vmin)*0.12 || vmax*0.1, lo = Math.max(0, vmin-pad), hi = vmax+pad, tk = ticks(lo, hi, 4);
-      var Y = ch.y(lo, hi), g = [];
+      var ch = C(), AX = ch.axis(iso(utc(A[0].e.d) - 14*864e5), A[A.length-1].e.d), vals = [];
+      A.forEach(function(x){ vals.push(x.e.lo, x.e.hi); });
+      var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = (hi-lo)*0.12 || hi*0.1; lo = Math.max(0, lo-pad); hi += pad;
+      var tk = ticks(lo, hi, 4), Y = ch.y(lo, hi), g = [], st = tk.length > 1 ? tk[1]-tk[0] : hi, dp = Math.max(0, -Math.floor(Math.log10(st)));
       function step(a){ var o = []; a.forEach(function(p, i){ if(i) o.push([p[0], a[i-1][1]]); o.push(p); }); return o; }
       function pts(a){ return a.map(function(p){ return AX.x(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1); }).join(' '); }
-      tk.forEach(function(v){ if(v >= lo && v <= hi){ g.push(ch.rule(Y(v), { cls:'as-s-grid' })); g.push(T(ch.X0, Y(v)-4, ax$(v))); } });
-      rps.forEach(function(d){ var x = AX.x(d).toFixed(1); g.push('<line x1="'+x+'" x2="'+x+'" y1="'+ch.PT+'" y2="'+ch.PB+'" class="as-s-axis" stroke-dasharray="2 3"></line>'); });
-      g.push('<polygon points="'+pts(step(env.map(function(e){ return [e.d, e.hi]; })))+' '+pts(step(env.map(function(e){ return [e.d, e.lo]; })).reverse())+'" style="fill:rgba(198,203,211,.10)"></polygon>');
-      g.push('<polyline fill="none" class="'+(sv ? 'as-s-hist' : 'as-s-series')+'" stroke-width="2" stroke-linejoin="round" points="'+pts(step(env.map(function(e){ return [e.d, e.m]; })))+'"></polyline>');
-      var la = env[env.length-1];
-      if(sv){ var co = Cc.dates.filter(function(d){ return sv.s[d] > 0; }).map(function(d){ return [d, sv.s[d]]; });
-        if(co.length) g.push('<polyline fill="none" stroke="var(--l1)" stroke-width="2" stroke-linejoin="round" points="'+pts(step(co))+'"></polyline>');
-        if(sv.s[GATE] > 0) g.push('<circle cx="'+AX.x(GATE).toFixed(1)+'" cy="'+Y(sv.s[GATE]).toFixed(1)+'" r="4" fill="var(--l1)"></circle>'); }
-      else g.push('<circle cx="'+AX.x(la.d).toFixed(1)+'" cy="'+Y(la.m).toFixed(1)+'" r="4" class="as-f-series"></circle>');
+      tk.forEach(function(v){ if(v < lo || v > hi) return; g.push(ch.rule(Y(v), { cls:'as-s-grid' })); g.push(T(ch.X0, Y(v)-4, ax$(v, dp))); });
+      g.push('<polygon points="'+pts(step(A.map(function(x){ return [x.e.d, x.e.hi]; })))+' '+pts(step(A.map(function(x){ return [x.e.d, x.e.lo]; })).reverse())+'" style="fill:rgba(198,203,211,.12)"></polygon>');
+      g.push('<polyline fill="none" class="as-s-series" stroke-width="2" stroke-linejoin="round" points="'+pts(step(A.map(function(x){ return [x.e.d, x.e.m]; })))+'"></polyline>');
+      var s = Cc.E[S.leg][S.K]; if(s){ var sx = AX.x(s.d);
+        g.push('<line x1="'+sx.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y1="'+ch.PT+'" y2="'+ch.TA+'" style="stroke:var(--l1)"></line>');
+        g.push('<circle cx="'+sx.toFixed(1)+'" cy="'+Y(s.m).toFixed(1)+'" r="5" style="fill:var(--l1);stroke:var(--bg);stroke-width:2"></circle>'); }
       g.push(AX.svg());
-      box._geo = { axis:ch.TA/ch.H, pts:env.map(function(e){ return { f:AX.x(e.d)/ch.W, e:e }; }) };
-      return ch.svg(g.join(''), model.model_name+' '+legName(leg).toLowerCase()+' price by week: market median and the range from the lowest to the highest vendor');
+      box._geo = { axis:ch.TA/ch.H, pts:A.map(function(x){ return { f:AX.x(x.e.d)/ch.W, e:x.e, i:x.i }; }) };
+      return ch.svg(g.join(''), model.model_name+', '+legName(S.leg).toLowerCase()+' market median and the range from the lowest to the highest vendor, by week');
     });
   }
+  function pickWeek(i){ if(i == null || i === S.K || i < 0 || i > CUR.W.length-1) return; S.K = i; tiles(); chart(); week(); }
+
+  /* ── The week: every vendor, cheapest first on the selected leg ── */
+  if(PHONE.addEventListener) PHONE.addEventListener('change', function(){ if(CUR) week(); });
+  function week(){
+    var C = CUR, K = S.K, d = C.W[K], pd = K > 0 ? C.W[K-1] : null, sel = S.leg, LV = PHONE.matches ? [sel] : C.legs, N = 1 + LV.length*4;
+    $('moWkT').textContent = 'Week of '+ldate(d);
+    $('moPrev').disabled = K <= 0; $('moNext').disabled = K >= C.W.length-1;
+    function on(l){ return l === sel ? ' on' : ' off'; }
+    function at(v, l, x){ return v.P[l] && v.P[l][x] > 0 ? v.P[l][x] : null; }
+    var now = C.vs.filter(function(v){ return C.legs.some(function(l){ return at(v, l, d); }); }), M = {};
+    C.legs.forEach(function(l){ M[l] = C.E[l][K] ? C.E[l][K].m : null; });
+    now.sort(function(a, b){ var x = at(a, sel, d), y = at(b, sel, d); return (x == null) - (y == null) || (x || 0) - (y || 0) || a.name.localeCompare(b.name); });
+    /* Vendors that priced the model in an earlier week and not in this one. */
+    var gone = C.vs.filter(function(v){ return now.indexOf(v) < 0 && v.first && v.first < d; }).map(function(v){ var last = null;
+      C.W.forEach(function(x){ if(x < d && C.legs.some(function(l){ return at(v, l, x); })) last = x; }); v.last = last; return v; }).sort(function(a, b){ return a.last < b.last ? 1 : a.last > b.last ? -1 : a.name.localeCompare(b.name); });
+    var h = '<thead><tr class="tp-hg"><th class="tp-unit">Prices in USD '+esc(S.unit)+'; the median counts each vendor once</th>'+LV.map(function(l){ return '<th class="tp-gp'+on(l)+'"></th><th colspan="3" class="tp-lgh'+on(l)+'"><span>'+legName(l)+'</span></th>'; }).join('')+'</tr>'
+      + '<tr class="tp-hc"><th>Vendor</th>'+LV.map(function(l){ var o = on(l); return '<th class="tp-gp tp-w0'+o+'"></th><th class="r tp-w1'+o+'">Price</th><th class="r tp-w2'+o+'">1 week</th><th class="r tp-w3'+o+'">Vs median</th>'; }).join('')+'</tr></thead><tbody>';
+    function cell(v, l){ var o = on(l), p = at(v, l, d), p0 = pd ? at(v, l, pd) : null, mv = p != null && p0 != null && Math.abs(p/p0-1) > 0.005;
+      if(p == null) return '<td class="tp-gp'+o+'"></td><td class="r d'+o+'">'+(C.E[l][K] ? 'Not priced' : '')+'</td><td class="'+o.trim()+'"></td><td class="'+o.trim()+'"></td>';
+      return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(mv ? '<span class="tp-was">'+esc(px(p0))+'</span>' : '')+esc(px(p))+'</td><td class="r'+o+'">'+(mv ? chg((p/p0-1)*100, 1) : '')+'</td><td class="r'+o+'"><span class="d">'+(M[l] ? vs(p, M[l]) : '')+'</span></td>'; }
+    /* A vendor opened: each week its price changed on any leg, newest first, up to the selected week. */
+    function hist(v){
+      var ev = [], prev = {};
+      C.W.slice(0, K+1).forEach(function(x){ var ch = {}, any = false;
+        C.legs.forEach(function(l){ var p = at(v, l, x); if(p != null && prev[l] != null && Math.abs(p/prev[l]-1) > 0.005){ ch[l] = [prev[l], p]; any = true; } if(p != null) prev[l] = p; });
+        if(any) ev.push({ d:x, ch:ch }); });
+      var out = ev.reverse().map(function(e){ return '<tr class="tp-vr"><td><span class="tp-vn">'+esc(sdate(e.d))+'<em>Repriced</em></span></td>'
+        + LV.map(function(l){ var c = e.ch[l], o = on(l); return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(c ? '<span class="tp-was">'+esc(px(c[0]))+'</span>'+esc(px(c[1])) : '')+'</td><td class="r'+o+'">'+(c ? chg((c[1]/c[0]-1)*100, 1) : '')+'</td><td class="'+o.trim()+'"></td>'; }).join('')+'</tr>'; }).join('');
+      return out + '<tr class="tp-vgo"><td colspan="'+N+'"><span class="tp-note">'+(ev.length ? 'First priced '+esc(ldate(v.first))+'.' : 'No price change since first priced '+esc(ldate(v.first))+'.')+'</span></td></tr>';
+    }
+    function row(v){ var o = !!S.open[v.id], nw = pd && v.first === d;
+      return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-v="'+esc(v.id)+'" aria-expanded="'+o+'"><td><span class="tp-mn"><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg><b>'+esc(v.name)+'</b>'+(nw ? '<span class="tp-nw">New</span>' : '')+'<em>'+esc(v.type)+'</em></span></td>'
+        + LV.map(function(l){ return cell(v, l); }).join('')+'</tr>'+(o ? hist(v) : ''); }
+    function grp(t, n, note){ return '<tr class="tp-gr"><td colspan="'+N+'"><span class="tp-lbl">'+t+'</span><span class="c">'+n+'</span>'+(note ? '<span class="hn">'+note+'</span>' : '')+'</td></tr>'; }
+    h += grp('Priced this week', now.length, 'cheapest first on '+legName(sel).toLowerCase()) + now.map(row).join('');
+    if(gone.length) h += grp('No price this week', gone.length, 'priced this model before; left out of the median') + gone.map(function(v){ return '<tr class="tp-xr"><td><span class="tp-mn"><b>'+esc(v.name)+'</b><em>'+esc(v.type)+'</em></span></td><td colspan="'+(N-1)+'" class="tp-xw">Last priced '+esc(ldate(v.last))+'</td></tr>'; }).join('');
+    $('moT').className = 'tp-ld n'+LV.length;
+    $('moT').innerHTML = h+'</tbody>';
+  }
+  function foot(){ $('moSrc').textContent = 'Source: Attic Standard, vendor prices published '+ldate(GATE)+'. Each vendor’s lowest list price for the model. Figures update with each index publication.'; }
+  function cite(b){ if(!CUR) return; var e = CUR.E[S.leg][CUR.W.length-1]; if(!e) return;
+    copy(b, 'Attic Standard, '+model.model_name+' '+legName(S.leg).toLowerCase()+' price, '+ldate(GATE)+': market median $'+fx(e.m)+' '+S.unit+' across '+e.n+' vendors (lowest $'+fx(e.lo)+', highest $'+fx(e.hi)+'). atticstandard.com'); }
+
   function start(){
     waiting($('moMsg'));
-    ddVen = DD($('moVen'), 'All vendors', list); ddMod = DD($('moMod'), 'All modalities', list);
-    $('moQ').addEventListener('input', list);
-    $('moList').addEventListener('click', function(e){ var b = e.target.closest('.tp-row'); if(!b) return; for(var i = 0; i < MODELS.length; i++) if(MODELS[i].anchor_id === b.dataset.id){ pick(MODELS[i]); break; } });
-    $('moLegs').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === leg) return; leg = b.dataset.leg; unit = null; selV = null;
-      this.querySelectorAll('[data-leg]').forEach(function(x){ x.setAttribute('aria-selected', String(x === b)); }); render(); });
-    $('moUnits').addEventListener('click', function(e){ var b = e.target.closest('[data-u]'); if(!b) return; unit = b.dataset.u; selV = null; render(); });
-    $('moDist').addEventListener('click', function(e){ var b = e.target.closest('button[data-v]'); if(b) pickV(b.dataset.v); });
-    $('moDist').addEventListener('mouseover', function(e){ var b = e.target.closest('button[data-v]'), t = this.querySelector('.tp-dtip'); if(!t) return; if(!b){ t.hidden = true; return; }
-      var v = CUR.V[b.dataset.v], d = (v.s[GATE]/CUR.M-1)*100;
-      t.innerHTML = '<b>'+esc(vgroup(v.name))+'</b> '+px(v.s[GATE])+' · '+(Math.abs(d) < 0.05 ? 'at median' : Math.abs(d).toFixed(1)+'% '+(d > 0 ? 'above' : 'below')); t.style.left = b.style.left; t.hidden = false; });
-    $('moDist').addEventListener('mouseleave', function(){ var t = this.querySelector('.tp-dtip'); if(t) t.hidden = true; });
-    $('moTbl').addEventListener('click', function(e){ var tr = e.target.closest('tr[data-v]'); if(tr) pickV(tr.dataset.v); });
-    $('moTbl').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var tr = e.target.closest('tr[data-v]'); if(!tr) return; e.preventDefault(); pickV(tr.dataset.v); });
-    hover($('moChW'), $('moCh'), function(p){ var e = p.e, sv = selV ? CUR.V[selV] : null;
-      return '<div class="t">Week of '+ldate(e.d)+'</div>Median <b>'+px(e.m)+'</b><br>Lowest '+px(e.lo)+' · Highest '+px(e.hi)+'<br>'+e.n+' vendor'+(e.n === 1 ? '' : 's')+' priced'+(CUR.rp[e.d] && e.d !== CUR.env[0].d ? ', repricing that week' : '')
-        + (sv && sv.s[e.d] > 0 ? '<br>'+esc(vgroup(sv.name))+' <b>'+px(sv.s[e.d])+'</b>' : ''); });
-    $('moCite').addEventListener('click', function(){ if(!CUR) return;
-      copy(this, 'Attic Standard, '+model.model_name+' '+legName(leg).toLowerCase()+' price, '+ldate(GATE)+': market median $'+fx(CUR.M)+' '+unit+' across '+CUR.now.length+' vendors (lowest $'+fx(CUR.lo)+', highest $'+fx(CUR.hi)+'). atticstandard.com'); });
+    ddVen = DD($('moVen'), 'All vendors', function(){ act = -1; openRes(); });
+    var Q = $('moQ');
+    Q.addEventListener('focus', openRes);
+    Q.addEventListener('input', function(){ act = -1; openRes(); });
+    Q.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){ closeRes(); Q.blur(); return; }
+      if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){ e.preventDefault(); if($('moRes').hidden) openRes(); var n = Math.min(12, matches().length); if(!n) return; act = (act + (e.key === 'ArrowDown' ? 1 : -1) + n) % n; results(); var o = $('moRo'+act); if(o) o.scrollIntoView({ block:'nearest' }); return; }
+      if(e.key === 'Enter'){ e.preventDefault(); var r = matches(); var m = r[Math.max(0, act)]; if(m) choose(m.anchor_id); } });
+    $('moRes').addEventListener('mousedown', function(e){ e.preventDefault(); });
+    $('moRes').addEventListener('click', function(e){ var b = e.target.closest('[data-id]'); if(b) choose(b.dataset.id); });
+    document.addEventListener('click', function(e){ if(!$('moFq').contains(e.target) && !$('moVen').contains(e.target) && !$('moMod').contains(e.target) && !e.target.closest('#moPc [data-open]')) { if(!$('moRes').hidden) closeRes(); } });
+    $('moMod').addEventListener('click', function(e){ var b = e.target.closest('[data-k]'); if(!b) return; mod = b.dataset.k; modRow(); act = -1; openRes(); });
+    $('moPins').addEventListener('click', function(e){
+      var u = e.target.closest('[data-unpin]'); if(u){ e.stopPropagation(); togglePin(u.dataset.unpin); return; }
+      if(e.target.closest('[data-open]')){ pinMode = !pinMode; drawPins(); if(pinMode){ Q.focus(); openRes(); } else closeRes(); return; }
+      var c = e.target.closest('[data-pin]'); if(c && BYA[c.dataset.pin] && BYA[c.dataset.pin] !== model) pick(BYA[c.dataset.pin]); });
+    $('moPc').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var c = e.target.closest('[data-pin]'); if(!c || e.target.closest('[data-unpin]')) return; e.preventDefault(); if(BYA[c.dataset.pin] !== model) pick(BYA[c.dataset.pin]); });
+    $('moPin').addEventListener('click', function(){ if(model) togglePin(model.anchor_id); });
+    $('moCg').addEventListener('click', function(e){ var b = e.target.closest('[data-ix]'); if(!b) return; show('indexes', true); IX.pick(b.dataset.ix); });
+    $('moUnits').addEventListener('click', function(e){ var b = e.target.closest('[data-u]'); if(!b || b.dataset.u === S.unit) return; S.unit = b.dataset.u; S.open = {}; S.K = null; render(); });
+    $('moTiles').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === S.leg) return; S.leg = b.dataset.leg; tiles(); chart(); week(); });
+    $('moPrev').addEventListener('click', function(){ pickWeek(S.K-1); });
+    $('moNext').addEventListener('click', function(){ pickWeek(S.K+1); });
+    hover($('moChW'), $('moCh'), function(p){ var e = p.e;
+      return '<div class="t">Week of '+ldate(e.d)+'</div>Median <b>'+px(e.m)+'</b><br>Lowest '+px(e.lo)+' · Highest '+px(e.hi)+'<br><span class="t">'+e.n+' vendor'+(e.n === 1 ? '' : 's')+(p.i === S.K ? ', selected' : ', select to see them')+'</span>'; });
+    $('moChW').addEventListener('click', function(e){ var G = $('moCh')._geo; if(!G) return; var r = $('moCh').getBoundingClientRect(), f = (e.clientX - r.left)/r.width, best = null, bd = 1e9;
+      G.pts.forEach(function(p){ var x = Math.abs(p.f - f); if(x < bd){ bd = x; best = p; } }); if(best) pickWeek(best.i); });
+    $('moChW').tabIndex = 0; $('moChW').setAttribute('aria-label', 'Chart. Use the left and right arrow keys to choose a week.');
+    $('moChW').addEventListener('keydown', function(e){ if(!CUR || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return; e.preventDefault(); pickWeek(S.K + (e.key === 'ArrowRight' ? 1 : -1)); });
+    /* Any number of vendors can be open at once; a second click closes only that one. */
+    function toggle(tr){ var v = tr.dataset.v; if(S.open[v]) delete S.open[v]; else S.open[v] = 1; week(); var n = $('moT').querySelector('tr[data-v="'+v+'"]'); if(n) n.focus({ preventScroll:true }); }
+    $('moT').addEventListener('click', function(e){ var tr = e.target.closest('tr[data-v]'); if(tr) toggle(tr); });
+    $('moT').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var tr = e.target.closest('tr[data-v]'); if(!tr) return; e.preventDefault(); toggle(tr); });
+    $('moCite').addEventListener('click', function(){ cite(this); });
     if(!sb){ message($('moMsg'), 'Prices load once you are logged in.'); return; }
     Promise.all([
       all(function(){ return sb.from('v_fair_value_models').select('anchor_id,model_name,display_name,creator,tier,modality,vendors,vendor_names,model_family,parameter_count,context_window,max_output_tokens,modality_input,modality_output,tool_calling,json_mode,training_cutoff,license_type,license_class,is_reasoning,creator_country').gte('vendors', 2).order('vendors', { ascending:false }).order('display_name'); }),
       q(sb.from('index_registry').select('index_code').eq('is_published', true)).catch(function(){ return []; })
     ]).then(function(r){ MODELS = r[0] || []; r[1].forEach(function(x){ PUB[x.index_code] = 1; });
       if(!MODELS.length){ message($('moMsg'), 'No model is sold by two or more vendors in the latest publication.'); return; }
-      var mods = {}, vens = {};
-      /* The registry's display name is what people read; the raw name still matches a search. */
-      MODELS.forEach(function(m){ m.raw_name = m.model_name; m.model_name = m.display_name || m.model_name; m._k = (m.model_name+' '+m.raw_name).toLowerCase().replace(/[-._\s/]/g,''); if(m.modality) mods[m.modality] = 1; m._v = (m.vendor_names || []).map(vgroup); m._v.forEach(function(v){ vens[v] = 1; }); });
+      var vens = {};
+      /* The registry's display name is what people read; the raw name and the developer still match a search. */
+      MODELS.forEach(function(m){ m.raw_name = m.model_name; m.model_name = m.display_name || m.model_name; BYA[m.anchor_id] = m;
+        m._k = norm(m.model_name+' '+m.raw_name+' '+(m.creator || '')); m._v = (m.vendor_names || []).map(vgroup); m._v.forEach(function(v){ vens[v] = 1; }); });
       ddVen.setOptions(Object.keys(vens).sort(function(a, b){ return a.localeCompare(b); }).map(function(v){ return [v, v]; }));
-      ddMod.setOptions(Object.keys(mods).sort().map(function(m){ return [m, m]; }));
+      modRow();
       var keep = pending; if(!keep){ try{ keep = localStorage.getItem('atMoModel'); }catch(e){} } pending = null;
-      pick(MODELS.filter(function(m){ return m.anchor_id === keep; })[0] || MODELS[0]);
-    }).catch(function(e){ console.error('[Pricing]', e); message($('moMsg'), 'Prices could not be loaded. Refresh the page, or log in again if the problem persists.'); });
+      pick(BYA[keep] || BYA[pins()[0]] || MODELS[0]);
+    }).catch(function(e){ console.error('[Models]', e); message($('moMsg'), 'Models could not be loaded. Refresh the page, or log in again if the problem persists.'); });
   }
-  /* Contracts can open a model here. */
-  function openModel(id){ if(!MODELS.length){ pending = id; return; } var m = MODELS.filter(function(x){ return x.anchor_id === id; })[0]; if(m && m !== model) pick(m); }
+  /* The Indexes week table can open a model here. */
+  function openModel(id){ if(!MODELS.length){ pending = id; return; } var m = BYA[id]; if(m && m !== model) pick(m); }
   return { start:start, open:openModel };
 })();
 
