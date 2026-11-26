@@ -81,7 +81,7 @@ var cur = null, started = {};
 
 function shell(){
   var h = '<div class="tp" id="atomTP">'
-  + '<header class="tp-pins" id="tpPins"><h1 class="tp-vh">Terminal</h1><p class="tp-lbl">Pinned indexes</p><div class="tp-pc" id="tpPc"></div></header>'
+  + '<h1 class="tp-vh">Terminal</h1>'
   + '<div class="tp-bar" id="tpBar"><div class="as-vt" role="tablist" aria-label="Terminal dashboards" id="tpTabs"></div></div>'
   + indexesHTML() + pricingHTML() + contractsHTML() + '</div>';
   var d = document.createElement('div'); d.innerHTML = h; ROOT = d.firstChild;
@@ -147,11 +147,13 @@ function masthead(){
    the pointer rests on it. While a new index loads the current one stays in place, dimmed. */
 function indexesHTML(){
   return '<section class="tp-dash" id="tpIndexes" role="tabpanel" aria-label="Indexes" hidden>'
+  + '<section class="tp-pins" id="tpPins" aria-label="Pinned indexes" hidden><div class="tp-bh"><p class="tp-lbl">Pinned indexes</p><span class="tp-bn" id="tpPinN"></span></div>'
+  + '<div class="tp-pc" id="tpPc"></div><div class="tp-ppk" id="tpPick" hidden></div></section>'
   + '<div class="tp-sel" id="ixSel"><span class="tp-lbl">Family</span><div class="as-vt" id="ixFam" role="group" aria-label="Family"></div>'
   + '<span class="tp-lbl">Index</span><div class="as-vt" id="ixSeg" role="group" aria-label="Index"></div>'
   + '<span class="tp-lbl">Market</span><div class="as-vt" id="ixMkt" role="group" aria-label="Market"></div></div>'
   + '<div id="ixMsg"></div><div class="tp-ix" id="ixBody" hidden><div class="tp-prog" id="ixProg" hidden></div>'
-  + '<div class="tp-ixh"><div class="tp-ixt"><p class="tp-code" id="ixCode"></p><h2 class="tp-h" id="ixName"></h2><p class="tp-q" id="ixQ"></p></div><div class="tp-cg" id="ixCg"></div></div>'
+  + '<div class="tp-ixh"><div class="tp-ixt"><p class="tp-code" id="ixCode"></p><h2 class="tp-h" id="ixName"></h2></div><div class="tp-cg" id="ixCg"></div></div>'
   + '<section class="tp-blk" id="ixComp"><div class="tp-bh"><p class="tp-lbl">Index composition by vendor type</p><span class="tp-bn">Share of SKUs in the index</span></div><div class="tp-ck" id="ixCk"></div><div class="tp-cb" id="ixCb"></div></section>'
   + '<section class="tp-blk" id="ixBehS"><div class="tp-bh"><p class="tp-lbl">Index behavior</p><span class="tp-bn">Structure now, behavior over 13 weeks &middot; bar shows the range across all indexes</span></div><div class="tp-b4" id="ixB4"></div></section>'
   + '<section class="tp-blk tp-lgs" id="ixLegsS"><div class="tp-ctl"><div class="as-vt" id="ixMode" role="group" aria-label="Measure"><button type="button" class="as-vt-b" data-m="lv">Index level</button><button type="button" class="as-vt-b" data-m="sp">Spot price</button></div>'
@@ -183,30 +185,46 @@ function spark(vs, h, on){
 }
 
 /* ═══ PINNED INDEXES ═══ */
-/* The Terminal's header: the indexes a subscriber follows, each with its latest level, its change on
-   the week and its line. Pins are kept in this browser; five to start with. */
+/* The first row of the Indexes view: up to five indexes a subscriber follows. Each card carries the
+   code, the name, what the index tracks, and every leg it has with its level and change on the week.
+   An x unpins a card; while fewer than five are pinned, a dashed card opens a picker grouped by family.
+   Pins are kept in this browser. */
 var PINS = (function(){
-  var DEF = ['AIPI FLG GLB', 'AIPI TXT GLB', 'AIPI MML GLB', 'AIPI PLT GLB', 'AIPI CHN GLB'], MAX = 5, BY = {}, on = null;
-  function get(){ var p = null; try{ p = JSON.parse(localStorage.getItem('atPins') || 'null'); }catch(e){} return (p && p.length ? p : DEF).filter(function(c){ return BY[c]; }).slice(0, MAX); }
+  var DEF = ['AIPI FLG GLB', 'AIPI TXT GLB', 'AIPI MML GLB', 'AIPI PLT GLB'], MAX = 5, BY = {}, L = [], on = null, pick = false;
+  var FAMO = ['Modality', 'Channel', 'Tier', 'License', 'Origin', 'Use case'], LK = [['input', 'Input'], ['cached', 'Cached'], ['output', 'Output']];
+  function get(){ var p = null; try{ p = JSON.parse(localStorage.getItem('atPins') || 'null'); }catch(e){} return (Array.isArray(p) ? p : DEF).filter(function(c){ return BY[c]; }).slice(0, MAX); }
   function put(p){ try{ localStorage.setItem('atPins', JSON.stringify(p)); }catch(e){} }
-  function leg(x){ var lv = x.lv || {}; return lv.output ? 'output' : lv.input ? 'input' : lv.cached ? 'cached' : null; }
+  function short(c){ var p = c.split(' '); return p[1]+(p[2] !== 'GLB' ? ' '+p[2] : ''); }
+  function card(c){ var x = BY[c], lv = x.lv || {}, sel = c === on, nm = ixName(c);
+    return '<div class="tp-pcd'+(sel ? ' on' : '')+'" role="button" tabindex="0" data-pin="'+esc(c)+'" aria-pressed="'+sel+'">'
+      + '<button type="button" class="tp-unpin" data-unpin="'+esc(c)+'" aria-label="Unpin '+esc(nm)+'"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6"></path></svg></button>'
+      + '<p class="tp-code">'+esc(c)+'</p><p class="tp-pn">'+esc(nm)+'</p><p class="tp-pd">'+esc(x.desc || '')+'</p>'
+      + '<div class="tp-plg">'+LK.filter(function(k){ return lv[k[0]]; }).map(function(k){ var v = lv[k[0]];
+          return '<span class="tp-pk">'+k[1]+'</span><b>'+Number(v[0]).toFixed(2)+'</b>'+(chg(v[1] == null ? null : Number(v[1]), 2) || '<span></span>'); }).join('')+'</div></div>'; }
   function draw(){
-    var el = $('tpPc'); if(!el) return; var P = get();
-    el.innerHTML = P.map(function(c){ var x = BY[c], l = leg(x), v = l ? x.lv[l] : null, sel = c === on;
-      return '<div class="tp-pcd'+(sel ? ' on' : '')+'" role="button" tabindex="0" data-pin="'+esc(c)+'" aria-pressed="'+sel+'">'
-        + '<p class="tp-pch"><span class="tp-code">'+esc(c)+'</span><span class="tp-pl2">'+(l ? esc({ input:'Input', cached:'Cached', output:'Output' }[l]) : '')+'</span></p>'
-        + '<p class="tp-pn">'+esc(ixName(c))+'</p><p class="tp-pv"><b>'+(v ? Number(v[0]).toFixed(2) : '')+'</b>'+(v ? chg(v[1] == null ? null : Number(v[1]), 2) : '')+'</p>'
-        + (v ? spark(v[2], 34, sel) : '')+'<button type="button" class="tp-unpin" data-unpin="'+esc(c)+'" aria-label="Unpin '+esc(c)+'">&times;</button></div>'; }).join('')
-      + (P.length < MAX && on && P.indexOf(on) < 0 ? '<button type="button" class="tp-pcd tp-padd" data-add="'+esc(on)+'">+ Pin '+esc(ixName(on))+'</button>' : '');
+    var el = $('tpPc'); if(!el) return; var P = get(), full = P.length >= MAX; if(full) pick = false;
+    $('tpPinN').textContent = P.length+' of '+MAX;
+    el.innerHTML = P.map(card).join('') + (full ? '' : '<button type="button" class="tp-padd'+(pick ? ' on' : '')+'" data-open="1" aria-expanded="'+pick+'" aria-controls="tpPick">+ Pin an index</button>');
+    var k = $('tpPick'); k.hidden = !pick; if(!pick){ k.innerHTML = ''; return; }
+    var fams = FAMO.filter(function(f){ return L.some(function(x){ return x.fam === f; }); });
+    L.forEach(function(x){ if(fams.indexOf(x.fam) < 0) fams.push(x.fam); });
+    k.innerHTML = '<div class="tp-bh"><p class="tp-lbl">Pin an index</p><span class="tp-bn">Up to five. Pinned indexes stay in this browser.</span><button type="button" class="tp-link" data-close="1">Close</button></div>'
+      + '<div class="tp-ppg">'+fams.map(function(f){ return '<div class="tp-ppf"><p class="tp-lbl">'+esc(f)+'</p>'
+        + L.filter(function(x){ return x.fam === f; }).map(function(x){ var pn = P.indexOf(x.code) > -1;
+            return '<button type="button" class="tp-ppi"'+(pn ? ' disabled' : ' data-add="'+esc(x.code)+'"')+'><span class="tp-cd2">'+esc(short(x.code))+'</span><span>'+esc(ixName(x.code))+'</span><span class="tp-pin2">'+(pn ? 'Pinned' : '')+'</span></button>'; }).join('')
+        + '</div>'; }).join('')+'</div>';
   }
+  function go(c){ show('indexes', true); IX.pick(c); }
   function start(){
-    var el = $('tpPc'); if(!el || !sb) { if($('tpPins')) $('tpPins').hidden = true; return; }
-    list().then(function(L){ L.forEach(function(x){ BY[x.code] = x; }); draw(); }).catch(function(){ $('tpPins').hidden = true; });
-    el.addEventListener('click', function(e){
+    var el = $('tpPc'), box = $('tpPins'); if(!el || !sb) return;
+    list().then(function(R){ L = R; R.forEach(function(x){ BY[x.code] = x; }); box.hidden = false; draw(); }).catch(function(){ box.hidden = true; });
+    box.addEventListener('click', function(e){
       var u = e.target.closest('[data-unpin]'); if(u){ e.stopPropagation(); put(get().filter(function(c){ return c !== u.dataset.unpin; })); draw(); return; }
-      var a = e.target.closest('[data-add]'); if(a){ var p = get(); p.push(a.dataset.add); put(p); draw(); return; }
-      var c = e.target.closest('[data-pin]'); if(c){ show('indexes', true); IX.pick(c.dataset.pin); } });
-    el.addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var c = e.target.closest('[data-pin]'); if(!c || e.target.closest('[data-unpin]')) return; e.preventDefault(); show('indexes', true); IX.pick(c.dataset.pin); });
+      if(e.target.closest('[data-open]')){ pick = !pick; draw(); return; }
+      if(e.target.closest('[data-close]')){ pick = false; draw(); return; }
+      var a = e.target.closest('[data-add]'); if(a){ var p = get(); if(p.length < MAX && p.indexOf(a.dataset.add) < 0) p.push(a.dataset.add); put(p); pick = false; draw(); return; }
+      var c = e.target.closest('[data-pin]'); if(c) go(c.dataset.pin); });
+    el.addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var c = e.target.closest('[data-pin]'); if(!c || e.target.closest('[data-unpin]')) return; e.preventDefault(); go(c.dataset.pin); });
   }
   function mark(c){ on = c; draw(); }
   return { start:start, mark:mark };
@@ -306,7 +324,7 @@ var IX = (function(){
   function chips(t, v, m, b, k){ return '<span class="tp-cgl"><span class="tp-lbl">'+t+'</span><span class="tp-np"><b>'+int(v)+'</b> vendors</span><span class="tp-np"><b>'+int(m)+'</b> models'+(b ? ' ('+int(b)+' at base)' : '')+'</span><span class="tp-np"><b>'+int(k)+'</b> SKUs</span></span>'; }
   function head(){
     var n = D.n || {};
-    $('ixCode').textContent = cur; $('ixName').textContent = ixName(cur); $('ixQ').textContent = [D.q, D.desc].filter(function(t, i, A){ return t && A.indexOf(t) === i; }).join(' ');
+    $('ixCode').textContent = cur; $('ixName').textContent = ixName(cur);
     $('ixCg').innerHTML = (n.models != null ? chips('All models', n.vendors, n.models, n.base, n.skus) : '')
       + (D.coh.length && n.cmodels ? '<span class="tp-cgd" aria-hidden="true"></span>'+chips('Caching cohort', n.cvendors, n.cmodels, n.cbase, n.cskus) : '');
     $('ixPub').href = '/indexes?index='+cur.toLowerCase().replace(/\s+/g, '-')+'#atom-index-card';
