@@ -274,15 +274,15 @@
 /* ── Terminal chrome (November 25, 2026) ── */
 /* The masthead names the Terminal: a rule after the wordmark, then TERMINAL in the wordmark's
    lettering. No ticker band here, so the masthead keeps its place and a rule closes it. */
-html.tp-page{--header-h:59px}
+html.tp-page{--header-h:58px}
 html.tp-page #atomHeader .as-band{display:none}
 html.tp-page #atomHeader .as-mast{border-bottom:1px solid var(--border)}
 html.tp-page #atomHeader.as-compact .as-mast{height:58px;overflow:visible;border-bottom:1px solid var(--border)}
 html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 .tp-mk-d{flex:none;width:1px;height:18px;margin-left:calc(var(--s4) - var(--s5));background:var(--border)}
 .tp-mk{flex:none;margin-left:calc(var(--s4) - var(--s5));font-family:var(--font-sans);font-size:15px;font-weight:700;letter-spacing:4.2px;line-height:18px;text-transform:uppercase;color:var(--l1) !important;text-decoration:none}
-/* The switch sits right under the masthead, between two rules. */
-.tp-bar{margin-top:var(--s5)}
+/* The switch sits flush under the masthead, whose rule it shares, and is locked there from the first
+   pixel of scroll: no margin above it to scroll away first. */
 /* Pinned indexes: the first row of the Indexes view, closed by a rule. Cards keep an even height;
    the legs sit side by side, each with its level and change on the week. */
 .tp-pins{padding:0 0 var(--s5);margin-bottom:var(--s5);border-bottom:1px solid var(--border-soft)}
@@ -321,7 +321,6 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 .tp-spk polygon{fill:rgba(198,203,211,.05)}
 .tp-spk.on polyline{stroke:var(--series)}
 .tp-spk.on polygon{fill:rgba(198,203,211,.1)}
-.tp-bar{border-top:1px solid var(--border)}
 
 /* ── Indexes, the journey (November 25, 2026) ── */
 .tp-ixh{flex-direction:column;align-items:flex-start;gap:0}
@@ -431,7 +430,7 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
   .tp-lt.n2,.tp-lt.n1{min-width:0}
 }
 @media (max-width:767px){
-  html.tp-page{--header-h:51px}
+  html.tp-page{--header-h:50px}
   html.tp-page #atomHeader.as-compact .as-mast{height:50px}
   .tp-tiles,.tp-tiles.n2{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(240px,82%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:var(--s2)}
   .tp-tiles.n1{grid-auto-columns:100%}
