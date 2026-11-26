@@ -599,7 +599,7 @@ var CS = (function(){
     ]).then(function(r){ if(my !== reqN) return;
       var ids = {}; r[1].forEach(function(x){ if(x.anchor_id && x.anchor_id !== '*') ids[x.anchor_id] = 1; }); ids = Object.keys(ids);
       var more = ids.length ? Promise.all([
-        q(sb.from('v_fair_value_models').select('anchor_id,model_name,creator,vendors').in('anchor_id', ids)),
+        q(sb.from('v_fair_value_models').select('anchor_id,model_name,display_name,creator,vendors').in('anchor_id', ids)),
         q(sb.from('v_fair_value').select('anchor_id,vendor_id,direction,price').in('anchor_id', ids).eq('gate_date', GATE).limit(5000))
       ]).catch(function(){ return [[],[]]; }) : Promise.resolve([[],[]]);
       return more.then(function(m){ if(my !== reqN) return; D = build(c, r[0], r[1], r[2], m[0], m[1]); c._settled = D.months.length; rail(); render(); });
@@ -627,7 +627,7 @@ var CS = (function(){
       m.r[x.direction] = { signed:Number(x.signing_rate), share:Number(x.spend_share) || 0 }; m.share += Number(x.spend_share) || 0;
       var ps = mk[x.anchor_id+'|'+FVD[x.direction]]; ps = ps ? Object.keys(ps).map(function(v){ return ps[v]; }) : [];
       m.r[x.direction].mkt = ps.length ? { med:med(ps), lo:Math.min.apply(null, ps), hi:Math.max.apply(null, ps), n:ps.length } : null; });
-    var M = Object.keys(mods).map(function(k){ var m = mods[k], i = info[k] || {}; m.name = i.model_name || k; m.dev = i.creator || ''; m.vendors = num(i.vendors) || 0; return m; })
+    var M = Object.keys(mods).map(function(k){ var m = mods[k], i = info[k] || {}; m.name = i.display_name || i.model_name || k; m.dev = i.creator || ''; m.vendors = num(i.vendors) || 0; return m; })
       .sort(function(a, b){ return b.share - a.share || a.name.localeCompare(b.name); });
     return { c:c, legs:legs, months:months, prov:prov, W:W, M:M, unit:unit || 'per 1,000 tokens' };
   }
@@ -1001,12 +1001,13 @@ var MO = (function(){
       copy(this, 'Attic Standard, '+model.model_name+' '+legName(leg).toLowerCase()+' price, '+ldate(GATE)+': market median $'+fx(CUR.M)+' '+unit+' across '+CUR.now.length+' vendors (lowest $'+fx(CUR.lo)+', highest $'+fx(CUR.hi)+'). atticstandard.com'); });
     if(!sb){ message($('moMsg'), 'Prices load once you are logged in.'); return; }
     Promise.all([
-      all(function(){ return sb.from('v_fair_value_models').select('anchor_id,model_name,creator,tier,modality,vendors,vendor_names,model_family,parameter_count,context_window,max_output_tokens,modality_input,modality_output,tool_calling,json_mode,training_cutoff,license_type,license_class,is_reasoning,creator_country').gte('vendors', 2).order('vendors', { ascending:false }).order('model_name'); }),
+      all(function(){ return sb.from('v_fair_value_models').select('anchor_id,model_name,display_name,creator,tier,modality,vendors,vendor_names,model_family,parameter_count,context_window,max_output_tokens,modality_input,modality_output,tool_calling,json_mode,training_cutoff,license_type,license_class,is_reasoning,creator_country').gte('vendors', 2).order('vendors', { ascending:false }).order('display_name'); }),
       q(sb.from('index_registry').select('index_code').eq('is_published', true)).catch(function(){ return []; })
     ]).then(function(r){ MODELS = r[0] || []; r[1].forEach(function(x){ PUB[x.index_code] = 1; });
       if(!MODELS.length){ message($('moMsg'), 'No model is sold by two or more vendors in the latest publication.'); return; }
       var mods = {}, vens = {};
-      MODELS.forEach(function(m){ m._k = String(m.model_name).toLowerCase().replace(/[-._\s/]/g,''); if(m.modality) mods[m.modality] = 1; m._v = (m.vendor_names || []).map(vgroup); m._v.forEach(function(v){ vens[v] = 1; }); });
+      /* The registry's display name is what people read; the raw name still matches a search. */
+      MODELS.forEach(function(m){ m.raw_name = m.model_name; m.model_name = m.display_name || m.model_name; m._k = (m.model_name+' '+m.raw_name).toLowerCase().replace(/[-._\s/]/g,''); if(m.modality) mods[m.modality] = 1; m._v = (m.vendor_names || []).map(vgroup); m._v.forEach(function(v){ vens[v] = 1; }); });
       ddVen.setOptions(Object.keys(vens).sort(function(a, b){ return a.localeCompare(b); }).map(function(v){ return [v, v]; }));
       ddMod.setOptions(Object.keys(mods).sort().map(function(m){ return [m, m]; }));
       var keep = pending; if(!keep){ try{ keep = localStorage.getItem('atMoModel'); }catch(e){} } pending = null;
