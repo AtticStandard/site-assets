@@ -371,6 +371,8 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 #ixChW:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 .tp-wk{margin-top:var(--s5);padding-top:var(--s5);border-top:1px solid var(--border-soft)}
 .tp-wkh{display:flex;align-items:center;gap:var(--s3)}
+/* The title sits on the arrows' centre line: no heading margins, a line box the arrows' height. */
+.tp-wkh .tp-st{margin:0;line-height:28px}
 .tp-stp{flex:none;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:var(--radius);background:transparent;color:var(--l3);cursor:pointer;transition:color .15s,border-color .15s}
 .tp-stp:hover{color:var(--l1);border-color:var(--l5)}
 .tp-stp:disabled{opacity:.3;cursor:default}
@@ -443,7 +445,7 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
   .tp-lt th+th,.tp-lt td+td{padding-left:var(--s2)}
   .tp-cg{flex-direction:column;align-items:flex-start}
   .tp-cgd{display:none}
-  .tp-wkh .tp-st{font-size:18px}
+  .tp-wkh .tp-st{font-size:18px;line-height:28px}
   .tp-lt td:first-child{white-space:normal}
   .tp-sc{margin-left:120px}
 }
