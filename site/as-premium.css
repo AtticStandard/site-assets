@@ -316,11 +316,6 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 .tp-cd2{font-family:var(--font-mono);font-size:10px;color:var(--l4);white-space:nowrap}
 .tp-pin2{font-size:11px;color:var(--l5)}
 .tp-ppi[disabled],.tp-ppi[disabled]:hover{color:var(--l5);cursor:default;background:none}
-.tp-spk{display:block;width:100%;height:34px;margin-top:var(--s2);overflow:visible}
-.tp-spk polyline{fill:none;stroke:var(--l4);stroke-width:1.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
-.tp-spk polygon{fill:rgba(198,203,211,.05)}
-.tp-spk.on polyline{stroke:var(--series)}
-.tp-spk.on polygon{fill:rgba(198,203,211,.1)}
 
 /* ── Indexes, the journey (November 25, 2026) ── */
 .tp-ixh{flex-direction:column;align-items:flex-start;gap:0}
@@ -358,18 +353,18 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 .tp-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s3);margin-top:var(--s4)}
 .tp-tiles.n2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tp-tiles.n1{grid-template-columns:minmax(0,1fr)}
-.tp-leg{display:block;min-width:0;text-align:left;border:1px solid var(--border);border-radius:var(--radius);padding:var(--s4) var(--s5);background:transparent;color:var(--l3);cursor:pointer;transition:background .15s}
+/* A leg tile is one compact row: the level, then its three changes. The chart below carries the line. */
+.tp-leg{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;column-gap:var(--s5);min-width:0;text-align:left;border:1px solid var(--border);border-radius:var(--radius);padding:12px var(--s4) 13px;background:transparent;color:var(--l3);cursor:pointer;transition:background .15s}
 .tp-leg:hover{background:rgba(255,255,255,.02)}
 .tp-leg.on,.tp-leg.on:hover{background:var(--surface-chip)}
-.tp-leg .tp-lbl{display:block}
+.tp-leg>.tp-lbl{display:block;grid-column:1/-1}
 .tp-leg.on>.tp-lbl{color:var(--l2)}
-.tp-lv{display:block;margin-top:var(--s2);font-size:32px;font-weight:600;line-height:1.1;color:var(--l2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tp-lv{display:block;margin-top:var(--s1);font-size:26px;font-weight:600;line-height:1.1;color:var(--l2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tp-leg.on .tp-lv{color:var(--l1)}
-.tp-c3{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s5);margin-top:var(--s4);font-size:var(--fs-body);font-weight:600;font-variant-numeric:tabular-nums}
+.tp-c3{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--s2) 18px;font-size:var(--fs-body);font-weight:600;font-variant-numeric:tabular-nums}
 .tp-c3>span{display:flex;flex-direction:column;gap:var(--s1)}
 .tp-c3 .tp-lbl{font-size:10px;color:var(--l5)}
-.tp-ls{display:block;margin-top:var(--s3);font-size:12px;color:var(--l5);font-variant-numeric:tabular-nums}
-.tp-leg .tp-spk{height:40px;margin-top:var(--s3)}
+.tp-ls{display:block;grid-column:1/-1;margin-top:var(--s2);font-size:12px;color:var(--l5);font-variant-numeric:tabular-nums}
 .tp-lgs .tp-chw{margin-top:var(--s6)}
 #ixChW{cursor:pointer}
 #ixChW:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
@@ -432,10 +427,13 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
 @media (max-width:767px){
   html.tp-page{--header-h:50px}
   html.tp-page #atomHeader.as-compact .as-mast{height:50px}
-  .tp-tiles,.tp-tiles.n2{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(240px,82%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:var(--s2)}
+  .tp-tiles,.tp-tiles.n2{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(260px,86%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:var(--s2)}
   .tp-tiles.n1{grid-auto-columns:100%}
   .tp-leg{scroll-snap-align:start}
-  .tp-lv{font-size:28px}
+  .tp-lv{font-size:24px}
+  .tp-leg{grid-template-columns:minmax(0,1fr)}
+  .tp-c3{justify-content:flex-start;flex-wrap:nowrap;gap:12px;margin-top:var(--s2)}
+  .tp-leg{padding:12px 14px 13px}
   .tp-ctl .tp-bn{margin-left:0;width:100%}
   /* On a phone the table keeps the selected leg only; the tiles above switch it. */
   .tp-lt,.tp-lt.n2,.tp-lt.n1{min-width:0}

@@ -176,14 +176,6 @@ var SEG = { TXT:'Text', MML:'Multimodal', IMG:'Image', IMP:'Image by area', VID:
   CMP:'Compact', PRP:'Unpublished weights', OSS:'Published weights', OWC:'Restricted weights', USA:'United States', CHN:'China', RSN:'Reasoning', COD:'Coding' };
 var MKT = { GLB:'Global', EUR:'Europe', CNY:'China' };
 function ixName(c){ var p = c.split(' '), s = SEG[p[1]] || p[1]; return s+(p[2] !== 'GLB' ? ', '+(MKT[p[2]] || p[2]) : ''); }
-/* A line drawn in a box 200 wide and h tall, with the area under it. */
-function spark(vs, h, on){
-  if(!vs || vs.length < 2) return '';
-  var lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs); if(hi === lo){ hi = lo + 1; lo = lo - 1; }
-  var p = vs.map(function(v, i){ return (i/(vs.length-1)*200).toFixed(1)+','+(h - 3 - (v-lo)/(hi-lo)*(h-8)).toFixed(1); }).join(' ');
-  return '<svg class="tp-spk'+(on ? ' on' : '')+'" viewBox="0 0 200 '+h+'" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,'+h+' '+p+' 200,'+h+'"></polygon><polyline points="'+p+'"></polyline></svg>';
-}
-
 /* ═══ PINNED INDEXES ═══ */
 /* The first row of the Indexes view: up to five indexes a subscriber follows. Each card carries the
    code, the name, what the index tracks, and every leg it has with its level and change on the week.
@@ -356,10 +348,9 @@ var IX = (function(){
     $('ixTiles').className = 'tp-tiles n'+ls.length;
     $('ixTiles').innerHTML = ls.map(function(k){ var G = D.LG[k], A = G.S, l = A[A.length-1], m = A[Math.max(0, A.length-5)], on = k === S.leg, sp = P[k] || [];
       var ch = lv ? [['1 week', l.w], ['1 month', A.length > 4 ? (l.l/m.l-1)*100 : null], ['Since base', l.l-100]] : [['1 week', sp[0]], ['1 month', sp[1]], ['Since base', sp[2]]];
-      var vs = A.map(function(s){ return lv ? s.l : s.s; }).filter(function(v){ return v != null; });
       return '<button type="button" class="tp-leg'+(on ? ' on' : '')+'" data-leg="'+k+'" aria-pressed="'+on+'"><span class="tp-lbl">'+NM[k]+'</span>'
         + '<span class="tp-lv">'+(lv ? l.l.toFixed(2) : px(l.s))+'</span><span class="tp-c3">'+ch.map(function(c){ return '<span><span class="tp-lbl">'+c[0]+'</span>'+c1(c[1])+'</span>'; }).join('')+'</span>'
-        + (lv ? '' : '<span class="tp-ls">25th to 75th percentile '+px(l.a)+' to '+px(l.b)+'</span>')+spark(vs, 40, on)+'</button>'; }).join('');
+        + (lv ? '' : '<span class="tp-ls">25th to 75th percentile '+px(l.a)+' to '+px(l.b)+'</span>')+'</button>'; }).join('');
   }
 
   /* ── Chart: the selected leg; weeks with model detail marked; select one ── */
