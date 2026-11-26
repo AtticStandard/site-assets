@@ -206,6 +206,7 @@
 .tp-ix{position:relative;transition:opacity .2s ease}
 .tp-ix.busy{opacity:.45;pointer-events:none}
 .tp-lt.busy{opacity:.45;transition:opacity .15s}
+.tp-ld.busy{opacity:.45;transition:opacity .15s}
 .tp-prog{position:absolute;top:-1px;left:0;right:0;height:1px;overflow:hidden;background:var(--border)}
 .tp-prog:after{content:"";position:absolute;top:0;left:0;width:30%;height:1px;background:var(--series);animation:tpRun 1.1s cubic-bezier(.45,0,.55,1) infinite}
 @keyframes tpRun{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
@@ -495,3 +496,78 @@ html.tp-page .atom-header.as-compact ~ .nav-dropdown{top:var(--header-h)}
   .tp-pos{width:100px}
 }
 @media (prefers-reduced-motion:reduce){.tp-wait i:after,.tp-prog:after{animation:none;transform:translateX(100px)}.tp-ix,.tp-trk b{transition:none}}
+
+/* ── The week table, ledger (November 26, 2026) ── */
+/* No fills. Leg groups sit under a hairline; the selected leg gets brighter figures and a 2px rule under its
+   name. Developer and vendor count ride with the model. Trailing zeros in prices are dimmed. */
+.tp-ld{width:100%;min-width:860px;border-collapse:collapse;font-size:13px;line-height:var(--lh-ui);font-variant-numeric:tabular-nums}
+.tp-ld.n3{min-width:1100px}
+.tp-ld.n1{min-width:560px}
+.tp-ld col.tp-c0{width:48px}.tp-ld col.tp-c1{width:120px}.tp-ld col.tp-c2{width:104px}.tp-ld col.tp-c3{width:150px}
+.tp-ld.n3 col.tp-c0{width:36px}.tp-ld.n3 col.tp-c1{width:112px}.tp-ld.n3 col.tp-c2{width:92px}.tp-ld.n3 col.tp-c3{width:132px}
+.tp-ld th{padding:0 0 8px;font-size:10px;font-weight:600;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--l5);text-align:left;white-space:nowrap;vertical-align:bottom}
+.tp-ld th.r,.tp-ld td.r{text-align:right}
+.tp-ld .tp-hg th{padding:0}
+.tp-ld .tp-hg th.tp-unit{padding-bottom:7px;font-size:12px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--l5)}
+.tp-ld .tp-lgh{font-size:var(--fs-label);color:var(--l4);text-align:right}
+.tp-ld .tp-lgh span{display:block;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.tp-ld .tp-lgh.on{color:var(--l1)}
+.tp-ld .tp-lgh.on span{padding-bottom:5px;border-bottom:2px solid var(--series)}
+.tp-ld .tp-hc th{padding-top:10px;border-bottom:1px solid var(--border)}
+.tp-ld td{padding:11px 0;border-bottom:1px solid var(--border-soft);color:var(--l4);white-space:nowrap;vertical-align:middle}
+.tp-ld td.on{color:var(--l1)}
+.tp-ld td.r+td.r{padding-left:16px}
+.tp-ld .d{color:var(--l5)}
+.tp-ld .tp-z{opacity:.35}
+.tp-ld .tp-up{color:var(--up)}.tp-ld .tp-dn{color:var(--down)}
+.tp-ld td:first-child{color:var(--l2)}
+.tp-mn{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 10px}
+.tp-mn b{font-weight:500;color:var(--l1)}
+.tp-mn em,.tp-vn em,.tp-ld .tp-ixr em{font-style:normal;font-size:12px;color:var(--l5)}
+.tp-dot{color:var(--l5)}
+.tp-ld .tp-chev{margin-right:0}
+.tp-ld .tp-nw{margin-left:0}
+.tp-ld tbody tr.pick{cursor:pointer}
+.tp-ld tbody tr.pick:hover td,.tp-ld tbody tr.pick:focus-visible td{background:rgba(255,255,255,.02)}
+.tp-ld tbody tr.pick:focus-visible{outline:none}
+.tp-ld .tp-ixr td{padding:16px 0;border-bottom:1px solid var(--border);color:var(--l4)}
+.tp-ld .tp-ixr td:first-child{font-weight:600;color:var(--l2)}
+.tp-ld .tp-ixr em{margin-left:var(--s2);font-weight:400}
+.tp-ld .tp-ixr b{font-size:15px;font-weight:600}
+.tp-ld .tp-ixr td.on b{color:var(--l1)}
+.tp-from{display:block;margin-top:2px;font-size:11px;color:var(--l5)}
+.tp-ld .tp-gr td{padding:28px 0 9px;border-bottom:1px solid var(--border-soft);white-space:normal;vertical-align:bottom;background:none}
+.tp-ld .tp-gr .tp-lbl{color:var(--l2)}
+.tp-ld .tp-gr .c{margin-left:var(--s2);font-size:12px;color:var(--l5)}
+.tp-ld .tp-gr .hn{margin-left:var(--s3);font-size:12px;color:var(--l5)}
+.tp-ld .tp-gr .tp-fold{float:none;margin-left:var(--s4)}
+.tp-sum{font-size:12px;font-weight:600}
+.tp-ef{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px}
+.tp-efb{position:relative;flex:none;width:64px;height:8px}
+.tp-efb:before{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--axis)}
+.tp-efb i{position:absolute;top:1px;height:6px;border-radius:1px}
+.tp-efb i.p{left:50%;background:var(--up)}.tp-efb i.n{right:50%;background:var(--down)}
+.tp-ld .tp-vr td{padding:7px 0;font-size:12px;border-bottom:0;background:none}
+.tp-ld .tp-vr td:first-child{padding-left:20px}
+.tp-ld .tp-vn{display:flex;align-items:center;gap:10px;padding-left:12px;border-left:1px solid var(--border);color:var(--l2)}
+.tp-ld .tp-vn .tp-nw{margin-left:0}
+.tp-was{margin-right:10px;color:var(--l5);text-decoration:line-through;text-decoration-color:var(--l5)}
+.tp-was .tp-z{opacity:1}
+.tp-ld .tp-vgo td{padding:2px 0 14px 32px;border-bottom:1px solid var(--border-soft)}
+.tp-ld .tp-xr td{color:var(--l2)}
+.tp-ld .tp-xw{white-space:normal;color:var(--l4)}
+.tp-ld .tp-xw .tp-tag2{margin-right:var(--s2)}
+@media (max-width:767px){
+  /* On a phone the table keeps the selected leg only; the tiles above switch it. */
+  .tp-ld,.tp-ld.n1,.tp-ld.n3{min-width:0}
+  .tp-ld col.tp-c0{width:10px}.tp-ld col.tp-c1{width:88px}.tp-ld col.tp-c2{width:70px}.tp-ld col.tp-c3{width:62px}
+  .tp-ld td.r+td.r{padding-left:8px}
+  .tp-ld .tp-vn em{display:none}
+  .tp-ld .tp-chev{display:none}
+  .tp-ld .tp-gr .hn:before{content:none}
+  .tp-ld .tp-hg th.tp-unit{white-space:normal}
+  .tp-ld td:first-child{white-space:normal}
+  .tp-efb{display:none}
+  .tp-ld .tp-gr .hn{display:block;margin:4px 0 0}
+  .tp-was{display:block;margin:0 0 2px}
+}

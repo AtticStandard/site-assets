@@ -162,7 +162,7 @@ function indexesHTML(){
   + '<div class="tp-chw"><div class="as-lgv" id="ixLg"></div><div class="tp-ch" id="ixChW"><div id="ixCh"></div><div class="tp-hv" hidden></div><div class="tp-tip" hidden></div></div></div></section>'
   + '<section class="tp-wk" id="ixWk"><div class="tp-wkh"><button type="button" class="tp-stp" id="ixPrev" aria-label="Previous week"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"></path></svg></button>'
   + '<h3 class="tp-st" id="ixWkT"></h3><button type="button" class="tp-stp" id="ixNext" aria-label="Next week"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg></button></div>'
-  + '<div class="tp-tw tp-ltw"><table class="tp-tbl tp-lt" id="ixT"></table></div></section>'
+  + '<div class="tp-tw tp-ltw"><table class="tp-ld" id="ixT"></table></div></section>'
   + '<div class="tp-foot"><p class="as-note" id="ixSrc"></p><div class="tp-ln"><button class="tp-link" id="ixCite" type="button">Copy citation</button><a class="tp-link" id="ixPub" href="/indexes">Open on the Indexes page &rarr;</a><a class="tp-link" href="/methodology">Read the methodology &rarr;</a></div></div>'
   + '</div></section>';
 }
@@ -394,7 +394,9 @@ var IX = (function(){
   function pickWeek(d){ var i = D.WI[d]; if(i == null || i === S.K) return; S.K = i; S.open = null; S.all = false; chart(); week(); }
 
   /* ── The week ── */
-  var wkN = 0;
+  var wkN = 0, PHONE = window.matchMedia('(max-width: 767px)');
+  /* On a phone the table shows the selected leg only; the tiles above switch it. */
+  if(PHONE.addEventListener) PHONE.addEventListener('change', function(){ if(D) week(); });
   function week(){
     var K = S.K, d = D.W[K], c = cur, my = ++wkN;
     $('ixWkT').textContent = d ? 'Week of '+ldate(d) : '';
@@ -404,9 +406,9 @@ var IX = (function(){
     if(!o || !o.done) t.classList.add('busy');
     /* Stepping quickly through weeks fetches only the one it settles on. */
     (o ? Promise.resolve() : new Promise(function(r){ setTimeout(r, 140); })).then(function(){ if(my !== wkN) return null; return getWeek(c, d); }).then(function(X){ if(my !== wkN) return; if(cache[c] && cache[c].WK[d]) cache[c].WK[d].done = true; t.classList.remove('busy');
-      if(!X){ t.className = 'tp-tbl tp-lt'; t.innerHTML = '<tbody><tr><td class="d">No model detail is stored for this week.</td></tr></tbody>'; return; }
+      if(!X){ t.className = 'tp-ld'; t.innerHTML = '<tbody><tr><td class="d">No model detail is stored for this week.</td></tr></tbody>'; return; }
       weekDraw(X); })
-    .catch(function(e){ if(my !== wkN) return; console.error('[Indexes week]', e); t.classList.remove('busy'); t.className = 'tp-tbl tp-lt'; t.innerHTML = '<tbody><tr><td class="d">This week could not be loaded. Try again.</td></tr></tbody>'; });
+    .catch(function(e){ if(my !== wkN) return; console.error('[Indexes week]', e); t.classList.remove('busy'); t.className = 'tp-ld'; t.innerHTML = '<tbody><tr><td class="d">This week could not be loaded. Try again.</td></tr></tbody>'; });
   }
   /* In a stored week, prices sit at 0 (the week before) and 1 (this week). */
   function pv(pts, k){ for(var i = 0; i < pts.length; i++) if(pts[i][0] === k) return pts[i][1]; return null; }
@@ -433,48 +435,64 @@ var IX = (function(){
       r.nv = Object.keys(vn).length; r.isNew = HP && !prevAny[a]; r.nm = nm(a); r.dev = dev(a);
       r.mx = Math.max.apply(null, LS.map(function(g){ return r.L[g] ? Math.abs(r.L[g].ef) : 0; }));
       r.moved = r.mx >= 0.005; r.rep = LS.some(function(g){ return r.L[g] && r.L[g].rep; }); return r; });
-    var N = 3 + LS.length*3;
-    function cl(g, i, base){ return (base || '')+(i === 0 ? ' g0' : '')+(g === cur2 ? ' on' : ' off'); }
-    var h = '<thead><tr class="tp-hg"><th colspan="3" class="tp-hg0"></th>'+LS.map(function(g){ return '<th colspan="3" class="r g0'+(g === cur2 ? ' on' : ' off')+'">'+NM[g]+'</th>'; }).join('')+'</tr>'
-      + '<tr><th>Model</th><th class="tp-dev">Developer</th><th class="r tp-vnc">Vendors</th>'+LS.map(function(g){ return '<th class="'+cl(g, 0, 'r')+'">Median</th><th class="'+cl(g, 1, 'r')+'">1 week</th><th class="'+cl(g, 2, 'r')+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
-    h += '<tr class="tp-ixr"><td>'+esc(ixName(cur))+(lv ? ' index level' : ' spot price')+'</td><td class="tp-dev d">'+(lv ? 'Base May 2026 = 100' : 'Median of every SKU')+'</td><td class="tp-vnc"></td>'
-      + LS.map(function(g){ var s = IDX[g], G = D.LG[g], i = G.I[d], p = i > 0 ? G.S[i-1] : null, w = lv ? s.w : (p && p.s && s.s ? (s.s/p.s-1)*100 : null);
-        return '<td class="'+cl(g, 0, 'r')+'"><b>'+(s.l == null ? '' : lv ? s.l.toFixed(2) : px(s.s))+'</b></td><td class="'+cl(g, 1, 'r')+'">'+(w == null ? '' : chg(w, lv ? 2 : 1))+'</td><td class="'+cl(g, 2, '')+'"></td>'; }).join('')+'</tr>';
-    function cell(r, g){ var x = r.L[g];
-      if(!x || !x.n) return '<td class="'+cl(g, 0, 'r')+' d">Not priced</td><td class="'+cl(g, 1, 'r')+'"></td><td class="'+cl(g, 2, 'r')+'"></td>';
+    /* The ledger: no fills. The selected leg is marked by brighter figures and a rule under its name; the
+       developer and vendor count sit with the model; prices keep their decimals for alignment with the
+       trailing zeros dimmed; Effect carries a bar from a zero line, scaled to the week's largest move. */
+    var LV = PHONE.matches ? [cur2] : LS, NL = LV.length, N = 1 + NL*4, cy = sym() === '$' ? 'USD' : sym() === '€' ? 'EUR' : 'CNY', mx = 0;
+    rows.forEach(function(r){ LS.forEach(function(g){ if(r.L[g]) mx = Math.max(mx, Math.abs(r.L[g].ef)); }); });
+    function on(g){ return g === cur2 ? ' on' : ' off'; }
+    function pz(v){ if(v == null) return ''; var t = px(v), u = t.indexOf('.') < 0 ? t : t.replace(/0+$/, ''); if(u.slice(-1) === '.') u += '0';
+      return esc(u)+(t.length > u.length ? '<span class="tp-z">'+t.slice(u.length)+'</span>' : ''); }
+    function efb(v){ if(!lv || !(mx > 0) || Math.abs(v) < 0.005) return '<span class="tp-efb"></span>';
+      return '<span class="tp-efb"><i class="'+(v < 0 ? 'n' : 'p')+'" style="width:'+(Math.abs(v)/mx*30).toFixed(1)+'px"></i></span>'; }
+    function sub(r){ return '<em>'+(r.dev ? esc(r.dev)+'<span class="tp-dot"> &middot; </span>' : '')+r.nv+(r.nv === 1 ? ' vendor' : ' vendors')+'</em>'; }
+    var h = '<colgroup><col>'+LV.map(function(g){ var o = on(g); return '<col class="tp-c0'+o+'"><col class="tp-c1'+o+'"><col class="tp-c2'+o+'"><col class="tp-c3'+o+'">'; }).join('')+'</colgroup>'
+      + '<thead><tr class="tp-hg"><th class="tp-unit">Prices in '+cy+' '+esc(D.unit || '')+'</th>'+LV.map(function(g){ return '<th class="tp-gp'+on(g)+'"></th><th colspan="3" class="tp-lgh'+on(g)+'"><span>'+NM[g]+'</span></th>'; }).join('')+'</tr>'
+      + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(g){ var o = on(g); return '<th class="tp-gp'+o+'"></th><th class="r'+o+'">Median</th><th class="r'+o+'">1 week</th><th class="r'+o+'">'+(lv ? 'Effect' : 'Vs spot')+'</th>'; }).join('')+'</tr></thead><tbody>';
+    h += '<tr class="tp-ixr"><td>'+esc(ixName(cur))+(lv ? ' index level' : ' spot price')+'<em>'+(lv ? 'Base May 2026 = 100' : 'Median of every SKU')+'</em></td>'
+      + LV.map(function(g){ var s = IDX[g], G = D.LG[g], i = G.I[d], p = i > 0 ? G.S[i-1] : null, w = lv ? s.w : (p && p.s && s.s ? (s.s/p.s-1)*100 : null), o = on(g);
+        var fr = p ? (lv ? (p.l == null ? '' : p.l.toFixed(2)) : (p.s == null ? '' : px(p.s))) : '';
+        return '<td class="tp-gp'+o+'"></td><td class="r'+o+'"><b>'+(s.l == null ? '' : lv ? s.l.toFixed(2) : px(s.s))+'</b>'+(fr ? '<span class="tp-from">from '+esc(fr)+'</span>' : '')+'</td><td class="r'+o+'">'+(w == null ? '' : chg(w, lv ? 2 : 1))+'</td><td class="'+o.trim()+'"></td>'; }).join('')+'</tr>';
+    function cell(r, g){ var x = r.L[g], o = on(g);
+      if(!x || !x.n) return '<td class="tp-gp'+o+'"></td><td class="r d'+o+'">Not priced</td><td class="'+o.trim()+'"></td><td class="'+o.trim()+'"></td>';
       var s = IDX[g], dv = s.s ? (x.md/s.s-1)*100 : null, sig = Math.abs(x.ef) >= 0.005;
-      var w = x.chg == null ? (x.isNew ? '<span class="d">New</span>' : '') : (Math.abs(x.chg) < 0.05 ? '' : chg(x.chg, 1));
-      var e = lv ? (sig ? '<span class="'+(x.ef < 0 ? 'tp-dn' : 'tp-up')+'">'+eff(x.ef)+'</span>' : (r.moved ? '<span class="d">'+eff(0)+'</span>' : ''))
+      var w = x.chg == null || Math.abs(x.chg) < 0.05 ? '' : chg(x.chg, 1);
+      var e = lv ? (sig ? '<span class="tp-ef"><span class="'+(x.ef < 0 ? 'tp-dn' : 'tp-up')+'">'+eff(x.ef)+'</span>'+efb(x.ef)+'</span>' : '')
                  : (dv == null ? '' : '<span class="d">'+(Math.abs(dv) < 0.05 ? 'At spot' : Math.abs(dv).toFixed(1)+'% '+(dv > 0 ? 'above' : 'below'))+'</span>');
-      return '<td class="'+cl(g, 0, 'r')+' w">'+px(x.md)+'</td><td class="'+cl(g, 1, 'r')+'">'+w+'</td><td class="'+cl(g, 2, 'r')+'">'+e+'</td>'; }
+      return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+pz(x.md)+'</td><td class="r'+o+'">'+w+'</td><td class="r'+o+'">'+e+'</td>'; }
     function vrows(r){
       var V = {}, keys = [];
       LS.forEach(function(g){ if(r.L[g]) r.L[g].vs.forEach(function(q){ var k = q.v.v+'|'+q.v.t; if(!V[k]){ V[k] = { v:q.v.v, t:q.v.t, P:{} }; keys.push(k); } V[k].P[g] = q; }); });
       var out = keys.map(function(k){ var z = V[k]; z.sp = z.P[cur2] ? z.P[cur2].p : 1e9; z.isNew = HP && LS.every(function(g){ return !z.P[g] || z.P[g].p0 == null; }); return z; })
         .sort(function(a, b){ return a.sp - b.sp || a.v.localeCompare(b.v); });
-      return out.map(function(z){ return '<tr class="tp-vr"><td><span class="tp-vn">'+esc(z.v)+(z.isNew ? '<span class="tp-nw">New</span>' : '')+'</span></td><td class="tp-dev d">'+esc(z.t)+'</td><td class="tp-vnc"></td>'
-        + LS.map(function(g){ var q = z.P[g], c = q && q.p0 != null && Math.abs(q.p/q.p0-1) > 0.005 ? chg((q.p/q.p0-1)*100, 1) : '';
-          return '<td class="'+cl(g, 0, 'r')+'">'+(q ? px(q.p) : '')+'</td><td class="'+cl(g, 1, 'r')+'">'+c+'</td><td class="'+cl(g, 2, '')+'"></td>'; }).join('')+'</tr>'; }).join('')
-        + (r.nv >= 2 ? '<tr class="tp-vr tp-vgo"><td colspan="'+N+'"><button class="tp-link" type="button" data-go="'+esc(r.a)+'">Open '+esc(r.nm)+' in Models &rarr;</button></td></tr>' : '');
+      return out.map(function(z){ return '<tr class="tp-vr"><td><span class="tp-vn">'+esc(z.v)+(z.isNew ? '<span class="tp-nw">New</span>' : '')+'<em>'+esc(z.t)+'</em></span></td>'
+        + LV.map(function(g){ var q = z.P[g], o = on(g), mv = q && q.p0 != null && Math.abs(q.p/q.p0-1) > 0.005;
+          return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(q ? (mv ? '<span class="tp-was">'+pz(q.p0)+'</span>' : '')+pz(q.p) : '')+'</td><td class="r'+o+'">'+(mv ? chg((q.p/q.p0-1)*100, 1) : '')+'</td><td class="'+o.trim()+'"></td>'; }).join('')+'</tr>'; }).join('')
+        + '<tr class="tp-vgo"><td colspan="'+N+'">'+(r.nv >= 2 ? '<button class="tp-link" type="button" data-go="'+esc(r.a)+'">Open '+esc(r.nm)+' in Models &rarr;</button>' : '')+'</td></tr>';
     }
     function mrow(r){ var o = S.open === r.a;
-      return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-a="'+esc(r.a)+'" aria-expanded="'+o+'"><td><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg>'+esc(r.nm)+(r.isNew ? '<span class="tp-nw">New</span>' : '')+'</td>'
-        + '<td class="tp-dev d">'+esc(r.dev)+'</td><td class="r tp-vnc">'+r.nv+'</td>'+LS.map(function(g){ return cell(r, g); }).join('')+'</tr>'+(o ? vrows(r) : ''); }
-    function grp(t, n, note, rowsH, fold){ return '<tr class="tp-gr"><td colspan="'+N+'"><span class="tp-lbl">'+t+'</span><span class="c">'+n+'</span>'+(note ? '<span class="hn">'+note+'</span>' : '')+(fold || '')+'</td></tr>'+rowsH; }
+      return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-a="'+esc(r.a)+'" aria-expanded="'+o+'"><td><span class="tp-mn"><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg><b>'+esc(r.nm)+'</b>'+(r.isNew ? '<span class="tp-nw">New</span>' : '')+sub(r)+'</span></td>'
+        + LV.map(function(g){ return cell(r, g); }).join('')+'</tr>'+(o ? vrows(r) : ''); }
+    function grp(t, n, note, rowsH, fold, tot){
+      var head = '<span class="tp-lbl">'+t+'</span><span class="c">'+n+'</span>'+(note ? '<span class="hn">'+note+'</span>' : '')+(fold || '');
+      if(!tot) return '<tr class="tp-gr"><td colspan="'+N+'">'+head+'</td></tr>'+rowsH;
+      return '<tr class="tp-gr"><td colspan="4">'+head+'</td>'+LV.map(function(g, i){ var v = tot[g], o = on(g);
+        return (i ? '<td class="tp-gp'+o+'"></td><td colspan="2" class="'+o.trim()+'"></td>' : '')+'<td class="r'+o+'">'+(Math.abs(v) >= 0.005 ? '<span class="tp-sum '+(v < 0 ? 'tp-dn' : 'tp-up')+'">'+eff(v)+'</span>' : '')+'</td>'; }).join('')+'</tr>'+rowsH; }
     var w = X.d, lo = X.pd || '0000';
     function when(a){ return a.st === 'admitted' ? a.vt : a.vf || a.dt; }
     var adm = (X.adm || []).filter(function(a){ var x = when(a); return x && String(x).slice(0, 10) <= w && String(x).slice(0, 10) > lo; });
     var left = adm.filter(function(a){ return (a.st === 'admitted' && a.vt) || (a.st === 'excluded' && a.vf); }).map(function(a){ return { nm:a.nm, rule:RULE[a.rc] || '', why:clean(a.r) }; });
     Object.keys(prevAny).forEach(function(a){ if(!curAny[a] && !left.some(function(x){ return x.nm === nm(a); })) left.push({ nm:nm(a), rule:'', why:'Out of the basket from this week.' }); });
     var away = adm.filter(function(a){ return a.st === 'excluded' && !a.vf; }).map(function(a){ return { nm:a.nm, rule:RULE[a.rc] || '', why:clean(a.r) }; });
-    function xrows(X){ return X.map(function(x){ return '<tr class="tp-xr"><td>'+esc(x.nm)+'</td><td colspan="'+(N-1)+'" class="tp-xw">'+(x.rule ? '<span class="tp-tag2">'+esc(x.rule)+'</span>' : '')+esc(x.why)+'</td></tr>'; }).join(''); }
+    function xrows(X){ return X.map(function(x){ return '<tr class="tp-xr"><td><span class="tp-mn"><b>'+esc(x.nm)+'</b></span></td><td colspan="'+(N-1)+'" class="tp-xw">'+(x.rule ? '<span class="tp-tag2">'+esc(x.rule)+'</span>' : '')+esc(x.why)+'</td></tr>'; }).join(''); }
     if(lv){
       var se = function(r){ return r.L[cur2] ? Math.abs(r.L[cur2].ef) : 0; }, by = function(a, b){ return se(b) - se(a) || b.mx - a.mx || b.nv - a.nv || a.nm.localeCompare(b.nm); };
       var mv = rows.filter(function(r){ return r.moved; }).sort(by), nw = rows.filter(function(r){ return !r.moved && r.isNew; }).sort(by);
       var rp = rows.filter(function(r){ return !r.moved && !r.isNew && r.rep; }).sort(by), ns = rows.filter(function(r){ return !r.moved && !r.isNew && !r.rep; }).sort(by);
-      if(mv.length) h += grp('Moved the index', mv.length, '', mv.map(mrow).join(''));
-      if(rp.length) h += grp('Repriced at a vendor, no effect on the level', rp.length, '', rp.map(mrow).join(''));
-      if(nw.length) h += grp('Joined the basket', nw.length, '', nw.map(mrow).join(''));
+      var tot = {}; LV.forEach(function(g){ tot[g] = mv.reduce(function(a, r){ return a + (r.L[g] ? r.L[g].ef : 0); }, 0); });
+      if(mv.length) h += grp('Moved the index', mv.length, 'together they account for the level&rsquo;s change', mv.map(mrow).join(''), '', tot);
+      if(rp.length) h += grp('Repriced at a vendor', rp.length, 'no effect on the level', rp.map(mrow).join(''));
+      if(nw.length) h += grp('Joined the basket', nw.length, 'new this week; they count toward the level from their second priced week', nw.map(mrow).join(''));
       var keep = mv.length || rp.length || nw.length ? 0 : 6, all = S.all;
       if(ns.length) h += grp('No change', ns.length, 'no price change at any vendor, on any leg', (all ? ns : ns.slice(0, keep)).map(mrow).join(''),
         ns.length > keep ? '<button class="tp-link tp-fold" type="button" data-fold="1">'+(all ? 'Hide' : keep ? 'Show all '+ns.length : 'Show')+'</button>' : '');
@@ -484,7 +502,7 @@ var IX = (function(){
     }
     if(left.length) h += grp('Left the basket', left.length, '', xrows(left));
     if(away.length) h += grp('Not admitted', away.length, '', xrows(away));
-    $('ixT').className = 'tp-tbl tp-lt n'+LS.length;
+    $('ixT').className = 'tp-ld n'+LV.length;
     $('ixT').innerHTML = h+'</tbody>';
   }
   function clean(r){ r = String(r || '');
