@@ -508,7 +508,8 @@ var IX = (function(){
 
   /* ── Close ── */
   function foot(){
-    $('ixSrc').textContent = 'Source: Attic Standard, index levels, spot prices and vendor prices published '+ldate(D.date)+'. Figures update with each index publication. Unit: '+(sym() === '$' ? 'USD ' : sym() === '€' ? 'EUR ' : 'CNY ')+(D.unit || '')+'.';
+    /* One line: the unit already heads the week table. */
+    $('ixSrc').textContent = 'Source: Attic Standard, index levels, spot prices and vendor prices published '+ldate(D.date)+'. Figures update with each index publication.';
   }
   function cite(b){ if(!D) return; var G = D.LG[S.leg], l = G.S[G.S.length-1];
     copy(b, 'Attic Standard, '+cur+' ('+ixName(cur)+'), '+NM[S.leg].toLowerCase()+' leg, '+(S.bk === 'coh' ? 'caching cohort' : 'all models')+', '+ldate(D.date)+': index level '+l.l.toFixed(2)+(l.s != null ? ', spot price '+sym()+fx(l.s)+' '+(D.unit || '') : '')+'. atticstandard.com'); }
