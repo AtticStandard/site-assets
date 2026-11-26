@@ -106,3 +106,8 @@ revoke all on function public.propose_display_name(text, text) from public, anon
 -- corrections (Qwen3.8 2.4T A95B; GPT-4o (November 20, 2024) Global). terminal_index_week overlays registry
 -- display names on stored weeks at read time; v_fair_value_models carries display_name; build_terminal_week
 -- uses it.
+
+-- Registry health B1.42 (November 26, 2026): counts rows with no display_name. To review and apply:
+--   SELECT * FROM v_display_name_missing;          -- proposed_name per new model; correct any in the statement below
+--   WITH u AS (UPDATE model_registry r SET display_name = m.proposed_name FROM v_display_name_missing m
+--              WHERE r.model_id = m.model_id RETURNING r.model_name, r.display_name) SELECT * FROM u;
