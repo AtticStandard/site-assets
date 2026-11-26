@@ -275,27 +275,37 @@ var IX = (function(){
   /* Each leg's series; each leg's model detail by week (the cohort's input and output are the models
      with a cached price that week); every vendor's price by model and leg. */
   function prep(d){
-    var LG = {}, ser = d.ser || {}, att = d.att || {}, W = d.weeks || [], WI = {};
-    W.forEach(function(x, i){ WI[x] = i; });
+    var LG = {}, ser = d.ser || {};
     ['input','output','cached','cin','cout'].forEach(function(k){ var a = ser[k]; if(!a || !a.length) return;
       var A = a.map(function(r){ return { d:r[0], l:Number(r[1]), w:r[2] == null ? null : Number(r[2]), s:r[3] == null ? null : Number(r[3]), a:r[4] == null ? null : Number(r[4]), b:r[5] == null ? null : Number(r[5]) }; });
       var I = {}; A.forEach(function(s, i){ I[s.d] = i; }); LG[k] = { S:A, I:I }; });
-    var E = {};
-    Object.keys(LG).forEach(function(k){ var src = att[k === 'cin' ? 'input' : k === 'cout' ? 'output' : k] || {}, out = {};
-      W.forEach(function(x){ var e = src[x] || [];
-        if(k === 'cin' || k === 'cout'){ var C = {}; ((att.cached || {})[x] || []).forEach(function(r){ C[r[0]] = 1; }); e = e.filter(function(r){ return C[r[0]]; }); }
-        out[x] = e.map(function(r){ return { a:r[0], v:r[1], lr:r[2] == null ? null : Number(r[2]) }; }); });
-      E[k] = out; });
-    var V = {};
-    ['input','output','cached'].forEach(function(k){ var s = (d.vend || {})[k], M = {};
-      if(s) s.split('|').forEach(function(r){ var i = r.indexOf('>'), a = r.slice(0, i), b = r.slice(i+1).split('~'); if(b.length < 3) return;
-        (M[a] = M[a] || []).push({ v:vgroup(b[0]), t:CH3[b[1]] || b[1], pts:b[2].split(',').map(function(p){ var q = p.split(':'); return [Number(q[0]), q[1] === 'x' ? null : Number(q[1])]; }) }); });
-      V[k] = M; });
-    d.LG = LG; d.E = E; d.V = V; d.W = W; d.WI = WI; d.names = d.names || {};
+    /* Every published week can be opened: the weeks are the longest leg's series. */
+    var W = [], WI = {};
+    Object.keys(LG).forEach(function(k){ if(LG[k].S.length > W.length) W = LG[k].S.map(function(x){ return x.d; }); });
+    W = W.filter(function(x){ return !d.date || x <= d.date; }); W.forEach(function(x, i){ WI[x] = i; });
+    d.LG = LG; d.W = W; d.WI = WI; d.WK = {};
     d.all = ['input','output'].filter(function(k){ return LG[k]; }); if(!d.all.length && LG.cached) d.all = ['cached'];
     d.coh = LG.cached && LG.cin && LG.cout && LG.input && LG.output ? ['cin','cached','cout'] : [];
     return d;
   }
+  /* One week's model detail, built at each publish and stored (terminal_index_week); kept in memory. */
+  function prepWeek(x){
+    var att = x.att || {}, ds = [x.pd, x.d].filter(Boolean), E = {}, V = {};
+    ['input','output','cached','cin','cout'].forEach(function(k){ var src = att[k === 'cin' ? 'input' : k === 'cout' ? 'output' : k] || {}, out = {};
+      ds.forEach(function(dd){ var e = src[dd] || [];
+        if(k === 'cin' || k === 'cout'){ var C = {}; ((att.cached || {})[dd] || []).forEach(function(r){ C[r[0]] = 1; }); e = e.filter(function(r){ return C[r[0]]; }); }
+        out[dd] = e.map(function(r){ return { a:r[0], v:r[1], lr:r[2] == null ? null : Number(r[2]) }; }); });
+      E[k] = out; });
+    ['input','output','cached'].forEach(function(k){ var s = (x.vend || {})[k], M = {};
+      if(s) s.split('|').forEach(function(r){ var i = r.indexOf('>'), a = r.slice(0, i), b = r.slice(i+1).split('~'); if(b.length < 3) return;
+        (M[a] = M[a] || []).push({ v:vgroup(b[0]), t:CH3[b[1]] || b[1], pts:b[2].split(',').map(function(p){ var q = p.split(':'); return [Number(q[0]), q[1] === 'x' ? null : Number(q[1])]; }) }); });
+      V[k] = M; });
+    return { d:x.d, pd:x.pd || null, E:E, V:V, names:x.names || {}, adm:x.adm || [] };
+  }
+  function getWeek(c, d){ var o = cache[c]; if(!o) return Promise.reject(new Error('No index'));
+    if(!o.WK[d]) o.WK[d] = sb.rpc('terminal_index_week', { p_code:c, p_date:d }).then(function(r){ if(r.error) throw r.error; return r.data ? prepWeek(r.data) : null; })
+      .catch(function(e){ delete o.WK[d]; throw e; });
+    return o.WK[d]; }
   function legs(){ return S.bk === 'coh' && D.coh.length ? D.coh : D.all; }
   function fixLeg(){ if(S.bk === 'coh' && !D.coh.length) S.bk = 'all'; var ls = legs(); if(ls.indexOf(S.leg) < 0){ var m = SW[S.leg] && SW[S.leg][S.bk]; S.leg = ls.indexOf(m) > -1 ? m : ls[ls.length-1]; } }
   function defWeek(){ var W = D.W, G = D.LG[S.leg]; S.K = W.length - 1;
@@ -358,7 +368,7 @@ var IX = (function(){
     var G = D.LG[S.leg], A = G.S, lv = S.mode === 'lv', box = $('ixCh'), bn = S.bk === 'coh' ? 'caching cohort' : 'all models', l = A[A.length-1];
     var lg = lv ? [{ k:'line', c:'var(--series)', n:NM[S.leg]+' index level, '+bn, v:l.l.toFixed(2) }, { k:'dash', c:'var(--l5)', n:'Base, May 2026 = 100' }]
                 : [{ k:'line', c:'var(--series)', n:NM[S.leg]+' spot price, the median, '+bn, v:px(l.s) }, { k:'bar', c:'rgba(198,203,211,.3)', n:'25th to 75th percentile' }];
-    lg.push({ k:'dot', c:'var(--series)', n:'Weeks with model detail' }, { k:'thin', c:'var(--l1)', n:'Selected week' });
+    lg.push({ k:'thin', c:'var(--l1)', n:'Selected week' });
     C().legend($('ixLg'), lg);
     if(A.length < 2){ box._geo = null; box.innerHTML = '<p class="tp-note tp-empty">Published for one week so far.</p>'; return; }
     mount(box, function(){
@@ -373,8 +383,6 @@ var IX = (function(){
       var P = A.filter(function(s){ return (lv ? s.l : s.s) != null; });
       g.push('<polyline points="'+P.map(function(s){ return AX.x(s.d).toFixed(1)+','+Y(lv ? s.l : s.s).toFixed(1); }).join(' ')+'" class="as-s-series" style="fill:none;stroke-width:2;stroke-linejoin:round"></polyline>');
       var sel = D.W[S.K];
-      D.W.forEach(function(d){ var i = G.I[d]; if(i == null) return; var s = A[i], v = lv ? s.l : s.s; if(v == null || d === sel) return;
-        g.push('<circle cx="'+AX.x(d).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="3.5" style="fill:var(--bg);stroke:var(--series);stroke-width:1.5"></circle>'); });
       var si = G.I[sel]; if(si != null){ var ss = A[si], sv = lv ? ss.l : ss.s, sx = AX.x(sel);
         g.push('<line x1="'+sx.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y1="'+ch.PT+'" y2="'+ch.TA+'" style="stroke:var(--l1)"></line>');
         if(sv != null) g.push('<circle cx="'+sx.toFixed(1)+'" cy="'+Y(sv).toFixed(1)+'" r="5" style="fill:var(--l1);stroke:var(--bg);stroke-width:2"></circle>'); }
@@ -386,30 +394,43 @@ var IX = (function(){
   function pickWeek(d){ var i = D.WI[d]; if(i == null || i === S.K) return; S.K = i; S.open = null; S.all = false; chart(); week(); }
 
   /* ── The week ── */
+  var wkN = 0;
   function week(){
-    var K = S.K, d = D.W[K], LS = legs(), lv = S.mode === 'lv', cur2 = S.leg, R = {}, prevAny = {}, curAny = {}, NMS = {}, IDX = {};
+    var K = S.K, d = D.W[K], c = cur, my = ++wkN;
     $('ixWkT').textContent = d ? 'Week of '+ldate(d) : '';
     $('ixPrev').disabled = K <= 0; $('ixNext').disabled = K >= D.W.length-1;
     if(!d){ $('ixT').innerHTML = ''; return; }
+    var o = cache[c] && cache[c].WK[d], t = $('ixT');
+    if(!o || !o.done) t.classList.add('busy');
+    /* Stepping quickly through weeks fetches only the one it settles on. */
+    (o ? Promise.resolve() : new Promise(function(r){ setTimeout(r, 140); })).then(function(){ if(my !== wkN) return null; return getWeek(c, d); }).then(function(X){ if(my !== wkN) return; if(cache[c] && cache[c].WK[d]) cache[c].WK[d].done = true; t.classList.remove('busy');
+      if(!X){ t.className = 'tp-tbl tp-lt'; t.innerHTML = '<tbody><tr><td class="d">No model detail is stored for this week.</td></tr></tbody>'; return; }
+      weekDraw(X); })
+    .catch(function(e){ if(my !== wkN) return; console.error('[Indexes week]', e); t.classList.remove('busy'); t.className = 'tp-tbl tp-lt'; t.innerHTML = '<tbody><tr><td class="d">This week could not be loaded. Try again.</td></tr></tbody>'; });
+  }
+  /* In a stored week, prices sit at 0 (the week before) and 1 (this week). */
+  function pv(pts, k){ for(var i = 0; i < pts.length; i++) if(pts[i][0] === k) return pts[i][1]; return null; }
+  function weekDraw(X){
+    var K = S.K, d = X.d, LS = legs(), lv = S.mode === 'lv', cur2 = S.leg, R = {}, prevAny = {}, curAny = {}, IDX = {}, HP = !!X.pd;
     LS.forEach(function(g){
-      var G = D.LG[g], s = G.S[G.I[d]] || {}, pd = K > 0 ? D.W[K-1] : null, prev = pd ? D.E[g][pd] : null, inPrev = {}, sum = 0, VS = D.V[g === 'cin' ? 'input' : g === 'cout' ? 'output' : g] || {};
+      var G = D.LG[g], s = G.S[G.I[d]] || {}, pd = X.pd, prev = pd ? X.E[g][pd] : null, inPrev = {}, sum = 0, VS = X.V[g === 'cin' ? 'input' : g === 'cout' ? 'output' : g] || {};
       if(prev) prev.forEach(function(e){ inPrev[e.a] = 1; prevAny[e.a] = 1; });
-      var E = D.E[g][d] || [];
+      var E = X.E[g][d] || [];
       E.forEach(function(e){ if(e.lr != null) sum += e.lr; curAny[e.a] = 1; });
       IDX[g] = s;
       E.forEach(function(e){
-        var vs = (VS[e.a] || []).map(function(v){ return { v:v, p:at(v.pts, K), p0:K > 0 ? at(v.pts, K-1) : null }; }).filter(function(x){ return x.p != null; });
+        var vs = (VS[e.a] || []).map(function(v){ return { v:v, p:pv(v.pts, 1), p0:HP ? pv(v.pts, 0) : null }; }).filter(function(x){ return x.p != null; });
         var ps = vs.map(function(x){ return x.p; }), r = R[e.a] || (R[e.a] = { a:e.a, L:{} });
         r.L[g] = { v:e.v, n:vs.length, vs:vs, md:med(ps), chg:e.lr == null ? null : (Math.exp(e.lr)-1)*100,
           ef:e.lr == null || s.w == null || Math.abs(sum) < 1e-9 ? 0 : s.w*e.lr/sum, isNew:!!prev && !inPrev[e.a],
           rep:vs.some(function(x){ return x.p0 != null && Math.abs(x.p/x.p0-1) > 0.005; }) };
       });
     });
-    function nm(a){ var n = D.names[a]; return n ? n[0] : a; }
-    function dev(a){ var n = D.names[a]; return n ? n[1] || '' : ''; }
+    function nm(a){ var n = X.names[a]; return n ? n[0] : a; }
+    function dev(a){ var n = X.names[a]; return n ? n[1] || '' : ''; }
     var rows = Object.keys(R).map(function(a){ var r = R[a], vn = {};
       LS.forEach(function(g){ if(r.L[g]) r.L[g].vs.forEach(function(x){ vn[x.v.v] = 1; }); });
-      r.nv = Object.keys(vn).length; r.isNew = K > 0 && !prevAny[a]; r.nm = nm(a); r.dev = dev(a);
+      r.nv = Object.keys(vn).length; r.isNew = HP && !prevAny[a]; r.nm = nm(a); r.dev = dev(a);
       r.mx = Math.max.apply(null, LS.map(function(g){ return r.L[g] ? Math.abs(r.L[g].ef) : 0; }));
       r.moved = r.mx >= 0.005; r.rep = LS.some(function(g){ return r.L[g] && r.L[g].rep; }); return r; });
     var N = 3 + LS.length*3;
@@ -429,7 +450,7 @@ var IX = (function(){
     function vrows(r){
       var V = {}, keys = [];
       LS.forEach(function(g){ if(r.L[g]) r.L[g].vs.forEach(function(q){ var k = q.v.v+'|'+q.v.t; if(!V[k]){ V[k] = { v:q.v.v, t:q.v.t, P:{} }; keys.push(k); } V[k].P[g] = q; }); });
-      var out = keys.map(function(k){ var z = V[k]; z.sp = z.P[cur2] ? z.P[cur2].p : 1e9; z.isNew = K > 0 && LS.every(function(g){ return !z.P[g] || z.P[g].p0 == null; }); return z; })
+      var out = keys.map(function(k){ var z = V[k]; z.sp = z.P[cur2] ? z.P[cur2].p : 1e9; z.isNew = HP && LS.every(function(g){ return !z.P[g] || z.P[g].p0 == null; }); return z; })
         .sort(function(a, b){ return a.sp - b.sp || a.v.localeCompare(b.v); });
       return out.map(function(z){ return '<tr class="tp-vr"><td><span class="tp-vn">'+esc(z.v)+(z.isNew ? '<span class="tp-nw">New</span>' : '')+'</span></td><td class="tp-dev d">'+esc(z.t)+'</td><td class="tp-vnc"></td>'
         + LS.map(function(g){ var q = z.P[g], c = q && q.p0 != null && Math.abs(q.p/q.p0-1) > 0.005 ? chg((q.p/q.p0-1)*100, 1) : '';
@@ -440,9 +461,9 @@ var IX = (function(){
       return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-a="'+esc(r.a)+'" aria-expanded="'+o+'"><td><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg>'+esc(r.nm)+(r.isNew ? '<span class="tp-nw">New</span>' : '')+'</td>'
         + '<td class="tp-dev d">'+esc(r.dev)+'</td><td class="r tp-vnc">'+r.nv+'</td>'+LS.map(function(g){ return cell(r, g); }).join('')+'</tr>'+(o ? vrows(r) : ''); }
     function grp(t, n, note, rowsH, fold){ return '<tr class="tp-gr"><td colspan="'+N+'"><span class="tp-lbl">'+t+'</span><span class="c">'+n+'</span>'+(note ? '<span class="hn">'+note+'</span>' : '')+(fold || '')+'</td></tr>'+rowsH; }
-    var w = D.W[K], lo = K > 0 ? D.W[K-1] : '0000';
+    var w = X.d, lo = X.pd || '0000';
     function when(a){ return a.st === 'admitted' ? a.vt : a.vf || a.dt; }
-    var adm = (D.adm || []).filter(function(a){ var x = when(a); return x && String(x).slice(0, 10) <= w && String(x).slice(0, 10) > lo; });
+    var adm = (X.adm || []).filter(function(a){ var x = when(a); return x && String(x).slice(0, 10) <= w && String(x).slice(0, 10) > lo; });
     var left = adm.filter(function(a){ return (a.st === 'admitted' && a.vt) || (a.st === 'excluded' && a.vf); }).map(function(a){ return { nm:a.nm, rule:RULE[a.rc] || '', why:clean(a.r) }; });
     Object.keys(prevAny).forEach(function(a){ if(!curAny[a] && !left.some(function(x){ return x.nm === nm(a); })) left.push({ nm:nm(a), rule:'', why:'Out of the basket from this week.' }); });
     var away = adm.filter(function(a){ return a.st === 'excluded' && !a.vf; }).map(function(a){ return { nm:a.nm, rule:RULE[a.rc] || '', why:clean(a.r) }; });
@@ -500,7 +521,7 @@ var IX = (function(){
     $('ixNext').addEventListener('click', function(){ if(D && S.K < D.W.length-1) pickWeek(D.W[S.K+1]); });
     hover($('ixChW'), $('ixCh'), function(p){ var s = p.w, lv = S.mode === 'lv', inW = D.WI[s.d] != null;
       return '<div class="t">Week of '+ldate(s.d)+'</div>'+NM[S.leg]+(lv ? ' index <b>'+s.l.toFixed(2)+'</b> '+(s.w == null ? '' : chg(s.w, 2)) : ' spot <b>'+px(s.s)+'</b>')
-        +'<br><span class="t">'+(!inW ? 'Model detail covers the last '+D.W.length+' weeks' : D.WI[s.d] === S.K ? 'Selected' : 'Select to see the models')+'</span>'; });
+        +'<br><span class="t">'+(!inW ? '' : D.WI[s.d] === S.K ? 'Selected' : 'Select to see the models')+'</span>'; });
     $('ixChW').addEventListener('click', function(e){ var G = $('ixCh')._geo; if(!G) return; var r = $('ixCh').getBoundingClientRect(), f = (e.clientX - r.left)/r.width, best = null, bd = 1e9;
       G.pts.forEach(function(p){ var x = Math.abs(p.f - f); if(x < bd){ bd = x; best = p; } }); if(best) pickWeek(best.w.d); });
     $('ixChW').tabIndex = 0; $('ixChW').setAttribute('aria-label', 'Chart. Use the left and right arrow keys to choose a week.');
