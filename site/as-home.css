@@ -1,0 +1,244 @@
+/* PRICE INDEX TABLE D, homepage only (staging review). Each family states its unit once beside
+   its name; an index priced in another unit shows it after its name in faint grey, on the same
+   line. Changes are marked with drawn arrows so value and change sit on one baseline. Phones
+   show the change only, so the name and all three components fit the screen. The legend keeps
+   var(--s5) from the table. Phone charts list their labels under the plot. The Standards
+   statement seal steps down on phones. */
+body #hpHm .as-hm-lg{margin-bottom:var(--s3)}
+body #hpHm .as-hm-f{display:flex;align-items:baseline;gap:var(--s2)}
+body #hpHm .as-hm-fu{font-size:var(--fs-label);font-weight:400;letter-spacing:0;text-transform:none;color:var(--l5)}
+body #hpHm .as-hm-r{grid-template-columns:60px 240px repeat(3,142px)}
+body #hpHm .as-hm-r>.as-code,body #hpHm .as-hm-r>.as-hm-n{align-self:center;padding-top:0}
+body #hpHm .as-hm-n{display:flex;flex-direction:row;align-items:baseline;gap:var(--s2);min-width:0}
+body #hpHm .as-hm-nt{overflow:hidden;text-overflow:ellipsis;min-width:0}
+body #hpHm .as-hm-u{font-size:var(--fs-label);color:var(--l5);flex:none}
+body #hpHm .as-hm-c{align-items:center}
+body #hpHm .as-hm-c>span{line-height:1}
+body #hpHm .as-hm-p{display:inline-flex;align-items:center}
+body #hpHeat .as-hm-a{display:inline-block;flex:none;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;margin-right:4px}
+body #hpHeat .as-hm-a.up{border-bottom:6px solid currentColor}
+body #hpHeat .as-hm-a.dn{border-top:6px solid currentColor}
+body #hpHeat .as-hm-a.fl{width:8px;height:2px;border:0;background:currentColor}
+body #hpHeat .as-hm-k>span{display:inline-flex;align-items:center}
+/* Two tables side by side down to a 1,180px content width, so laptop screens from 1,280px
+   up (1,366px, 1,440px, 1,512px and wider) keep both columns, scrollbar or not; the name column gives way first, the cells keep their room. */
+@container (min-width:1180px){
+  body #hpHm .as-hm-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(40px,4vw,120px)}
+  body #hpHm .as-hm-r{grid-template-columns:60px minmax(150px,240px) repeat(3,minmax(104px,1fr))}
+  body #hpHm .as-hm-w{width:auto}
+}
+@container (max-width:1179.98px){
+  body #hpHm{width:max-content;max-width:100%}
+  body #hpHm .as-hm-g{display:grid;grid-template-columns:minmax(0,1fr)}
+}
+.as-ch-list{list-style:none;margin:var(--s4) 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.35}
+.as-ch-list li{display:flex;flex-wrap:wrap;column-gap:var(--s2);padding-left:14px;position:relative}
+.as-ch-list li:before{content:"";position:absolute;left:0;top:.6em;width:8px;height:2px;background:var(--bar-3,#4a5160)}
+.as-ch-list li.on:before{background:var(--series,var(--accent))}
+.as-ch-list .v{color:var(--l5)}
+@media (max-width:767px){
+  body #hpHm{width:auto}
+  body #hpHm .as-hm{overflow:visible}
+  body #hpHm .as-hm-r{grid-template-columns:minmax(0,1fr) repeat(3,64px);gap:6px var(--s2)}
+  body #hpHm .as-hm-r>:first-child{display:none}
+  body #hpHm .as-hm-fu,body #hpHm .as-hm-u,body #hpHm .as-hm-l{display:none}
+  body #hpHm .as-hm-c{justify-content:center;height:32px;padding:0 4px}
+  body #hpHm .as-hm-p{font-size:12px;font-weight:600;color:var(--l1)}
+  body .as-mb-seal{width:160px;height:160px}
+}
+
+/* Market board: the change in every cell rotates on its own through since the base, year to
+   date, 1 month and 1 week; the period is named in the legend, with a thin line counting down to
+   the next turn. Cells crossfade to the new colour and light up or down as they change. */
+body #hpHm .as-hm-lg{justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:var(--s3) var(--s5)}
+body #hpHm .as-hm-kt{position:relative;padding-bottom:6px;font-size:var(--fs-ui,13px);font-weight:600;color:var(--l1)}
+body #hpHm .as-hm-k{margin-left:auto}
+body #hpHm .as-hm-kt .as-hm-pg{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--l4);opacity:.6;transform-origin:left center;transform:scaleX(0);pointer-events:none}
+body #hpHm .as-hm-c{transition:background-color .45s ease}
+body #hpHm .as-hm-p b{font-weight:inherit;font-variant-numeric:tabular-nums}
+body #hpHm .as-hm-c.fx-up{animation:asHmUp .9s ease-out}
+body #hpHm .as-hm-c.fx-dn{animation:asHmDn .9s ease-out}
+@keyframes asHmUp{0%{box-shadow:inset 0 0 0 1px rgba(53,208,127,.95)}100%{box-shadow:inset 0 0 0 1px rgba(53,208,127,0)}}
+@keyframes asHmDn{0%{box-shadow:inset 0 0 0 1px rgba(229,72,77,.95)}100%{box-shadow:inset 0 0 0 1px rgba(229,72,77,0)}}
+/* Spot prices carry longer figures, so their cells keep more room in two columns; on the
+   narrowest two-column widths their figures step down a size and long names shorten. */
+@container (min-width:1180px){
+  body #hpHm.as-hm-sp .as-hm-r{grid-template-columns:60px minmax(96px,240px) repeat(3,minmax(124px,1fr))}
+}
+@container (min-width:1180px) and (max-width:1339.98px){
+  body #hpHm.as-hm-sp .as-hm-l,body #hpHm.as-hm-sp .as-hm-p{font-size:12px}
+  body #hpHm.as-hm-sp .as-hm-c{padding:0 5px;gap:4px}
+}
+@media (prefers-reduced-motion:reduce){body #hpHm .as-hm-c{transition:none}body #hpHm .as-hm-c.fx-up,body #hpHm .as-hm-c.fx-dn{animation:none}}
+
+/* ── Research section: white papers as a list with small covers, beside the weekly
+   assessment, in the same row rhythm (concept C, November 16, 2026). ── */
+body #hpPubs .as-pb-pl{display:flex;flex-direction:column;border-bottom:1px solid var(--border-soft);flex:1}
+body #hpPubs .as-pb-pr{display:grid;grid-template-columns:120px minmax(0,1fr);gap:var(--s5);align-items:start;padding:var(--s4) 0;border-top:1px solid var(--border-soft);color:inherit}
+body #hpPubs .as-pb-pr .as-pb-cv{flex:none;width:120px;height:170px;padding:12px 11px 10px;overflow:hidden}
+body #hpPubs .as-pb-pr .as-pb-cv .as-wm svg{height:6px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-crule{margin:9px 0 11px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-ck{font-size:6.5px;letter-spacing:.7px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:13px;margin-top:7px}
+body #hpPubs .as-pb-pr .as-pb-cv .as-cf{font-size:6px;padding-top:4px}
+body #hpPubs .as-pb-px{display:flex;flex-direction:column;gap:6px;min-width:0}
+body #hpPubs .as-pb-pt{font-size:var(--fs-subhead);font-weight:600;color:var(--l1);line-height:var(--lh-ui);transition:color .15s}
+body #hpPubs .as-pb-ps{margin:0;font-size:14px;line-height:1.55;color:var(--l3);text-wrap:pretty}
+body #hpPubs .as-pb-px .as-pb-go{margin-top:2px}
+body #hpPubs .as-pb-pr:hover .as-pb-pt{color:var(--accent-hover)}
+body #hpPubs .as-pb-pr:hover .as-pb-cv{border-color:var(--l5)}
+body #hpPubs .as-pb-pr:hover .as-pb-go{color:var(--accent-hover)}
+/* Edition rows stretch to the papers column height; centre their text in the taller row. */
+body #hpPubs .as-pb-r{align-content:center}
+/* The LinkedIn link belongs to the weekly assessment: on tablets and desktops it sits at the
+   right of the newsletter name, across from it; on phones it sits under the list. */
+body #hpPubs .as-pb-l:not(#hpPbPaper) .as-pb-hd{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--s4);row-gap:var(--s4);align-items:baseline}
+body #hpPubs .as-pb-l:not(#hpPbPaper) .as-pb-hd .as-lbl{grid-column:1 / -1}
+body #hpPubs .as-pb-hl{grid-column:2;grid-row:2;white-space:nowrap}
+body #hpPubs .as-sf{display:none}
+@media (max-width:560px){body #hpPubs .as-pb-hl{display:none}body #hpPubs .as-sf{display:flex}}
+@media (max-width:560px){
+  body #hpPubs .as-pb-pr{grid-template-columns:88px minmax(0,1fr);gap:var(--s4)}
+  body #hpPubs .as-pb-pr .as-pb-cv{width:88px;height:125px;padding:9px 8px 7px}
+  body #hpPubs .as-pb-pr .as-pb-cv .as-wm svg{height:5px}
+  body #hpPubs .as-pb-pr .as-pb-cv .as-ct{font-size:10px}
+  body #hpPubs .as-pb-ps{display:none}
+}
+
+/* ── Legends and facts, site rule F (November 16, 2026) ──
+   Live tables: the period label with four step dots (current one white), then the colour
+   key on its own row under it, left-aligned above the columns. Nothing sits at the far right. */
+body #hpHm .as-hm-lg{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:12px}
+body #hpHm .as-hm-kt{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;padding-bottom:0}
+body #hpHm .as-hm-kt .as-hm-pg{display:none}
+body #hpHm .as-hm-ds{display:inline-flex;align-items:center;gap:6px}
+body #hpHm .as-hm-d{display:block;width:6px;height:6px;border-radius:50%;background:var(--l5);opacity:.6;transition:background .3s,opacity .3s}
+body #hpHm .as-hm-d.on{background:var(--l1);opacity:1}
+body #hpHm .as-hm-k{margin-left:0;justify-content:flex-start}
+/* Contract section. The older dotted facts list (.as-pl) is no longer in the page; its rules stay
+   harmless until the stylesheet is folded. Charts carry a legend with values, never end labels. */
+body #hpClause .as-cl{display:flex;flex-direction:column;gap:var(--s4)}
+body #hpClause .as-pl{flex-direction:row;flex-wrap:wrap;gap:4px 0}
+body #hpClause .as-pl li{padding-left:0;color:var(--l3)}
+body #hpClause .as-pl li:first-child{color:var(--l2)}
+body #hpClause .as-pl li::before{content:none}
+body #hpClause .as-pl li+li::before{content:"\00B7";position:static;display:inline;width:auto;height:auto;background:none;margin:0 12px;color:var(--l5)}
+body #hpClause .as-cl-c{margin-top:-8px}
+/* Legend C: the contract facts as one sentence; the legend row above the chart is the shared .as-lgv (as-fluid.css). 24px from the sentence to the legend, as on every chart. */
+body #hpClause .as-cl-s{margin:0;max-width:760px;font-size:15px;line-height:1.6;color:var(--l3)}
+body #hpClause .as-cl-s b{color:var(--l2);font-weight:600}
+@media (max-width:560px){
+  body #hpClause .as-pl{flex-direction:column;gap:6px}
+  body #hpClause .as-pl li+li::before{content:none}
+}
+
+/* Simulated contracts, option K (November 17, 2026): five columns on the page background, divided by
+   thin vertical rules like the IOSCO section; on phones, rows divided by thin lines. Each column is a
+   link to that contract on the Clause page; only its "See the contract" line is blue. */
+body #hpClause .as-k5-tot{margin:0;max-width:860px;font-size:var(--fs-lead,16px);line-height:1.55;color:var(--l2)}
+body #hpClause .as-k5-tot strong{font-weight:600;color:var(--l1)}
+body #hpClause .as-k5-tot{display:none}
+body #hpClause #hpClLg{margin:0 0 16px}
+body #hpClause .as-k5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+body #hpClause .as-k5-c{display:flex;flex-direction:column;gap:6px;min-width:0;padding:var(--s2) var(--s5);text-decoration:none;color:inherit;transition:background .15s}
+body #hpClause .as-k5-c:first-child{padding-left:0}
+body #hpClause .as-k5-c:last-child{padding-right:0}
+body #hpClause .as-k5-c + .as-k5-c{border-left:1px solid var(--border)}
+body #hpClause .as-k5-c .as-lbl{color:var(--l4)}
+body #hpClause .as-k5-t{font-size:13px;line-height:1.4;color:var(--l4)}
+body #hpClause .as-k5-v{margin-top:6px;font-size:var(--fs-title,24px);font-weight:600;line-height:1.15;color:var(--l1);font-variant-numeric:tabular-nums}
+body #hpClause .as-k5-d{font-size:13px;color:var(--l3)}
+body #hpClause .as-k5-d b{font-weight:600;color:var(--gold)}
+body #hpClause .as-k5-c svg{display:block;width:100%;height:auto;margin:8px 0 4px}
+body #hpClause .as-k5-n{font-size:12px;line-height:1.4;color:var(--l4)}
+body #hpClause .as-k5-go{margin-top:auto;padding-top:8px;font-size:var(--fs-ui,13px);color:var(--accent)}
+body #hpClause .as-k5-c:hover .as-k5-go,body #hpClause .as-k5-c:focus-visible .as-k5-go{color:var(--accent-hover)}
+body #hpClause .as-k5-c:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:1199px){
+  body #hpClause .as-k5{grid-template-columns:minmax(0,1fr)}
+  body #hpClause .as-k5-c{display:grid;grid-template-columns:minmax(0,1fr) 120px;column-gap:var(--s4);row-gap:2px;padding:var(--s4) 0;border-bottom:1px solid var(--border-soft)}
+  body #hpClause .as-k5-c + .as-k5-c{border-left:0}
+  body #hpClause .as-k5-c > span{grid-column:1}
+  body #hpClause .as-k5-c svg{grid-column:2;grid-row:1 / span 5;align-self:center;margin:0}
+  body #hpClause .as-k5-v{font-size:24px;margin-top:2px}
+  body #hpClause .as-k5-t,body #hpClause .as-k5-n{display:none}
+  body #hpClause .as-k5-go{padding-top:4px}
+  body #hpClause .as-k5-c:first-child{padding-top:0}
+  body #hpClause .as-k5-c:last-child{border-bottom:0}
+}
+/* November 17, 2026: no notes and no per-contract links; each column still opens its contract on the
+   Clause page (a quiet hover), and the one blue link under the section leads to all five. */
+body #hpClause .as-k5-n,body #hpClause .as-k5-go{display:none}
+body #hpClause .as-k5-c:hover .as-lbl,body #hpClause .as-k5-c:focus-visible .as-lbl{color:var(--l2)}
+body #hpClause .as-k5-c svg{margin-bottom:0}
+/* The small charts end where the contract's settled months end: the fixed price line no longer runs
+   past them. A tick at every month boundary and the month names under the axis (November 17, 2026). */
+body #hpClause .as-k5-ch{display:flex;flex-direction:column;gap:4px;margin:8px 0 0}
+body #hpClause .as-k5-ch svg{display:block;width:100%;height:auto;margin:0}
+body #hpClause .as-k5-m{display:flex}
+body #hpClause .as-k5-m i{flex:1 1 0;min-width:0;font-style:normal;font-size:11px;line-height:1;color:var(--l4);text-align:center}
+@media (max-width:1199px){
+  body #hpClause .as-k5-c .as-k5-ch{grid-column:2;grid-row:1 / span 4;align-self:center;margin:0}
+  body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
+  body #hpClause .as-k5-m i{font-size:11px}
+}
+/* The five columns line up row by row (name, terms, figure, share, chart) even when a name or the
+   terms wrap: each column shares the section's rows (subgrid). */
+@media (min-width:1200px){
+  body #hpClause .as-k5{grid-template-rows:repeat(5,auto);row-gap:6px}
+  body #hpClause .as-k5-c{display:grid;grid-row:span 5;grid-template-rows:subgrid;row-gap:6px;align-content:start}
+}
+/* Every small chart is the same height whatever its column width, so the axes line up. */
+body #hpClause .as-k5-ch svg{height:62px}
+@media (max-width:1199px){ body #hpClause .as-k5-ch svg{height:52px} }
+/* Responsive (November 17, 2026). Five columns from 1200px. Tablets and small laptops (600 to 1199px): one row per
+   contract with the figures at the left and the small chart filling the rest of the row, so no
+   gap opens in the middle. Phones (under 600px): the chart keeps a fixed 150px at the right. */
+@media (min-width:600px) and (max-width:1199px){
+  body #hpClause .as-k5-c{grid-template-columns:minmax(180px,1fr) minmax(0,2fr);column-gap:var(--s6)}
+  body #hpClause .as-k5-ch svg{height:56px}
+}
+@media (max-width:599px){
+  body #hpClause .as-k5-c{grid-template-columns:minmax(0,1fr) 150px}
+}
+/* The contract terms show on every screen, under the name, as on desktop (November 17, 2026). */
+@media (max-width:1199px){ body #hpClause .as-k5-t{display:block;margin-bottom:2px} }
+
+/* Index table colour key: a gradient bar read in words (November 17, 2026). */
+body #hpHeat .as-hm-k.as-hm-gk{display:inline-flex;flex-direction:column;gap:4px;width:240px;max-width:100%;margin-left:0;align-self:flex-start}
+body #hpHeat .as-hm-gb{display:block;height:8px;border-radius:2px}
+body #hpHeat .as-hm-gt{display:flex;justify-content:space-between;align-items:center;font-size:11px;line-height:1.3;color:var(--l4);white-space:nowrap}
+body #hpHeat .as-hm-gt > span{display:inline-flex;align-items:center;gap:4px}
+body #hpHeat .as-hm-k.as-hm-gk{align-items:stretch}
+body #hpHeat .as-hm-k.as-hm-gk > .as-hm-gb,body #hpHeat .as-hm-k.as-hm-gk > .as-hm-gt{width:100%;align-self:stretch;gap:0}
+body #hpHeat .as-hm-k.as-hm-gk > .as-hm-gb{display:block}
+body #hpHeat .as-hm-k.as-hm-gk > .as-hm-gt{justify-content:space-between}
+
+/* Index table option G (November 17, 2026): the period switch beside the view switch, both the site
+   toggle; no Live label (the header ticker keeps the pulsing dot); only the colour key above the table. */
+body #hpHeat .as-ib-live{display:none}
+body #hpHeat .as-mk-live{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3) var(--s2)}
+body #hpHmPer .as-vt-b{position:relative}
+body #hpHmPer .as-hm-tm{position:absolute;left:var(--s3);right:var(--s3);bottom:3px;height:1px;background:var(--l3);opacity:0;transform:scaleX(0);transform-origin:left center;pointer-events:none}
+body #hpHmPer .as-vt-b.on .as-hm-tm{opacity:.9}
+body #hpHmPer .as-vt-b.on::before{content:"";position:absolute;left:var(--s3);right:var(--s3);bottom:3px;height:1px;background:rgba(255,255,255,.08)}
+body #hpHm.as-hm-man ~ * #hpHmPer .as-vt-b.on::before{display:none}
+body #hpHeat .as-hm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body #hpHm .as-hm-lg{margin-bottom:var(--s4)}
+
+/* The colour key at the right end of the control row, level with the switches (November 17, 2026); on phones it takes its own line under them, on the left. */
+body #hpHeat .as-mk-live > #hpHmKey{display:flex;flex-direction:column;margin:0 0 0 auto;align-self:center}
+body #hpHeat #hpHmKey .as-hm-k.as-hm-gk{margin-left:0}
+@media (max-width:767px){body #hpHeat .as-mk-live > #hpHmKey{flex-basis:100%;margin:var(--s2) 0 0}}
+/* Five drivers, option B (November 17, 2026): each tab is the driver's name with its context, its
+   headline figure and the breakdown in brackets, in the sizes of the Simulated contracts columns. */
+body #hpDrivers #hpDsText{display:none}
+body #hpDrivers .as-ds-t{gap:6px}
+body #hpDrivers .as-ds-n{font-size:var(--fs-ui);font-weight:600;line-height:var(--lh-ui);color:var(--l3)}
+body #hpDrivers .as-ds-v{font-size:24px;font-weight:600;line-height:1.15;color:var(--l3);font-variant-numeric:tabular-nums;margin-top:2px}
+body #hpDrivers .as-ds-t[aria-selected="true"] .as-ds-v{color:var(--l1)}
+body #hpDrivers .as-ds-s{font-size:var(--fs-ui);line-height:var(--lh-ui);color:var(--l4)}
+@media (max-width:767px){body #hpDrivers .as-ds-v{font-size:20px}}
+
+/* Five drivers: the line on top of the selected tab fills in white as the tabs rotate (November 17, 2026). */
+body #hpDrivers .as-ds-fill{background:var(--l1);animation:none !important;transition:none}
