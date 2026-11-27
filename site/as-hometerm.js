@@ -91,7 +91,7 @@ function frames(){
   L.innerHTML = '<a href="/terminal" data-x="' + (x1 - 6) + '"><i style="border-color:#8B93A0"></i>Explore the Terminal &rarr;</a><a href="/clause" data-x="' + ce + '"><i style="border-color:#D4AF37"></i>Explore the Clause &rarr;</a>';
   s.parentNode.insertBefore(L, s.nextSibling);
   var A2 = [].slice.call(L.querySelectorAll('a'));
-  function size(){ var fs = ref ? +ref.getAttribute('font-size') || 12 : 12, n = NARROW.matches;
+  function size(){ var fs = ref ? parseFloat(getComputedStyle(ref).fontSize) || 12 : 12, n = NARROW.matches;
     fig.classList.toggle('as-fr-n', n);
     T.forEach(function(t, i){ t.setAttribute('font-size', (i % 2 ? fs : fs * .9).toFixed(2)); t.style.display = n ? 'none' : ''; });
     if(n){ A2.forEach(function(a){ a.style.cssText = ''; }); return; }
@@ -99,7 +99,7 @@ function frames(){
     A2.forEach(function(a){ var xr = +a.getAttribute('data-x') - 14;
       a.style.cssText = 'font-size:' + px.toFixed(2) + 'px;right:' + (fr.right - (sr.left + (xr - vb[0]) * sc)).toFixed(1) + 'px;top:' + (sr.top - fr.top + (top + h - 12 - vb[1]) * sc - px * .82).toFixed(1) + 'px'; }); }
   size();
-  if(ref && window.MutationObserver) new MutationObserver(size).observe(ref, { attributes:true, attributeFilter:['font-size'] });
+  if(ref && window.MutationObserver){ var mo = new MutationObserver(size); mo.observe(ref, { attributes:true, attributeFilter:['font-size', 'style'] }); if(ref.parentNode) mo.observe(ref.parentNode, { attributes:true, attributeFilter:['font-size', 'style'] }); }
   if(window.ResizeObserver) new ResizeObserver(size).observe(s);
   if(NARROW.addEventListener) NARROW.addEventListener('change', size);
 }
