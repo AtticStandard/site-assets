@@ -510,10 +510,11 @@ var IX = (function(){
   /* ── Close ── */
   function foot(){
     /* One line: the unit already heads the week table. */
-    $('ixSrc').textContent = 'Source: Attic Standard, index levels, spot prices and vendor prices published '+ldate(D.date)+'. Figures update with each index publication.';
+    $('ixSrc').textContent = 'Source: Attic Standard, index levels, spot prices and vendor prices published '+ldate(D.date)+', administered with reference to the IOSCO Principles for Financial Benchmarks.';
   }
-  function cite(b){ if(!D) return; var G = D.LG[S.leg], l = G.S[G.S.length-1];
-    copy(b, 'Attic Standard, '+cur+' ('+ixName(cur)+'), '+NM[S.leg].toLowerCase()+' leg, '+(S.bk === 'coh' ? 'caching cohort' : 'all models')+', '+ldate(D.date)+': index level '+l.l.toFixed(2)+(l.s != null ? ', spot price '+sym()+fx(l.s)+' '+(D.unit || '') : '')+'. atticstandard.com'); }
+  /* The citation is for the week on screen, so any past week can be quoted exactly. */
+  function cite(b){ if(!D) return; var G = D.LG[S.leg], wd = D.W[S.K], l = G.S.filter(function(x){ return x.d === wd; })[0] || G.S[G.S.length-1];
+    copy(b, 'Attic Standard, '+cur+' ('+ixName(cur)+'), '+NM[S.leg].toLowerCase()+' leg, '+(S.bk === 'coh' ? 'caching cohort' : 'all models')+', week of '+ldate(l.d)+': index level '+l.l.toFixed(2)+(l.s != null ? ', spot price '+sym()+fx(l.s)+' '+(D.unit || '') : '')+'. atticstandard.com'); }
 
   function pick(c){ if(!L.length){ try{ localStorage.setItem('atIxCode', c); }catch(e){} return; } pickCode(c); }
   function start(){
@@ -830,7 +831,8 @@ function pricingHTML(){
   + '<div class="tp-sel tp-fnd"><span class="tp-lbl">Model</span><div class="tp-fr"><div class="tp-fq" id="moFq"><svg class="tp-fi" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"></circle><path d="M10.4 10.4 14 14"></path></svg>'
   + '<input class="tp-in" id="moQ" type="text" role="combobox" aria-expanded="false" aria-controls="moRes" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Find a model by name or developer">'
   + '<div class="tp-res" id="moRes" role="listbox" aria-label="Models" hidden></div></div><div class="tp-dd" id="moVen"></div></div>'
-  + '<span class="tp-lbl">Modality</span><div class="as-vt" id="moMod" role="group" aria-label="Modality"></div></div>'
+  + '<span class="tp-lbl">Modality</span><div class="as-vt" id="moMod" role="group" aria-label="Modality"></div>'
+  + '<span class="tp-lbl" id="moYl">Your price</span><div class="tp-yr" id="moYr" role="group" aria-labelledby="moYl"></div></div>'
   + '<div id="moMsg"></div><div class="tp-ix" id="moBody" hidden><div class="tp-prog" id="moProg" hidden></div>'
   + '<div class="tp-ixh"><div class="tp-mh"><div class="tp-ixt"><p class="tp-code" id="moCode"></p><h2 class="tp-h" id="moName"></h2></div><button type="button" class="tp-pinb" id="moPin" aria-pressed="false"></button></div>'
   + '<div class="tp-cg" id="moCg"></div><p class="tp-facts" id="moFacts"></p></div>'
@@ -920,6 +922,21 @@ var MO = (function(){
   function pinBtn(){ if(!model) return; var b = $('moPin'), on = pins().indexOf(model.anchor_id) > -1, full = pins().length >= PMAX;
     b.setAttribute('aria-pressed', String(on)); b.disabled = !on && full; b.textContent = on ? 'Pinned' : full ? 'Five pinned' : 'Pin'; b.title = !on && full ? 'Unpin a model to pin this one' : ''; }
 
+  /* ── Your price: the rate a subscriber pays, per leg, kept in this browser. It becomes a row in the week
+     table, at its place among the vendors, with its distance from the median. ── */
+  function rates(){ try{ return JSON.parse(localStorage.getItem('atMoRates') || '{}') || {}; }catch(e){ return {}; } }
+  function myRate(){ var r = rates(), m = model && r[model.anchor_id]; return (m && m[S.unit]) || {}; }
+  function putRate(leg, v){ var r = rates(), a = model.anchor_id; r[a] = r[a] || {}; var u = r[a][S.unit] = r[a][S.unit] || {};
+    if(v > 0) u[leg] = v; else delete u[leg];
+    if(!Object.keys(u).length) delete r[a][S.unit]; if(!Object.keys(r[a]).length) delete r[a];
+    try{ localStorage.setItem('atMoRates', JSON.stringify(r)); }catch(e){} }
+  function num(v){ v = String(v || '').replace(/[$,\s]/g, ''); var n = Number(v); return v !== '' && n > 0 ? n : null; }
+  function yours(){
+    var Y = myRate(), any = Object.keys(Y).length;
+    $('moYr').innerHTML = CUR.legs.map(function(l){ return '<label class="tp-yi"><span>'+legName(l)+'</span><input class="tp-in" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" data-leg="'+esc(l)+'" placeholder="$0.000000" value="'+(Y[l] ? '$'+fx(Y[l]) : '')+'" aria-label="Your '+legName(l).toLowerCase()+' price, USD '+esc(S.unit)+'"></label>'; }).join('')
+      + '<span class="tp-bn">USD '+esc(S.unit)+'. Kept in this browser only.</span><button type="button" class="tp-link" id="moYc"'+(any ? '' : ' hidden')+'>Clear</button>';
+  }
+
   /* ── Finder ── */
   function norm(s){ return String(s || '').toLowerCase().replace(/[-._\s/]/g, ''); }
   function matches(){
@@ -981,7 +998,7 @@ var MO = (function(){
     if(S.K == null || S.K > W.length-1) S.K = W.length-1;
     CUR = { units:units, legs:legs, W:W, V:V, vs:vs, E:E };
   }
-  function render(){ prep(); head(); controls(); tiles(); chart(); week(); foot(); }
+  function render(){ prep(); head(); yours(); controls(); tiles(); chart(); week(); foot(); }
   function head(){
     var m = model, C = CUR, now = C.vs.filter(function(v){ return C.legs.some(function(l){ return v.P[l] && v.P[l][GATE] > 0; }); }).length;
     $('moCode').textContent = [m.creator, m.modality, TIER[m.tier]].filter(Boolean).join(' · ');
@@ -1057,6 +1074,9 @@ var MO = (function(){
     var now = C.vs.filter(function(v){ return C.legs.some(function(l){ return at(v, l, d); }); }), M = {};
     C.legs.forEach(function(l){ M[l] = C.E[l][K] ? C.E[l][K].m : null; });
     now.sort(function(a, b){ var x = at(a, sel, d), y = at(b, sel, d); return (x == null) - (y == null) || (x || 0) - (y || 0) || a.name.localeCompare(b.name); });
+    /* Your price sits among the vendors, after any vendor at the same price. */
+    var Y = myRate(), yi = -1;
+    if(Object.keys(Y).length){ yi = now.length; if(Y[sel]) for(var i = 0; i < now.length; i++){ var x = at(now[i], sel, d); if(x != null && x > Y[sel]){ yi = i; break; } } }
     /* Vendors that priced the model in an earlier week and not in this one. */
     var gone = C.vs.filter(function(v){ return now.indexOf(v) < 0 && v.first && v.first < d; }).map(function(v){ var last = null;
       C.W.forEach(function(x){ if(x < d && C.legs.some(function(l){ return at(v, l, x); })) last = x; }); v.last = last; return v; }).sort(function(a, b){ return a.last < b.last ? 1 : a.last > b.last ? -1 : a.name.localeCompare(b.name); });
@@ -1079,14 +1099,17 @@ var MO = (function(){
       return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-v="'+esc(v.id)+'" aria-expanded="'+o+'"><td><span class="tp-mn"><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg><b>'+esc(v.name)+'</b>'+(nw ? '<span class="tp-nw">New</span>' : '')+'<em>'+esc(v.type)+'</em></span></td>'
         + LV.map(function(l){ return cell(v, l); }).join('')+'</tr>'+(o ? hist(v) : ''); }
     function grp(t, n, note){ return '<tr class="tp-gr"><td colspan="'+N+'"><span class="tp-lbl">'+t+'</span><span class="c">'+n+'</span>'+(note ? '<span class="hn">'+note+'</span>' : '')+'</td></tr>'; }
-    h += grp('Priced this week', now.length, 'cheapest first on '+legName(sel).toLowerCase()) + now.map(row).join('');
+    function you(){ return '<tr class="tp-you"><td><span class="tp-mn"><b>Your price</b><em>entered by you</em></span></td>'
+      + LV.map(function(l){ var o = on(l), p = Y[l]; return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(p ? esc(px(p)) : '')+'</td><td class="'+o.trim()+'"></td><td class="r'+o+'">'+(p && M[l] ? '<span class="d">'+vs(p, M[l])+'</span>' : '')+'</td>'; }).join('')+'</tr>'; }
+    h += grp('Priced this week', now.length, 'cheapest first on '+legName(sel).toLowerCase()) + now.map(function(v, i){ return (i === yi ? you() : '') + row(v); }).join('') + (yi === now.length ? you() : '');
     if(gone.length) h += grp('No price this week', gone.length, 'priced this model before; left out of the median') + gone.map(function(v){ return '<tr class="tp-xr"><td><span class="tp-mn"><b>'+esc(v.name)+'</b><em>'+esc(v.type)+'</em></span></td><td colspan="'+(N-1)+'" class="tp-xw">Last priced '+esc(ldate(v.last))+'</td></tr>'; }).join('');
     $('moT').className = 'tp-ld n'+LV.length;
     $('moT').innerHTML = h+'</tbody>';
   }
-  function foot(){ $('moSrc').textContent = 'Source: Attic Standard, vendor prices published '+ldate(GATE)+'. Each vendor’s lowest list price for the model. Figures update with each index publication.'; }
-  function cite(b){ if(!CUR) return; var e = CUR.E[S.leg][CUR.W.length-1]; if(!e) return;
-    copy(b, 'Attic Standard, '+model.model_name+' '+legName(S.leg).toLowerCase()+' price, '+ldate(GATE)+': market median $'+fx(e.m)+' '+S.unit+' across '+e.n+' vendors (lowest $'+fx(e.lo)+', highest $'+fx(e.hi)+'). atticstandard.com'); }
+  function foot(){ $('moSrc').textContent = 'Source: Attic Standard, vendor prices published '+ldate(GATE)+', each vendor’s lowest list price for the model, administered with reference to the IOSCO Principles for Financial Benchmarks.'; }
+  /* The citation is for the week on screen, so any past week can be quoted exactly. */
+  function cite(b){ if(!CUR) return; var e = CUR.E[S.leg][S.K]; if(!e) return;
+    copy(b, 'Attic Standard, '+model.model_name+' '+legName(S.leg).toLowerCase()+' price, week of '+ldate(e.d)+': market median $'+fx(e.m)+' '+S.unit+' across '+e.n+' vendors (lowest $'+fx(e.lo)+', highest $'+fx(e.hi)+'), published '+ldate(e.d)+'. atticstandard.com'); }
 
   function start(){
     waiting($('moMsg'));
@@ -1108,6 +1131,13 @@ var MO = (function(){
       var c = e.target.closest('[data-pin]'); if(c && BYA[c.dataset.pin] && BYA[c.dataset.pin] !== model) pick(BYA[c.dataset.pin]); });
     $('moPc').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var c = e.target.closest('[data-pin]'); if(!c || e.target.closest('[data-unpin]')) return; e.preventDefault(); if(BYA[c.dataset.pin] !== model) pick(BYA[c.dataset.pin]); });
     $('moPin').addEventListener('click', function(){ if(model) togglePin(model.anchor_id); });
+    var yT = null;
+    /* Each entry is kept as it is typed; the table follows a moment later. */
+    $('moYr').addEventListener('input', function(e){ var t = e.target.closest('input[data-leg]'); if(!t || !model) return;
+      putRate(t.dataset.leg, num(t.value)); $('moYc').hidden = !Object.keys(myRate()).length; clearTimeout(yT); yT = setTimeout(week, 200); });
+    $('moYr').addEventListener('change', function(e){ var t = e.target.closest('input[data-leg]'); if(!t) return; var v = num(t.value); t.value = v ? '$'+fx(v) : ''; });
+    $('moYr').addEventListener('keydown', function(e){ if(e.key === 'Enter' && e.target.matches('input[data-leg]')) e.target.blur(); });
+    $('moYr').addEventListener('click', function(e){ if(!e.target.closest('#moYc') || !model) return; CUR.legs.forEach(function(l){ putRate(l, null); }); yours(); week(); });
     $('moCg').addEventListener('click', function(e){ var b = e.target.closest('[data-ix]'); if(!b) return; show('indexes', true); IX.pick(b.dataset.ix); });
     $('moUnits').addEventListener('click', function(e){ var b = e.target.closest('[data-u]'); if(!b || b.dataset.u === S.unit) return; S.unit = b.dataset.u; S.open = {}; S.K = null; render(); });
     $('moTiles').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === S.leg) return; S.leg = b.dataset.leg; tiles(); chart(); week(); });

@@ -622,3 +622,13 @@ html.tp-page .as-nav a.tp-nv{cursor:pointer}
 /* A model's tiles carry wider changes than an index's; they stay on one line beside the price. */
 #moTiles .tp-c3{flex-wrap:nowrap;gap:var(--s2) 14px}
 #moTiles .tp-leg{column-gap:var(--s4)}
+/* Your price: inputs in the selector, then one marked row in the week table. No fill, like the rest of the
+   table: the name in the accent colour and a rule down the left edge. */
+.tp-yr{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s4)}
+.tp-yi{display:flex;align-items:center;gap:var(--s2);font-size:var(--fs-ui);color:var(--l4)}
+.tp-yi .tp-in{width:128px;font-variant-numeric:tabular-nums}
+.tp-yr .tp-bn{font-size:12px;color:var(--l5)}
+.tp-ld tr.tp-you td{color:var(--l1)}
+.tp-ld tr.tp-you td:first-child{box-shadow:inset 2px 0 0 var(--accent);padding-left:var(--s3)}
+.tp-ld tr.tp-you .tp-mn b{color:var(--accent)}
+@media (max-width:767px){ .tp-yr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2)} .tp-yi{flex-direction:column;align-items:stretch;gap:4px;min-width:0;font-size:12px;white-space:nowrap} .tp-yi .tp-in{width:100%;min-width:0;padding-left:10px;padding-right:6px} .tp-yr .tp-bn{grid-column:1/-1} .tp-yr #moYc{grid-column:1/-1;justify-self:start} }
