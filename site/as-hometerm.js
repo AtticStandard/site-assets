@@ -108,7 +108,7 @@ function section(){
   var cl = document.getElementById('hpClause'); if(!cl || document.getElementById('hpTerm')) return;
   var host = cl.parentElement, wrap = document.createElement('div'); wrap.className = host.className || 'w-embed'; wrap.style.cssText = host.style.cssText;
   wrap.innerHTML = '<section class="as-sec" id="hpTerm" aria-labelledby="hpTermH"><div class="as-tm">'
-    + '<div class="as-tm-l"><div class="as-sh"><div><h2 class="as-st" id="hpTermH">Know the market price before you sign, and every month after.</h2>'
+    + '<div class="as-tm-l"><div class="as-sh"><div><h2 class="as-st" id="hpTermH">Know the market price before you sign, and every day after.</h2>'
     + '<p class="as-ss">The Attic Standard Terminal delivers independent pricing intelligence to FinOps and procurement teams, so every negotiation and purchase decision starts from the market price.</p></div></div>'
     + '<div class="as-tm-pts" role="tablist" aria-orientation="vertical" aria-label="What the Terminal shows">'
     + PTS.map(function(p, i){ return '<button type="button" class="as-tm-t' + (p.c ? ' as-tm-c' : '') + '" role="tab" id="hpTmT' + i + '" aria-controls="hpTmP" aria-selected="false" data-i="' + i + '"><span class="as-tm-bar"><span class="as-tm-fill"></span></span><span class="as-tm-x"><span class="as-tm-n">' + p.n + '</span><span class="as-tm-d">' + p.d + '</span></span></button>'; }).join('')
