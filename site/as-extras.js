@@ -138,7 +138,7 @@
     '<svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 6.4 L6 1.6 L11 6.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
     '<div class="as-cd-b" id="asCdB" role="region" aria-labelledby="asCdT" inert>' +
     '<div class="as-cd-k"><div><h2 class="as-cd-t" id="asCdT">Talk to the team</h2><p class="as-cd-st">A demo, a quote, or a question about coverage. We respond within one business day.</p></div>' +
-    '<ol class="as-cd-steps"><li><b>01</b><span>Tell us what you buy or build, and where.</span></li><li><b>02</b><span>We reply within one business day to set a time.</span></li><li><b>03</b><span>In 30 minutes we compare your models with the benchmark, so you see where your spend sits against the market.</span></li></ol></div>' +
+    '<ol class="as-cd-steps"><li><b>01</b><span>Tell us what you buy or build, and where.</span></li><li><b>02</b><span>We reply within one business day to set a time.</span></li><li><b>03</b><span>In 30 minutes we compare your models with the benchmark, so you know the market price before you negotiate.</span></li></ol></div>' +
     '<form novalidate><p class="as-cd-n">All fields required.</p>' +
     '<div class="as-cd-row">' + f('first', 'First name', inp('first', 'text', 'given-name')) + f('last', 'Last name', inp('last', 'text', 'family-name')) + '</div>' +
     '<div class="as-cd-row">' + f('email', 'Work email', inp('email', 'email', 'email')) + f('company', 'Company', inp('company', 'text', 'organization')) + '</div>' +

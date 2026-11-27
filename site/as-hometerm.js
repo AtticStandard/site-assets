@@ -38,16 +38,65 @@ function words(){
   txt(find('#hpCov .as-ss', 'so your contract follows'), 'so your contract follows the whole market', 'so the benchmark reflects the whole market');
   txt(find('.as-sec .as-ss', 'Every figure your contract settles on'), 'Every figure your contract settles on traces back', 'Every published figure traces back');
   var p = find('.as-sec p.as-prose', 'how the Clause would have priced');
-  if(p){ p.textContent = 'A 30-minute session compares the models you use with the benchmark, so you see where your spend sits before you negotiate or renew.';
-    var h = p.closest('.as-sec').querySelector('h2.as-st'); txt(h, 'Put the market price in your next AI contract.', 'See where your AI spend sits against the market.'); }
+  if(p){ p.textContent = 'A 30-minute session compares the models you use with the benchmark, before you negotiate or renew.';
+    var cs = p.closest('.as-sec'), h = cs.querySelector('h2.as-st'); txt(h, 'Put the market price in your next AI contract.', 'Bring the market price to your next AI contract.');
+    /* Two links up front: the Terminal as the button, the Clause as the text link beside it. The one-page
+       overview moves from the hero to the close, in place of the Clause link there. */
+    var pdf = document.querySelector('.as-hero a[data-ov-pdf], .as-hero a[href="#overview"]') || find('.as-hero a', 'One-page overview');
+    var ex = find('.as-sec a.as-cl-l', 'Explore the Clause');
+    if(pdf && ex && !document.getElementById('hpHeroCl')){
+      var cl = pdf.cloneNode(false); cl.id = 'hpHeroCl'; cl.textContent = 'How the Clause works \u203a'; cl.setAttribute('href', '/clause'); cl.removeAttribute('data-ov-pdf');
+      pdf.parentNode.insertBefore(cl, pdf);
+      pdf.className = ex.className; ex.parentNode.replaceChild(pdf, ex);
+    }
+  }
+}
+
+/* The hero diagram in two frames (option C, November 27, 2026): a Terminal window around the point where
+   vendor prices become the index, and a Clause frame around the contract price and the bill. The frame
+   names and lines take the size of the diagram's own labels and follow them when they are rescaled;
+   phones, which show a legend instead of labels, get the two frames as legend entries. */
+var NS = 'http://www.w3.org/2000/svg';
+function el(tag, at){ var e = document.createElementNS(NS, tag); for(var k in at) e.setAttribute(k, at[k]); return e; }
+function frames(){
+  var s = document.querySelector('svg.as-vx'); if(!s || s.querySelector('.as-fr')) return;
+  var lines = [].slice.call(s.querySelectorAll('polyline')), gold = lines.filter(function(l){ return /gold/.test(l.getAttribute('style') || ''); })[0];
+  var idx = lines.filter(function(l){ return l !== gold; })[0]; if(!idx || !gold) return;
+  function xs(l){ return l.getAttribute('points').trim().split(/\s+/).map(function(p){ return +p.split(',')[0]; }); }
+  var ix = xs(idx), gx = xs(gold), x0 = Math.min.apply(null, ix), x1 = Math.max.apply(null, ix);
+  var vb = (s.getAttribute('viewBox') || '0 28 1200 168').split(/\s+/).map(Number), top = vb[1] + 4, h = vb[3] - 8;
+  var ref = [].slice.call(s.querySelectorAll('text')).filter(function(t){ return t.textContent.trim() === 'Attic Standard index'; })[0];
+  var g = el('g', { 'class':'as-fr', 'aria-hidden':'true' }), T = [];
+  function frame(x, w, stroke, fill, name, line){
+    g.appendChild(el('rect', { x:x, y:top, width:w, height:h, rx:8, fill:fill, stroke:stroke, 'stroke-opacity':'.55', 'vector-effect':'non-scaling-stroke' }));
+    var a = el('text', { x:x + 14, y:top + 18, 'font-family':'Roboto, sans-serif', 'font-weight':'600', 'letter-spacing':'1', style:'fill:' + stroke }); a.textContent = name;
+    var b = el('text', { x:x + 14, y:top + h - 12, 'font-family':'Roboto, sans-serif', style:'fill:var(--l4)' }); b.textContent = line;
+    g.appendChild(a); g.appendChild(b); T.push(a, b);
+  }
+  var tx = Math.max(vb[0], x0 - 200);
+  frame(tx, x1 + 12 - tx, '#3278FF', 'rgba(50,120,255,.05)', 'ATTIC STANDARD TERMINAL', 'Discover and monitor the market price');
+  var cx = x1 + 24;
+  frame(cx, Math.max(Math.max.apply(null, gx) + 40, vb[0] + vb[2] + 6) - cx, '#D4AF37', 'rgba(212,175,55,.05)', '\u00a7 ATTIC STANDARD CLAUSE', 'Contract and settle on the index');
+  s.insertBefore(g, s.firstChild);
+  function size(){ var fs = ref ? +ref.getAttribute('font-size') || 12 : 12, narrow = s.clientWidth < 600;
+    T.forEach(function(t, i){ t.setAttribute('font-size', (i % 2 ? fs : fs * .9).toFixed(2)); t.style.display = narrow ? 'none' : ''; }); }
+  size();
+  if(ref && window.MutationObserver) new MutationObserver(size).observe(ref, { attributes:true, attributeFilter:['font-size'] });
+  if(window.ResizeObserver) new ResizeObserver(size).observe(s);
+  var lgr = (s.closest('figure') || s.parentNode).querySelector('.as-lgr');
+  if(lgr && !lgr.querySelector('.as-fr-lg')){
+    [['#3278FF', 'Attic Standard Terminal: discover and monitor the market price'], ['#D4AF37', 'Attic Standard Clause: contract and settle on the index']].forEach(function(f){
+      var it = document.createElement('div'); it.className = 'as-lg as-fr-lg';
+      it.innerHTML = '<span class="as-lg-k" style="width:12px;height:9px;border-radius:2px;border:1px solid ' + f[0] + '"></span><span>' + f[1] + '</span>'; lgr.appendChild(it); });
+  }
 }
 
 function section(){
   var cl = document.getElementById('hpClause'); if(!cl || document.getElementById('hpTerm')) return;
   var host = cl.parentElement, wrap = document.createElement('div'); wrap.className = host.className || 'w-embed'; wrap.style.cssText = host.style.cssText;
   wrap.innerHTML = '<section class="as-sec" id="hpTerm" aria-labelledby="hpTermH"><div class="as-tm">'
-    + '<div class="as-tm-l"><div class="as-sh"><div><h2 class="as-st" id="hpTermH">Know whether you are paying the market price.</h2>'
-    + '<p class="as-ss">The Terminal compares the models you use with the benchmark, week by week, so you see where your spend sits before you negotiate or renew.</p></div></div>'
+    + '<div class="as-tm-l"><div class="as-sh"><div><h2 class="as-st" id="hpTermH">Know the market price before you sign.</h2>'
+    + '<p class="as-ss">The Attic Standard Terminal compares the models you use with the benchmark, week by week, so you know the market price before you negotiate or renew.</p></div></div>'
     + '<div class="as-tm-pts" role="tablist" aria-orientation="vertical" aria-label="What the Terminal shows">'
     + PTS.map(function(p, i){ return '<button type="button" class="as-tm-t" role="tab" id="hpTmT' + i + '" aria-controls="hpTmP" aria-selected="false" data-i="' + i + '"><span class="as-tm-bar"><span class="as-tm-fill"></span></span><span class="as-tm-x"><span class="as-tm-n">' + p.n + '</span><span class="as-tm-d">' + p.d + '</span></span></button>'; }).join('')
     + '</div></div>'
@@ -86,6 +135,6 @@ function rotate(sec){
   if(auto) requestAnimationFrame(loop);
 }
 
-function start(){ if(!document.getElementById('hpClause')) return; styles(); words(); section(); }
+function start(){ if(!document.getElementById('hpClause')) return; styles(); words(); section(); frames(); }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
