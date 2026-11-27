@@ -101,7 +101,7 @@ function frames(){
       t.setAttribute('x', (t._x + pad).toFixed(2)); t.setAttribute('y', (i % 2 ? top + h - pad : top + pad + fs * .8).toFixed(2)); });
     /* The fan: same convergence point, starting one padding inside the frame, between the name and the line. */
     if(m){ var xr = m.a * (bb.x + bb.width) + m.e, xl = tx + pad, A = (xr - xl) / bb.width, E = xr - A * (bb.x + bb.width);
-      var band = n ? pad : pad + fs * 1.6, lo = top + band, hi = top + h - band;
+      var band = n ? pad : pad + fs * 1.1 + 16 / sc, lo = top + band, hi = top + h - band;
       var yt = m.d * bb.y + m.f, yb = m.d * (bb.y + bb.height) + m.f, k = Math.min(1, (cy - lo) / Math.max(1, cy - yt), (hi - cy) / Math.max(1, yb - cy));
       fan.setAttribute('transform', 'matrix(' + [A, 0, 0, k * m.d, E, k * m.f + cy * (1 - k)].map(function(v){ return +v.toFixed(4); }).join(',') + ')'); }
     if(n){ A2.forEach(function(a){ a.style.cssText = ''; }); return; }
