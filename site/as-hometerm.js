@@ -62,24 +62,18 @@ function frames(){
   var lines = [].slice.call(s.querySelectorAll('polyline')).filter(function(l){ return !l.closest('.as-s-series'); }), gold = lines.filter(function(l){ return /gold/.test(l.getAttribute('style') || ''); })[0];
   var idx = lines.filter(function(l){ return l !== gold; })[0]; if(!idx || !gold) return;
   function pts(l){ return l.getAttribute('points').trim().split(/\s+/).map(function(p){ p = p.split(','); return [+p[0], +p[1]]; }); }
-  var ip = pts(idx), ix = ip.map(function(p){ return p[0]; }), gx = pts(gold).map(function(p){ return p[0]; }), x0 = Math.min.apply(null, ix), x1 = Math.max.apply(null, ix);
-  var vb = (s.getAttribute('viewBox') || '0 28 1200 168').split(/\s+/).map(Number), top = vb[1] + 4, h = vb[3] - 8;
+  var ip = pts(idx), ix = ip.map(function(p){ return p[0]; }), gx = pts(gold).map(function(p){ return p[0]; }), x1 = Math.max.apply(null, ix);
+  var vb0 = (s.getAttribute('viewBox') || '0 28 1200 168').split(/\s+/).map(Number), mid = vb0[1] + vb0[3] / 2, cy = ip[0][1];
   var ref = [].slice.call(s.querySelectorAll('text')).filter(function(t){ return t.textContent.trim() === 'Attic Standard index'; })[0];
-  var tx = vb[0] + 1, cx = x1 + 6, ce = Math.max(Math.max.apply(null, gx) + 40, vb[0] + vb[2] - 1);
-  /* The fan: same convergence point, now starting inside the frame and kept between its name and its line. */
-  var fan = s.querySelector('g.as-s-series');
-  if(fan && fan.getBBox && fan.transform && fan.transform.baseVal.numberOfItems){
-    var bb = fan.getBBox(), m = fan.transform.baseVal.consolidate().matrix, cy = ip[0][1];
-    var xr = m.a * (bb.x + bb.width) + m.e, xl = tx + 18, A = (xr - xl) / bb.width, E = xr - A * (bb.x + bb.width);
-    var yt = m.d * bb.y + m.f, yb = m.d * (bb.y + bb.height) + m.f, k = Math.min(1, (cy - (top + 30)) / Math.max(1, cy - yt), ((top + h - 28) - cy) / Math.max(1, yb - cy));
-    fan.setAttribute('transform', 'matrix(' + [A, 0, 0, k * m.d, E, k * m.f + cy * (1 - k)].map(function(v){ return +v.toFixed(4); }).join(',') + ')');
-  }
-  var g = el('g', { 'class':'as-fr', 'aria-hidden':'true' }), T = [];
+  var tx = vb0[0] + 1, cx = x1 + 6, ce = Math.max(Math.max.apply(null, gx) + 40, vb0[0] + vb0[2] - 1);
+  var fan = s.querySelector('g.as-s-series'), bb = null, m = null;
+  if(fan && fan.getBBox && fan.transform && fan.transform.baseVal.numberOfItems){ bb = fan.getBBox(); m = fan.transform.baseVal.consolidate().matrix; m = { a:m.a, d:m.d, e:m.e, f:m.f }; }
+  var g = el('g', { 'class':'as-fr', 'aria-hidden':'true' }), R = [], T = [];
   function frame(x, w, stroke, fill, name, line){
-    g.appendChild(el('rect', { x:x, y:top, width:w, height:h, rx:8, fill:fill, stroke:stroke, 'stroke-opacity':'.55', 'vector-effect':'non-scaling-stroke' }));
-    var a = el('text', { x:x + 14, y:top + 18, 'font-family':'Roboto, sans-serif', 'font-weight':'600', 'letter-spacing':'1', style:'fill:' + (stroke === '#8B93A0' ? 'var(--l2)' : stroke) }); a.textContent = name;
-    var b = el('text', { x:x + 14, y:top + h - 12, 'font-family':'Roboto, sans-serif', style:'fill:var(--l4)' }); b.textContent = line;
-    g.appendChild(a); g.appendChild(b); T.push(a, b);
+    var r = el('rect', { x:x, width:w, rx:8, fill:fill, stroke:stroke, 'stroke-opacity':'.55', 'vector-effect':'non-scaling-stroke' }); g.appendChild(r); R.push(r);
+    var a = el('text', { x:x, 'font-family':'Roboto, sans-serif', 'font-weight':'600', 'letter-spacing':'1', style:'fill:' + (stroke === '#8B93A0' ? 'var(--l2)' : stroke) }); a.textContent = name;
+    var b = el('text', { x:x, 'font-family':'Roboto, sans-serif', style:'fill:var(--l4)' }); b.textContent = line;
+    a._x = b._x = x; g.appendChild(a); g.appendChild(b); T.push(a, b);
   }
   frame(tx, x1 - 6 - tx, '#8B93A0', 'rgba(255,255,255,.025)', 'ATTIC STANDARD TERMINAL', 'Discover and monitor the market price');
   frame(cx, ce - cx, '#D4AF37', 'rgba(212,175,55,.05)', '§ ATTIC STANDARD CLAUSE', 'Contract and settle on the index');
@@ -90,18 +84,36 @@ function frames(){
   var fig = s.closest('figure') || s.parentNode, L = document.createElement('div'); L.className = 'as-frl';
   L.innerHTML = '<a href="/terminal" data-x="' + (x1 - 6) + '"><i style="border-color:#8B93A0"></i>Explore the Terminal &rarr;</a><a href="/clause" data-x="' + ce + '"><i style="border-color:#D4AF37"></i>Explore the Clause &rarr;</a>';
   s.parentNode.insertBefore(L, s.nextSibling);
-  var A2 = [].slice.call(L.querySelectorAll('a'));
-  function size(){ var fs = ref ? parseFloat(getComputedStyle(ref).fontSize) || 12 : 12, n = NARROW.matches;
+  var A2 = [].slice.call(L.querySelectorAll('a')), last = '';
+  /* Layout in screen pixels, on the site's spacing scale: the frames keep a minimum height (240px with their
+     texts, 160px on tablets and 120px on phones without them), their texts sit 24px in from the edges, and the
+     vendor fan fills the space between the frame name and its line. Wider screens keep the drawing's own shape. */
+  function layout(){
+    var w = s.getBoundingClientRect().width; if(!w) return;
+    var sc = w / vb0[2], n = NARROW.matches, fs = ref ? parseFloat(getComputedStyle(ref).fontSize) || 12 : 12, px = fs * sc;
+    var minH = n ? (w < 600 ? 120 : 160) : 240, H = Math.max(vb0[3], minH / sc), y0 = mid - H / 2;
+    var vbs = [vb0[0], +y0.toFixed(2), vb0[2], +H.toFixed(2)].join(' ');
+    if(vbs !== last){ last = vbs; s.setAttribute('viewBox', vbs); }
     fig.classList.toggle('as-fr-n', n);
-    T.forEach(function(t, i){ t.setAttribute('font-size', (i % 2 ? fs : fs * .9).toFixed(2)); t.style.display = n ? 'none' : ''; });
+    var top = y0 + 1, h = H - 2, pad = (n ? 16 : 24) / sc;
+    R.forEach(function(r){ r.setAttribute('y', top.toFixed(2)); r.setAttribute('height', h.toFixed(2)); });
+    T.forEach(function(t, i){ t.style.fontSize = (i % 2 ? fs : fs * .9).toFixed(2) + 'px'; t.style.display = n ? 'none' : '';
+      t.setAttribute('x', (t._x + pad).toFixed(2)); t.setAttribute('y', (i % 2 ? top + h - pad : top + pad + fs * .8).toFixed(2)); });
+    /* The fan: same convergence point, starting one padding inside the frame, between the name and the line. */
+    if(m){ var xr = m.a * (bb.x + bb.width) + m.e, xl = tx + pad, A = (xr - xl) / bb.width, E = xr - A * (bb.x + bb.width);
+      var band = n ? pad : pad + fs * 1.6, lo = top + band, hi = top + h - band;
+      var yt = m.d * bb.y + m.f, yb = m.d * (bb.y + bb.height) + m.f, k = Math.min(1, (cy - lo) / Math.max(1, cy - yt), (hi - cy) / Math.max(1, yb - cy));
+      fan.setAttribute('transform', 'matrix(' + [A, 0, 0, k * m.d, E, k * m.f + cy * (1 - k)].map(function(v){ return +v.toFixed(4); }).join(',') + ')'); }
     if(n){ A2.forEach(function(a){ a.style.cssText = ''; }); return; }
-    var sc = s.getBoundingClientRect().width / vb[2], fr = fig.getBoundingClientRect(), sr = s.getBoundingClientRect(), px = fs * sc;
-    A2.forEach(function(a){ var xr = +a.getAttribute('data-x') - 14;
-      a.style.cssText = 'font-size:' + px.toFixed(2) + 'px;right:' + (fr.right - (sr.left + (xr - vb[0]) * sc)).toFixed(1) + 'px;top:' + (sr.top - fr.top + (top + h - 12 - vb[1]) * sc - px * .82).toFixed(1) + 'px'; }); }
-  size();
-  if(ref && window.MutationObserver){ var mo = new MutationObserver(size); mo.observe(ref, { attributes:true, attributeFilter:['font-size', 'style'] }); if(ref.parentNode) mo.observe(ref.parentNode, { attributes:true, attributeFilter:['font-size', 'style'] }); }
-  if(window.ResizeObserver) new ResizeObserver(size).observe(s);
-  if(NARROW.addEventListener) NARROW.addEventListener('change', size);
+    var fr = fig.getBoundingClientRect(), sr = s.getBoundingClientRect();
+    A2.forEach(function(a){ var xr2 = +a.getAttribute('data-x') - pad;
+      a.style.cssText = 'font-size:' + px.toFixed(2) + 'px;right:' + (fr.right - (sr.left + (xr2 - vb0[0]) * sc)).toFixed(1) + 'px;top:' + (sr.top - fr.top + (top + h - pad - y0) * sc - px * .82).toFixed(1) + 'px'; });
+  }
+  layout();
+  if(ref && window.MutationObserver){ var mo = new MutationObserver(layout); mo.observe(ref, { attributes:true, attributeFilter:['font-size', 'style'] }); if(ref.parentNode) mo.observe(ref.parentNode, { attributes:true, attributeFilter:['font-size', 'style'] }); }
+  if(window.ResizeObserver) new ResizeObserver(layout).observe(s);
+  if(NARROW.addEventListener) NARROW.addEventListener('change', layout);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 }
 
 function section(){
