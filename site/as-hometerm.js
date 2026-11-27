@@ -18,6 +18,10 @@ var PTS = [
   { n:'Competitive landscape', d:'How far prices spread across vendors, how concentrated each segment is and how often vendors reprice, for every index.',
     img:'indexes-behavior.jpg', t:'Terminal · Indexes · Flagship', alt:'The Terminal view of one index: its split by vendor type, price dispersion, vendor concentration, repricing and volatility' }];
 
+/* The section's styles, kept with it (homepage only). */
+var CSS = `body #hpTerm .as-tm{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center}body #hpTerm .as-tm-l .as-sh{margin-bottom:0}body #hpTerm .as-tm-pts{display:flex;flex-direction:column;margin-top:var(--s5)}body #hpTerm .as-tm-t{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:2px minmax(0,1fr);column-gap:18px;padding:14px 0}body #hpTerm .as-tm-t:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}body #hpTerm .as-tm-bar{position:relative;background:var(--border);border-radius:1px;overflow:hidden}body #hpTerm .as-tm-fill{position:absolute;left:0;top:0;width:2px;height:0;background:var(--l1)}body #hpTerm .as-tm-x{min-width:0}body #hpTerm .as-tm-n{display:block;font-size:var(--fs-lead);font-weight:600;line-height:var(--lh-ui);color:var(--l3);transition:color .15s}body #hpTerm .as-tm-t:hover .as-tm-n,body #hpTerm .as-tm-t[aria-selected="true"] .as-tm-n{color:var(--l1)}body #hpTerm .as-tm-d{display:block;margin-top:4px;font-size:var(--fs-ui);line-height:1.55;color:var(--l4)}body #hpTerm .as-tm-mon{background:var(--surface-raised);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.45)}body #hpTerm .as-tm-top{display:flex;align-items:center;gap:6px;height:14px;margin:-2px 2px 10px}body #hpTerm .as-tm-top i{width:7px;height:7px;border-radius:50%;background:#3A4048}body #hpTerm .as-tm-top em{margin-left:10px;font-style:normal;font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}body #hpTerm .as-tm-scr{position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid var(--border);border-radius:4px;background:var(--bg)}body #hpTerm .as-tm-scr img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;opacity:0;transition:opacity .5s ease}body #hpTerm .as-tm-scr img.on{opacity:1}body #hpTerm .as-sf{margin-top:var(--s6)}@media (prefers-reduced-motion:reduce){body #hpTerm .as-tm-scr img{transition:none}}@media (max-width:991px){body #hpTerm .as-tm{grid-template-columns:none;gap:var(--s5)}}@media (max-width:767px){body #hpTerm .as-tm-mon{padding:8px;border-radius:8px}body #hpTerm .as-tm-top{margin-bottom:8px}body #hpTerm .as-tm-t{padding:10px 0}}`;
+function styles(){ if(document.getElementById('asHomeTermCss')) return; var st = document.createElement('style'); st.id = 'asHomeTermCss'; st.textContent = CSS; document.head.appendChild(st); }
+
 function txt(el, from, to){ if(el && el.textContent.indexOf(from) > -1) el.textContent = el.textContent.replace(from, to); }
 function find(sel, has){ return [].slice.call(document.querySelectorAll(sel)).filter(function(e){ return e.textContent.indexOf(has) > -1; })[0]; }
 
@@ -40,7 +44,7 @@ function words(){
 
 function section(){
   var cl = document.getElementById('hpClause'); if(!cl || document.getElementById('hpTerm')) return;
-  var host = cl.parentElement, wrap = document.createElement('div'); wrap.className = host.className || 'w-embed';
+  var host = cl.parentElement, wrap = document.createElement('div'); wrap.className = host.className || 'w-embed'; wrap.style.cssText = host.style.cssText;
   wrap.innerHTML = '<section class="as-sec" id="hpTerm" aria-labelledby="hpTermH"><div class="as-tm">'
     + '<div class="as-tm-l"><div class="as-sh"><div><h2 class="as-st" id="hpTermH">Know whether you are paying the market price.</h2>'
     + '<p class="as-ss">The Terminal compares the models you use with the benchmark, week by week, so you see where your spend sits before you negotiate or renew.</p></div></div>'
@@ -82,6 +86,6 @@ function rotate(sec){
   if(auto) requestAnimationFrame(loop);
 }
 
-function start(){ if(!document.getElementById('hpClause')) return; words(); section(); }
+function start(){ if(!document.getElementById('hpClause')) return; styles(); words(); section(); }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
