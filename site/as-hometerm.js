@@ -71,6 +71,8 @@ function frames(){
   var tx = vb0[0] + 1, cx = x1 + 6, ce = Math.max(Math.max.apply(null, gx) + 40, vb0[0] + vb0[2] - 1);
   var fan = s.querySelector('g.as-s-series'), bb = null, m = null;
   if(fan && fan.getBBox && fan.transform && fan.transform.baseVal.numberOfItems){ bb = fan.getBBox(); m = fan.transform.baseVal.consolidate().matrix; m = { a:m.a, d:m.d, e:m.e, f:m.f }; }
+  var vl = [].slice.call(s.querySelectorAll('text')).filter(function(t){ return t.textContent.trim() === 'Vendor prices'; })[0];
+  var FP = fan ? [].slice.call(fan.querySelectorAll('polyline')).map(pts) : [];
   var g = el('g', { 'class':'as-fr', 'aria-hidden':'true' }), R = [], T = [];
   function frame(x, w, stroke, fill, name, line){
     var r = el('rect', { x:x, width:w, rx:8, fill:fill, stroke:stroke, 'stroke-opacity':'.55', 'vector-effect':'non-scaling-stroke' }); g.appendChild(r); R.push(r);
@@ -106,7 +108,12 @@ function frames(){
     if(m){ var xr = m.a * (bb.x + bb.width) + m.e, xl = tx + pad, A = (xr - xl) / bb.width, E = xr - A * (bb.x + bb.width);
       var lo = top + (n ? pad : pad + fs * 2.7 + 16 / sc), hi = top + h - (n ? pad : pad + fs * 1.1 + 16 / sc);
       var yt = m.d * bb.y + m.f, yb = m.d * (bb.y + bb.height) + m.f, k = Math.min(1, (cy - lo) / Math.max(1, cy - yt), (hi - cy) / Math.max(1, yb - cy));
-      fan.setAttribute('transform', 'matrix(' + [A, 0, 0, k * m.d, E, k * m.f + cy * (1 - k)].map(function(v){ return +v.toFixed(4); }).join(',') + ')'); }
+      var D = k * m.d, F = k * m.f + cy * (1 - k);
+      fan.setAttribute('transform', 'matrix(' + [A, 0, 0, D, E, F].map(function(v){ return +v.toFixed(4); }).join(',') + ')');
+      /* The fan's label rests 8px above the highest line at its own position, not in the air above it. */
+      if(vl){ var lx = +vl.getAttribute('x'), rx = (lx - E) / A, yMin = Infinity;
+        FP.forEach(function(P){ for(var j = 1; j < P.length; j++) if(P[j - 1][0] <= rx && P[j][0] >= rx){ var u = (rx - P[j - 1][0]) / ((P[j][0] - P[j - 1][0]) || 1), yy = P[j - 1][1] + u * (P[j][1] - P[j - 1][1]); if(yy < yMin) yMin = yy; break; } });
+        if(yMin < Infinity) vl.setAttribute('y', (D * yMin + F - 8 / sc).toFixed(2)); } }
     if(n){ A2.forEach(function(a){ a.style.cssText = ''; }); return; }
     var fr = fig.getBoundingClientRect(), sr = s.getBoundingClientRect();
     /* Each frame is one link: its own area, with the link text at its bottom left. */
@@ -125,7 +132,7 @@ function section(){
   var host = cl.parentElement, wrap = document.createElement('div'); wrap.className = host.className || 'w-embed'; wrap.style.cssText = host.style.cssText;
   wrap.innerHTML = '<section class="as-sec" id="hpTerm" aria-labelledby="hpTermH"><div class="as-tm">'
     + '<div class="as-tm-l"><div class="as-sh"><div><h2 class="as-st" id="hpTermH">Know the market price before you sign, and every day after.</h2>'
-    + '<p class="as-ss">The Attic Standard Terminal delivers independent pricing intelligence to FinOps and procurement teams, so every negotiation and purchase decision starts from the market price.</p></div></div>'
+    + '<p class="as-ss">The Attic Standard Terminal, our subscription analytics platform, gives FinOps and procurement teams independent pricing intelligence, so every negotiation and purchase decision starts from the market price.</p></div></div>'
     + '<div class="as-tm-pts" role="tablist" aria-orientation="vertical" aria-label="What the Terminal shows">'
     + PTS.map(function(p, i){ return '<button type="button" class="as-tm-t' + (p.c ? ' as-tm-c' : '') + '" role="tab" id="hpTmT' + i + '" aria-controls="hpTmP" aria-selected="false" data-i="' + i + '"><span class="as-tm-bar"><span class="as-tm-fill"></span></span><span class="as-tm-x"><span class="as-tm-n">' + p.n + '</span><span class="as-tm-d">' + p.d + '</span></span></button>'; }).join('')
     + '</div></div>'
