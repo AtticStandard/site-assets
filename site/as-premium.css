@@ -632,3 +632,23 @@ html.tp-page .as-nav a.tp-nv{cursor:pointer}
 .tp-ld tr.tp-you td:first-child{box-shadow:inset 2px 0 0 var(--accent);padding-left:var(--s3)}
 .tp-ld tr.tp-you .tp-mn b{color:var(--accent)}
 @media (max-width:767px){ .tp-yr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s2)} .tp-yi{flex-direction:column;align-items:stretch;gap:4px;min-width:0;font-size:12px;white-space:nowrap} .tp-yi .tp-in{width:100%;min-width:0;padding-left:10px;padding-right:6px} .tp-yr .tp-bn{grid-column:1/-1} .tp-yr #moYc{grid-column:1/-1;justify-self:start} }
+
+/* ── Contracts, rebuilt on the Indexes and Models principles (November 27, 2026) ── */
+.tp-plg.tp-plc{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.tp-plg.tp-plc .d{font-size:11px;color:var(--l5)}
+.tp-rmv{color:var(--l2)}
+.tp-wkh .tp-wkn{margin-left:auto}
+.tp-ld.n2{min-width:820px}
+.tp-ld.n4{min-width:1300px}
+.tp-ld.n4 th.tp-w0{width:32px}
+.tp-ld.n4 th.tp-w1{width:104px}
+.tp-ld.n4 th.tp-w2{width:96px}
+.tp-ld.n4 th.tp-w3{width:84px}
+.tp-ld .tp-lgl{font-style:normal;font-weight:400;letter-spacing:0;margin-left:6px;color:var(--l5)}
+.tp-ld .tp-lgh.on .tp-lgl{color:var(--l3)}
+.tp-ld .tp-lgv{color:var(--l2)}
+.tp-ld td.r .tp-flag{margin-left:0}
+@media (max-width:767px){.tp-ld.n2,.tp-ld.n4{min-width:0}.tp-wkh .tp-wkn{display:none}}
+#tpContracts .tp-ixh{border-top:0;padding-top:0}
+#csTiles .tp-c3{flex-wrap:nowrap}#csTiles .tp-c3 .tp-lbl,#csTiles .tp-c3>span{white-space:nowrap}
+@media (max-width:767px){.tp-ld.n2{min-width:600px}}

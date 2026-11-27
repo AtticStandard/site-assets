@@ -563,50 +563,71 @@ var IX = (function(){
 })();
 
 /* ═══ CONTRACTS ═══ */
+/* One page per contract, read top to bottom like an index or a model (rebuilt November 27, 2026, on the
+   Indexes and Models principles):
+     Contracts    every contract on file as a card: the index it follows, what it covers, the latest
+                  settled month against the signed value and the term elapsed. A card opens the contract.
+     Header       the reference index and the contract's name; the latest month, the contract to date and
+                  the term as chips; the other terms in one line.
+     Legs         one tile per leg, also the leg selector: the settled level of the month on screen, its
+                  change on the month before and since the base, the room to the floor or cap, the value.
+     Chart        the monthly bill against the fixed price, or the selected leg's index and settled level.
+     The month    every covered model that month: each leg's settled and signed rate and its share of the
+                  commitment, and the model's value against signed; a model opens to its market. The
+                  month steps back and forward, and the citation follows it. */
 function contractsHTML(){
-  return '<section class="tp-dash" id="tpContracts" role="tabpanel" aria-label="Contracts" hidden><div class="tp-wrap">'
-  + '<aside class="tp-rail"><label class="tp-lbl" for="csQ">Contracts</label>'
-  + '<input class="tp-in" id="csQ" type="text" autocomplete="off" spellcheck="false" placeholder="Search contracts">'
-  + '<div class="tp-list" id="csList" role="listbox" aria-label="Contracts"></div><p class="tp-note" id="csListNote"></p></aside>'
-  + '<div class="tp-main"><div id="csMsg"></div><div id="csBody" hidden>'
-  + '<div class="tp-top"><div><div class="tp-ttl"><h2 class="tp-h" id="csName"></h2><span class="tp-tag" id="csSim" hidden>Simulated</span></div><p class="tp-meta" id="csMeta"></p></div></div>'
-  + '<div class="tp-hero"><div class="tp-hl2"><p class="tp-lbl" id="csValT"></p><div class="tp-bigrow"><div class="tp-big" id="csVal"></div><div class="tp-chg" id="csValChg"></div></div><div class="tp-legs" id="csLegs"></div></div>'
-  + '<div class="tp-hr2"><p class="tp-lbl">Contract terms</p><dl class="tp-dl" id="csTerms"></dl><div class="tp-el" id="csEl"></div></div></div>'
+  var L = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5"></path></svg>', R = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg>';
+  return '<section class="tp-dash" id="tpContracts" role="tabpanel" aria-label="Contracts" hidden>'
+  + '<section class="tp-pins" id="csCards" aria-label="Contracts" hidden><div class="tp-bh"><p class="tp-lbl">Contracts</p><span class="tp-bn" id="csCardN"></span></div><div class="tp-pc" id="csPc"></div></section>'
+  + '<div id="csMsg"></div><div class="tp-ix" id="csBody" hidden><div class="tp-prog" id="csProg" hidden></div>'
+  + '<div class="tp-ixh"><div class="tp-ixt"><p class="tp-code" id="csCode"></p><h2 class="tp-h" id="csName"></h2></div><div class="tp-cg" id="csCg"></div><p class="tp-facts" id="csFacts"></p></div>'
   + '<div class="tp-notice" id="csNote" hidden></div>'
-  + '<section class="tp-sec" id="csBillSec"><p class="tp-lbl">Monthly bill</p><p class="tp-note sub" id="csBillN"></p>'
-  + '<div class="tp-chw"><div class="as-lgv" id="csBillLg"></div><div class="tp-ch"><div id="csBill"></div></div></div></section>'
-  + '<section class="tp-sec"><div class="tp-sech"><div><p class="tp-lbl">Index and settled level</p><p class="tp-note sub" id="csLvN"></p></div><div class="as-vt" id="csSeg" role="group" aria-label="Leg"></div></div>'
-  + '<div class="tp-chw"><div class="as-lgv" id="csLvLg"></div><div class="tp-ch" id="csLvW"><div id="csLv"></div><div class="tp-hv" hidden></div><div class="tp-tip" hidden></div></div></div></section>'
-  + '<section class="tp-sec"><p class="tp-lbl">Settlement history</p><p class="tp-note sub">Settled level on each leg and the month’s value, newest first.</p>'
-  + '<div class="tp-tw"><table class="tp-tbl"><thead id="csHiH"></thead><tbody id="csHi"></tbody></table></div></section>'
-  + '<section class="tp-sec" id="csRcSec"><p class="tp-lbl" id="csRcT"></p><p class="tp-note sub">Settled rate per model and leg. Share is each model’s part of the signed commitment. Select a model to compare it with its market.</p>'
-  + '<div class="tp-tw"><table class="tp-tbl"><thead id="csRcH"></thead><tbody id="csRc"></tbody></table></div></section>'
+  + '<section class="tp-blk tp-lgs" id="csLegsS"><div class="tp-ctl"><div class="as-vt" id="csView" role="group" aria-label="Chart"><button type="button" class="as-vt-b" data-v="bill">Monthly bill</button><button type="button" class="as-vt-b" data-v="lv">Index and settled level</button></div><span class="tp-bn" id="csCtlN"></span></div>'
+  + '<div class="tp-tiles" id="csTiles" role="group" aria-label="Leg"></div>'
+  + '<div class="tp-chw"><div class="as-lgv" id="csLg"></div><div class="tp-ch" id="csChW"><div id="csCh"></div><div class="tp-hv" hidden></div><div class="tp-tip" hidden></div></div></div></section>'
+  + '<section class="tp-wk" id="csWk"><div class="tp-wkh"><button type="button" class="tp-stp" id="csPrev" aria-label="Previous month">'+L+'</button><h3 class="tp-st" id="csMoT"></h3><button type="button" class="tp-stp" id="csNext" aria-label="Next month">'+R+'</button><span class="tp-bn tp-wkn" id="csMoN"></span></div>'
+  + '<div class="tp-tw tp-ltw"><table class="tp-ld" id="csT"></table></div></section>'
   + '<div class="tp-foot"><p class="as-note" id="csSrc"></p><div class="tp-ln"><button class="tp-link" id="csCite" type="button">Copy citation</button><a class="tp-link" href="/clause">How the Clause works &rarr;</a></div></div>'
-  + '</div></div></div></section>';
+  + '</div></section>';
 }
 
 var CS = (function(){
   var ORDER = ['input','cached','output'], LEG = { input:'Input', cached:'Cached input', output:'Output' }, FVD = { input:'Input', cached:'Cached Input', output:'Output' };
-  var RULE = { monthly_average:'Monthly average', quarterly_in_advance:'Quarterly, in advance' }, LIMIT = { floor:'Floor', cap:'Cap', band:'Threshold' }, NEAR = 2;
-  var L = [], c0 = null, reqN = 0, D = null, leg = null, open = null;
+  var RULE = { monthly_average:'Settled on the monthly average', quarterly_in_advance:'Set a quarter in advance' }, LIMIT = { floor:'Floor', cap:'Cap', band:'Threshold' }, NEAR = 2;
+  var L = [], SUM = {}, c0 = null, reqN = 0, D = null, leg = null, K = 0, open = {}, view = 'bill', PHONE = window.matchMedia('(max-width: 767px)');
+  try{ view = localStorage.getItem('atCsView') === 'lv' ? 'lv' : 'bill'; }catch(e){}
   function num(v){ return v == null ? null : Number(v); }
   function usd(v){ return '$'+Math.round(Math.abs(Number(v))).toLocaleString('en-US'); }
   function big(v){ v = Number(v); return v >= 1e6 && v%1e5 === 0 ? '$'+(v/1e6)+'M' : usd(v); }
   function rate(v){ return '$'+Number(v).toFixed(6); }
   function lv(v){ return Number(v).toFixed(2); }
   function chg2(d){ return chg(d, 2); }
+  function mon(ym){ return MN[+ym.slice(5,7)-1]; }
+  function ixc(c){ return c.index_code === 'BLEND' ? 'Blend of three indexes' : c.index_code; }
 
-  function rail(){
-    var k = $('csQ').value.trim().toLowerCase();
-    var R = L.filter(function(c){ return !k || (c.label+' '+c.index_code+' '+c.contract_id).toLowerCase().indexOf(k) > -1; });
-    $('csList').innerHTML = R.map(function(c){ var n = c._settled != null ? 'month '+c._settled+' of '+c.term_months : c.term_months+' months';
-      return '<button type="button" role="option" aria-selected="'+(c === c0)+'" class="tp-row tp-c'+(c === c0 ? ' on' : '')+'" data-id="'+esc(c.contract_id)+'"><span>'+esc(c.label)+'</span><span class="s"><span class="tp-code">'+esc(c.index_code)+'</span> &middot; '+n+'</span></button>'; }).join('')
-      || '<p class="tp-note" style="padding:var(--s3) var(--s2)">No contract matches that search.</p>';
-    var sim = L.filter(function(c){ return c.is_illustrative; }).length;
-    $('csListNote').textContent = sim ? (sim === L.length ? 'Simulated contracts' : sim+' simulated contracts')+' follow the same settlement rules as signed ones.' : '';
+  /* ── The cards: every contract on file, its latest settled month from one query for all ── */
+  function summarise(rows){
+    var by = {}; rows.forEach(function(r){ var c = by[r.contract_id] = by[r.contract_id] || {}; (c[r.ym] = c[r.ym] || []).push(r); });
+    L.forEach(function(c){ var M = by[c.contract_id] || {}, n = 0, last = null, fx = 0, ix = 0;
+      Object.keys(M).sort().forEach(function(ym){ var R = M[ym]; if(!R.length || R.some(function(r){ return r.settled_level == null || r.provisional; })) return;
+        n++; last = { ym:ym, fx:R.reduce(function(a, r){ return a + num(r.fixed_usd); }, 0), ix:R.reduce(function(a, r){ return a + num(r.indexed_usd); }, 0) }; });
+      SUM[c.contract_id] = { n:n, last:last }; });
   }
+  function cards(){
+    var el = $('csPc'); $('csCards').hidden = !L.length;
+    var sim = L.filter(function(c){ return c.is_illustrative; }).length;
+    $('csCardN').textContent = sim ? (sim === L.length ? 'Simulated contracts' : sim+' simulated')+' follow the same settlement rules as signed ones' : L.length+' on file';
+    el.innerHTML = L.map(function(c){ var s = SUM[c.contract_id] || {}, m = s.last, sel = c === c0, p = String(c.label).split(': ');
+      return '<div class="tp-pcd'+(sel ? ' on' : '')+'" role="button" tabindex="0" data-c="'+esc(c.contract_id)+'" aria-pressed="'+sel+'">'
+        + '<p class="tp-code">'+esc(ixc(c))+'</p><p class="tp-pn">'+esc(p[0])+'</p><p class="tp-pd">'+esc(p.slice(1).join(': '))+'</p>'
+        + '<div class="tp-plg tp-plc">'+(m ? '<span class="tp-pk">'+mon(m.ym)+' settled</span><b>'+usd(m.ix)+'</b>'+(chg2((m.ix/m.fx-1)*100) || '<span></span>')
+          + '<span class="tp-pk">Term</span><b>'+s.n+' of '+c.term_months+'</b><span class="d">months</span>' : '<span class="tp-pk">Not yet settled</span><span></span><span></span>')+'</div></div>'; }).join('');
+  }
+
+  /* ── One contract ── */
   function load(c){
-    c0 = c; open = null; rail(); waiting($('csMsg')); $('csBody').hidden = true; var my = ++reqN;
+    var first = !D; c0 = c; open = {}; cards(); var my = ++reqN;
+    if(first){ waiting($('csMsg')); $('csBody').hidden = true; } else { $('csBody').classList.add('busy'); $('csProg').hidden = false; }
     try{ localStorage.setItem('atCsContract', c.contract_id); }catch(e){}
     Promise.all([
       q(sb.from('v_clause_settlement').select('direction,share,month_no,ym,weeks,index_level,settled_level,fixed_usd,indexed_usd,limit_applied,provisional').eq('contract_id', c.contract_id).order('month_no')),
@@ -618,8 +639,10 @@ var CS = (function(){
         q(sb.from('v_fair_value_models').select('anchor_id,model_name,display_name,creator,vendors').in('anchor_id', ids)),
         q(sb.from('v_fair_value').select('anchor_id,vendor_id,direction,price').in('anchor_id', ids).eq('gate_date', GATE).limit(5000))
       ]).catch(function(){ return [[],[]]; }) : Promise.resolve([[],[]]);
-      return more.then(function(m){ if(my !== reqN) return; D = build(c, r[0], r[1], r[2], m[0], m[1]); c._settled = D.months.length; rail(); render(); });
-    }).catch(function(e){ if(my !== reqN) return; console.error('[Contracts]', e); message($('csMsg'), 'The contract could not be loaded. Refresh the page, or log in again if the problem persists.'); });
+      return more.then(function(m){ if(my !== reqN) return; done(); D = build(c, r[0], r[1], r[2], m[0], m[1]); K = D.months.length - 1; render(); });
+    }).catch(function(e){ if(my !== reqN) return; done(); console.error('[Contracts]', e);
+      if(first) message($('csMsg'), 'The contract could not be loaded. Refresh the page, or log in again if the problem persists.'); else flash($('csName'), 'Could not load this contract'); });
+    function done(){ $('csBody').classList.remove('busy'); $('csProg').hidden = true; }
   }
   /* Months with every leg settled, weekly levels rebased to the contract base, covered models with
      the latest market. A model row of * is the whole index and has no rate of its own. */
@@ -627,9 +650,9 @@ var CS = (function(){
     var legs = ORDER.filter(function(k){ return S.some(function(r){ return r.direction === k; }); });
     var byM = {}; S.forEach(function(r){ (byM[r.ym] = byM[r.ym] || { ym:r.ym, weeks:r.weeks, L:{} }).L[r.direction] = r; });
     var rows = Object.keys(byM).sort().map(function(k){ return byM[k]; });
-    function done(m){ return legs.every(function(k){ var r = m.L[k]; return r && r.settled_level != null && !r.provisional; }); }
+    function full(m){ return legs.every(function(k){ var r = m.L[k]; return r && r.settled_level != null && !r.provisional; }); }
     function part(m){ return legs.some(function(k){ var r = m.L[k]; return r && r.settled_level != null; }); }
-    var months = rows.filter(done), prov = rows.filter(function(m){ return !done(m) && part(m); })[0] || null;
+    var months = rows.filter(full), prov = rows.filter(function(m){ return !full(m) && part(m); })[0] || null;
     months.forEach(function(m){ m.fx = 0; m.ix = 0; legs.forEach(function(k){ m.fx += num(m.L[k].fixed_usd); m.ix += num(m.L[k].indexed_usd); }); });
     var W = {}; legs.forEach(function(k){
       var w = WR.filter(function(x){ return String(x.direction).toLowerCase() === k; }).map(function(x){ return { d:String(x.date).slice(0,10), v:Number(x.level) }; }).filter(function(x){ return !isNaN(x.v); });
@@ -647,84 +670,90 @@ var CS = (function(){
       .sort(function(a, b){ return b.share - a.share || a.name.localeCompare(b.name); });
     return { c:c, legs:legs, months:months, prov:prov, W:W, M:M, unit:unit || 'per 1,000 tokens' };
   }
-  function last(){ return D.months[D.months.length-1]; }
   function render(){
-    var c = D.c, m = last(), fl = num(c.floor_level), cp = num(c.cap_level), th = num(c.threshold_pct);
-    var startM = String(c.effective_date).slice(0,7), endM = addM(startM, c.term_months-1);
+    var c = D.c, has = D.months.length;
     if(!leg || D.legs.indexOf(leg) < 0) leg = D.legs[0];
-    $('csName').textContent = c.label;
-    $('csSim').hidden = !c.is_illustrative;
-    $('csMeta').textContent = (m ? 'Settled through '+mname(m.ym) : 'Not yet settled')+' · USD '+D.unit;
-    if(m){
-      $('csValT').textContent = MN[+m.ym.slice(5,7)-1]+' settled value';
-      $('csVal').textContent = usd(m.ix);
-      $('csValChg').innerHTML = chg2((m.ix/m.fx-1)*100)+'<em>against '+usd(m.fx)+' signed</em>';
-    } else { $('csValT').textContent = 'Settled value'; $('csVal').textContent = 'Not yet'; $('csValChg').innerHTML = '<em>The first month settles once its weeks are published.</em>'; }
-    legRows();
-    var T2 = [['Reference index', c.index_code === 'BLEND' ? 'A blend of three indexes' : '<a href="/indexes?index='+esc(String(c.index_code).toLowerCase().replace(/\s+/g,'-'))+'#atom-index-card"><span class="tp-code" style="color:inherit">'+esc(c.index_code)+'</span></a>'],
-      ['Form', (c.form === 'differential' ? 'Differential' : 'Ratio')+(D.legs.length > 1 ? ', '+['','one','two','three'][D.legs.length]+' legs' : ', '+LEG[D.legs[0]].toLowerCase())],
-      ['Base', esc(mname(c.base_period))+' = 100'], ['Settlement', esc(c.reset_months > 1 ? 'Quarterly, in advance' : (RULE[c.settlement_rule] || c.settlement_rule))],
-      ['Floor and cap', fl != null && cp != null ? fl+' and '+cp : fl != null ? 'Floor '+fl : cp != null ? 'Cap '+cp : 'None'],
-      ['Term', ldate(c.effective_date)+' to '+ldate(iso(utc(addM(endM,1)+'-01') - 864e5))],
-      ['Commitment', c.annual_commitment_usd != null ? big(c.annual_commitment_usd)+' a year'+(c.terms && c.terms.commitment === 'minimum_spend' ? ', minimum spend' : '') : 'None']];
-    if(th != null) T2.push(['Threshold', th+'% either side of base']);
-    if(D.M.length) T2.push(['Models', String(D.M.length)]);
-    T2.push(['Substitution', 'A successor keeps the rate']);
-    $('csTerms').innerHTML = T2.map(function(t){ return '<div><dt>'+t[0]+'</dt><dd>'+t[1]+'</dd></div>'; }).join('');
-    var s = D.months.length, cells = ''; for(var i = 0; i < c.term_months; i++) cells += '<i'+(i < s ? ' class="on"' : '')+'></i>';
-    $('csEl').innerHTML = '<div class="h">Term elapsed<b>'+s+' of '+c.term_months+' months</b></div><div class="tp-cells">'+cells+'</div>';
-    notice(); bill(); seg(); levels(); history(); card(); foot();
+    head(); notice();
+    $('csLegsS').hidden = $('csWk').hidden = !has;
+    if(has){ controls(); tiles(); chart(); month(); }
+    foot();
     $('csMsg').hidden = true; $('csBody').hidden = false;
   }
-  function legRows(){
-    var m = last(), fl = num(D.c.floor_level), cp = num(D.c.cap_level); if(!m){ $('csLegs').innerHTML = ''; return; }
-    var lim = fl != null ? 'floor' : cp != null ? 'cap' : null;
-    var h = '<div class="tp-lg tp-lgh"><span>Leg</span><span class="r">Level</span><span class="r">Vs base</span><span>'+(lim ? 'Room to '+lim : '')+'</span><span class="r">Value</span></div>';
-    D.legs.forEach(function(k){ var r = m.L[k], v = num(r.settled_level), room = lim === 'floor' ? (v-fl)/v*100 : lim === 'cap' ? (cp-v)/v*100 : null;
-      var bar = room != null ? '<svg width="72" height="6" viewBox="0 0 72 6" aria-hidden="true"><rect y="1" width="72" height="4" rx="2" fill="var(--border)"/><rect y="1" width="'+Math.max(3, Math.min(72, room/10*72)).toFixed(1)+'" height="4" rx="2" fill="var(--l4)"/></svg>'+room.toFixed(1)+'%' : '';
-      h += '<button type="button" class="tp-lg tp-lgb'+(k === leg ? ' on' : '')+'" data-leg="'+k+'" aria-pressed="'+(k === leg)+'"><span>'+LEG[k]+(r.limit_applied ? '<span class="tp-flag">'+LIMIT[r.limit_applied]+'</span>' : '')+'</span><span class="r lv">'+lv(v)+'</span><span class="r">'+chg2(v-100)+'</span><span class="tp-rm">'+bar+'</span><span class="r vl">'+usd(r.indexed_usd)+'</span></button>'; });
-    $('csLegs').innerHTML = h;
+  function head(){
+    var c = D.c, m = D.months[D.months.length-1], fl = num(c.floor_level), cp = num(c.cap_level), th = num(c.threshold_pct);
+    var startM = String(c.effective_date).slice(0,7), endM = addM(startM, c.term_months-1), fx = 0, ix = 0;
+    D.months.forEach(function(x){ fx += x.fx; ix += x.ix; });
+    $('csCode').textContent = ixc(c)+(c.is_illustrative ? ' · Simulated contract' : '');
+    $('csName').textContent = c.label;
+    var g = [];
+    if(m) g.push('<span class="tp-cgl"><span class="tp-lbl">'+mon(m.ym)+' settled</span><span class="tp-np"><b>'+usd(m.ix)+'</b></span><span class="tp-np">'+chg2((m.ix/m.fx-1)*100)+' against '+usd(m.fx)+' signed</span></span>');
+    if(D.months.length > 1) g.push('<span class="tp-cgl"><span class="tp-lbl">Contract to date</span><span class="tp-np"><b>'+usd(ix)+'</b></span><span class="tp-np">'+chg2((ix/fx-1)*100)+' against '+usd(fx)+' signed</span></span>');
+    g.push('<span class="tp-cgl"><span class="tp-lbl">Term</span><span class="tp-np"><b>'+D.months.length+'</b> of '+c.term_months+' months settled</span></span>');
+    if(c.index_code !== 'BLEND'){ var p = String(c.index_code).split(' ');
+      g.push('<span class="tp-cgl"><span class="tp-lbl">Reference index</span><button type="button" class="tp-np tp-ixl" data-ix="'+esc(c.index_code)+'" title="'+esc(ixName(c.index_code))+'">'+esc(p[1]+(p[2] !== 'GLB' ? ' '+p[2] : ''))+'</button></span>'); }
+    $('csCg').innerHTML = g.join('<span class="tp-cgd" aria-hidden="true"></span>');
+    var F = [(c.form === 'differential' ? 'Differential' : 'Ratio')+(D.legs.length > 1 ? ', '+['','one','two','three'][D.legs.length]+' legs' : ', '+LEG[D.legs[0]].toLowerCase()),
+      'Base '+mname(c.base_period)+' = 100', c.reset_months > 1 ? RULE.quarterly_in_advance : (RULE[c.settlement_rule] || c.settlement_rule),
+      fl != null && cp != null ? 'Floor '+fl+', cap '+cp : fl != null ? 'Floor '+fl : cp != null ? 'Cap '+cp : null,
+      th != null ? 'Threshold '+th+'% either side of base' : null,
+      ldate(c.effective_date)+' to '+ldate(iso(utc(addM(endM,1)+'-01') - 864e5)),
+      c.annual_commitment_usd != null ? big(c.annual_commitment_usd)+' a year'+(c.terms && c.terms.commitment === 'minimum_spend' ? ', minimum commitment' : '') : null,
+      D.M.length ? D.M.length+' model'+(D.M.length === 1 ? '' : 's') : 'The whole index', 'A successor model keeps the rate'].filter(Boolean);
+    $('csFacts').textContent = F.join(' · ');
   }
-  function pickLeg(k){ if(!k || k === leg) return; leg = k; legRows(); seg(); levels(); card(); }
-  /* One line, only when a leg settled at its floor or cap, or within 2% of it. */
+  /* One line, only when a leg settled at its floor or cap, or within 2% of it, in the latest month. */
   function notice(){
-    var m = last(), fl = num(D.c.floor_level), cp = num(D.c.cap_level), el = $('csNote'), h = '';
+    var m = D.months[D.months.length-1], fl = num(D.c.floor_level), cp = num(D.c.cap_level), el = $('csNote'), h = '';
     if(m) D.legs.some(function(k){ var r = m.L[k], v = num(r.settled_level), w = D.W[k][D.W[k].length-1], t = '';
-      if(r.limit_applied === 'floor' || r.limit_applied === 'cap') t = LEG[k]+' settled at its '+r.limit_applied+' in '+MN[+m.ym.slice(5,7)-1]+', '+lv(v)+' against an index average of '+lv(r.index_level)+'.';
+      if(r.limit_applied === 'floor' || r.limit_applied === 'cap') t = LEG[k]+' settled at its '+r.limit_applied+' in '+mon(m.ym)+', '+lv(v)+' against an index average of '+lv(r.index_level)+'.';
       else if(fl != null && (v-fl)/v*100 < NEAR) t = LEG[k]+' settled '+((v-fl)/v*100).toFixed(1)+'% above its floor.';
       else if(cp != null && (cp-v)/v*100 < NEAR) t = LEG[k]+' settled '+((cp-v)/v*100).toFixed(1)+'% below its cap.';
       if(!t) return false;
       h = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="8" y1="4.5" x2="8" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.9" fill="currentColor"/></svg><p>'+t+(w ? ' <span>The week of '+ldate(w.d)+' closed at '+lv(w.v)+'.</span>' : '')+'</p>';
       return true; });
+    if(!D.months.length) h = '<p>The first month settles once its index levels are published.</p>';
     el.innerHTML = h; el.hidden = !h;
   }
+
+  /* ── Legs: the chart switch and one tile per leg, for the month on screen ── */
+  function controls(){
+    $('csView').querySelectorAll('[data-v]').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.v === view)); });
+    $('csCtlN').textContent = 'Settled level, base '+mname(D.c.base_period)+' = 100';
+  }
+  function tiles(){
+    var m = D.months[K], pm = K > 0 ? D.months[K-1] : null, fl = num(D.c.floor_level), cp = num(D.c.cap_level), lim = fl != null ? 'floor' : cp != null ? 'cap' : null;
+    $('csTiles').className = 'tp-tiles n'+D.legs.length;
+    $('csTiles').innerHTML = D.legs.map(function(k){ var r = m.L[k], v = num(r.settled_level), pv = pm ? num(pm.L[k].settled_level) : null, on = k === leg;
+      var room = lim === 'floor' ? (v-fl)/v*100 : lim === 'cap' ? (cp-v)/v*100 : null;
+      var C3 = [['1 month', pv ? chg2((v/pv-1)*100) : ''], ['Since base', chg2(v-100)]];
+      if(room != null) C3.push([lim === 'floor' ? 'Above floor' : 'Below cap', '<span class="tp-rmv">'+Math.max(0, room).toFixed(1)+'%</span>']);
+      return '<button type="button" class="tp-leg'+(on ? ' on' : '')+'" data-leg="'+k+'" aria-pressed="'+on+'"><span class="tp-lbl">'+LEG[k]+(r.limit_applied ? '<span class="tp-flag">'+LIMIT[r.limit_applied]+'</span>' : '')+'</span>'
+        + '<span class="tp-lv">'+lv(v)+'</span><span class="tp-c3">'+C3.map(function(c){ return '<span><span class="tp-lbl">'+c[0]+'</span>'+(c[1] || '<span class="d">&mdash;</span>')+'</span>'; }).join('')+'</span>'
+        + '<span class="tp-ls">'+usd(r.indexed_usd)+' settled against '+usd(r.fixed_usd)+' signed'+(r.limit_applied ? ', index average '+lv(r.index_level) : '')+'</span></button>'; }).join('');
+  }
+
+  /* ── Chart: the monthly bill, or the selected leg's index and settled level ── */
+  function chart(){ if(view === 'lv') levels(); else bill(); }
   /* The monthly bill: the shared simulated contract chart, the same drawing as on the Clause page. */
   function bill(){
-    var sec = $('csBillSec'), ac = C(); if(!D.months.length || !ac || !ac.contract){ sec.hidden = true; return; } sec.hidden = false;
+    var box = $('csCh'), ac = C(); box._geo = null; if(!ac || !ac.contract){ view = 'lv'; controls(); levels(); return; }
     var c = D.c, single = D.legs.length === 1, li = -1, fx = D.months[0].fx;
     if(single) D.months.some(function(m, i){ var a = m.L[D.legs[0]].limit_applied; if(a === 'floor' || a === 'cap'){ li = i; return true; } return false; });
-    var lim = li >= 0 ? D.months[li].L[D.legs[0]].limit_applied : null;
     var S = { fx:fx, months:D.months.map(function(m){ return m.ym; }), pay:D.months.map(function(m){ return m.ix; }),
-      unl:li >= 0 ? D.months.map(function(m){ var r = m.L[D.legs[0]]; return r.limit_applied ? num(r.index_level) : null; }) : null, lim:lim,
-      gate:GATE, from:MN[+D.months[0].ym.slice(5,7)-1], min:!!(c.terms && c.terms.commitment === 'minimum_spend') };
-    var tot = D.months.reduce(function(a, m){ return a + (m.fx - m.ix); }, 0);
-    $('csBillN').textContent = 'What the contract paid each month under the Clause, against the fixed price set at '+MN[+c.base_period.slice(5,7)-1]+' levels: '+(tot >= 0 ? usd(tot)+' less' : usd(tot)+' more')+' since '+S.from+'.';
-    mount($('csBill'), function(){ var r = ac.contract(S); ac.legend($('csBillLg'), r.legend); return r.svg; });
+      unl:li >= 0 ? D.months.map(function(m){ var r = m.L[D.legs[0]]; return r.limit_applied ? num(r.index_level) : null; }) : null, lim:li >= 0 ? D.months[li].L[D.legs[0]].limit_applied : null,
+      gate:GATE, from:mon(D.months[0].ym), min:!!(c.terms && c.terms.commitment === 'minimum_spend') };
+    mount(box, function(){ var r = ac.contract(S); ac.legend($('csLg'), r.legend); return r.svg; });
   }
-  function seg(){
-    var s = $('csSeg'); s.hidden = D.legs.length < 2;
-    s.innerHTML = D.legs.length > 1 ? D.legs.map(function(k){ return '<button type="button" class="as-vt-b" data-leg="'+k+'" aria-selected="'+(k === leg)+'">'+LEG[k]+'</button>'; }).join('') : '';
-  }
-  /* The weekly index on the contract base and the monthly settled level, floor and cap dashed. */
+  /* The weekly index on the contract base and the monthly settled level, floor and cap dashed; the month on
+     screen shaded. */
   function levels(){
-    var c = D.c, W = D.W[leg] || [], st = D.months, fl = num(c.floor_level), cp = num(c.cap_level), base = c.base_period;
-    $('csLvN').textContent = LEG[leg]+' leg. Base '+mname(base)+' = 100'+(fl != null || cp != null ? '; '+[fl != null ? 'floor '+fl : '', cp != null ? 'cap '+cp : ''].filter(Boolean).join(', ') : '')+'. The settled level is the level the month is paid at.';
+    var c = D.c, W = D.W[leg] || [], st = D.months, fl = num(c.floor_level), cp = num(c.cap_level), base = c.base_period, sel = D.months[K];
     var lg = [];
-    if(W.length) lg.push({ k:'thin', c:'var(--series)', n:'Weekly index' });
-    lg.push({ k:'line', c:'var(--l1)', n:'Settled level' });
+    if(W.length) lg.push({ k:'thin', c:'var(--series)', n:LEG[leg]+' index' });
+    lg.push({ k:'line', c:'var(--l1)', n:'Settled level', v:lv(sel.L[leg].settled_level) });
     if(fl != null || cp != null) lg.push({ k:'dash', c:'var(--l4)', n:fl != null && cp != null ? 'Floor and cap' : fl != null ? 'Floor' : 'Cap' });
-    C().legend($('csLvLg'), lg);
-    var box = $('csLv');
+    C().legend($('csLg'), lg);
+    var box = $('csCh');
     mount(box, function(){
       var ch = C(), first = monday(utc(base+'-01')), lastT = Math.max(W.length ? utc(W[W.length-1].d) : first, utc(GATE)), AX = ch.axis(iso(first), iso(monday(lastT - 6*864e5)));
       var vals = W.map(function(w){ return w.v; }).concat(st.map(function(m){ return num(m.L[leg].settled_level); }), [100]);
@@ -734,73 +763,94 @@ var CS = (function(){
       function X(t){ return Math.max(x0, Math.min(x1, AX.x(iso(t)))); }
       var bx = X(monday(utc(addM(base,1)+'-01')));
       g.push('<rect x="'+x0+'" y="'+ch.PT+'" width="'+(bx-x0).toFixed(1)+'" height="'+(ch.PB-ch.PT)+'" style="fill:rgba(255,255,255,.025)"></rect>');
+      var sa = X(monday(utc(sel.ym+'-01'))), sb2 = X(monday(utc(addM(sel.ym,1)+'-01')));
+      g.push('<rect x="'+sa.toFixed(1)+'" y="'+ch.PT+'" width="'+Math.max(0, sb2-sa).toFixed(1)+'" height="'+(ch.PB-ch.PT)+'" style="fill:rgba(255,255,255,.045)"></rect>');
       tk.forEach(function(v){ g.push(ch.rule(Y(v), { cls:'as-s-grid' })); g.push(T(x0, Y(v)-4, String(v))); });
       [fl, cp].forEach(function(v){ if(v != null) g.push(ch.rule(Y(v), { cls:'as-s-bar3', dash:'6 4' })); });
       if(W.length) g.push('<polyline fill="none" class="as-s-series" stroke-width="1.5" stroke-linejoin="round" points="'+W.map(function(w){ return X(utc(w.d)).toFixed(1)+','+Y(w.v).toFixed(1); }).join(' ')+'"></polyline>');
       st.forEach(function(m){ var a = X(monday(utc(m.ym+'-01'))) + 3, b = X(monday(utc(addM(m.ym,1)+'-01'))) - 3, y = Y(num(m.L[leg].settled_level)).toFixed(1);
-        if(b > a) g.push('<line x1="'+a.toFixed(1)+'" x2="'+b.toFixed(1)+'" y1="'+y+'" y2="'+y+'" stroke="var(--l1)" stroke-width="3" stroke-linecap="round"></line>'); });
+        if(b > a) g.push('<line x1="'+a.toFixed(1)+'" x2="'+b.toFixed(1)+'" y1="'+y+'" y2="'+y+'" stroke="var(--l1)" stroke-width="3" stroke-linecap="round"'+(m === sel ? '' : ' stroke-opacity=".55"')+'></line>'); });
       if(W.length){ var lw = W[W.length-1]; g.push('<circle cx="'+X(utc(lw.d)).toFixed(1)+'" cy="'+Y(lw.v).toFixed(1)+'" r="4" class="as-f-series"></circle>'); }
       g.push(AX.svg());
       box._geo = { axis:ch.TA/ch.H, pts:W.map(function(w){ return { f:X(utc(w.d))/ch.W, w:w }; }) };
       return ch.svg(g.join(''), LEG[leg]+': weekly index level on the contract base and the monthly settled level'+(fl != null || cp != null ? ', with floor and cap' : ''));
     });
   }
-  function history(){
-    var Lg = D.legs;
-    $('csHiH').innerHTML = '<tr><th>Month</th><th class="r">Weeks</th>'+Lg.map(function(k){ return '<th class="r">'+LEG[k]+'</th>'; }).join('')+'<th class="r">Signed value</th><th class="r">Settled value</th><th class="r">Vs signed</th></tr>';
-    var h = '', fx = 0, ix = 0;
-    if(D.prov) h += '<tr class="prov"><td>'+mname(D.prov.ym)+(D.c.reset_months > 1 ? ', being set' : ', to date')+'</td><td class="r">'+(D.prov.weeks || '')+'</td>'+Lg.map(function(k){ var r = D.prov.L[k]; return '<td class="r">'+(r && r.settled_level != null ? lv(r.settled_level) : '')+'</td>'; }).join('')+'<td></td><td></td><td></td></tr>';
-    D.months.slice().reverse().forEach(function(m){ fx += m.fx; ix += m.ix;
-      h += '<tr><td>'+mname(m.ym)+'</td><td class="r d">'+(m.weeks || '')+'</td>'+Lg.map(function(k){ var r = m.L[k]; return '<td class="r">'+lv(r.settled_level)+(r.limit_applied ? '<span class="tp-flag">'+LIMIT[r.limit_applied]+'</span>' : '')+'</td>'; }).join('')
-        +'<td class="r d">'+usd(m.fx)+'</td><td class="r w">'+usd(m.ix)+'</td><td class="r">'+chg2((m.ix/m.fx-1)*100)+'</td></tr>'; });
-    if(D.months.length) h += '<tr class="tot"><td colspan="'+(Lg.length+2)+'">Contract year to date</td><td class="r">'+usd(fx)+'</td><td class="r">'+usd(ix)+'</td><td class="r">'+chg2((ix/fx-1)*100)+'</td></tr>';
-    $('csHi').innerHTML = h || '<tr><td colspan="'+(Lg.length+5)+'">No month has settled yet.</td></tr>';
-  }
-  /* Rate card: every covered model on every leg. Contracts on the whole index have none. */
-  function card(){
-    var sec = $('csRcSec'), m = last(); if(!D.M.length || !m){ sec.hidden = true; return; } sec.hidden = false;
-    $('csRcT').textContent = MN[+m.ym.slice(5,7)-1]+' rate card';
-    $('csRcH').innerHTML = '<tr><th>Model</th><th class="r">Share</th>'+D.legs.map(function(k){ return '<th class="r">'+LEG[k]+'<span class="lv">'+lv(m.L[k].settled_level)+'</span></th>'; }).join('')+'<th class="r">Signed value</th><th class="r">Settled value</th><th class="r">Vs signed</th></tr>';
-    var h = '';
-    D.M.forEach(function(x){ var isO = open === x.id, fx = 0, ix = 0;
+  function pickMonth(i){ if(!D || i == null || i === K || i < 0 || i > D.months.length-1) return; K = i; tiles(); chart(); month(); }
+
+  /* ── The month: every covered model, each leg in its own block, and the model's value ── */
+  if(PHONE.addEventListener) PHONE.addEventListener('change', function(){ if(D && D.months.length) month(); });
+  function month(){
+    var m = D.months[K], LV = PHONE.matches ? [leg] : D.legs, N = 1 + (LV.length+1)*4, last = K === D.months.length-1;
+    $('csMoT').textContent = mname(m.ym);
+    $('csPrev').disabled = K <= 0; $('csNext').disabled = last;
+    $('csMoN').textContent = last && D.prov ? mname(D.prov.ym)+(D.c.reset_months > 1 ? ' is being set' : ' settles once its index levels are published') : '';
+    function on(k){ return k === leg ? ' on' : ' off'; }
+    var h = '<thead><tr class="tp-hg"><th class="tp-unit">Rates in USD '+esc(D.unit)+'; share is each model&rsquo;s part of the commitment</th>'
+      + LV.map(function(k){ return '<th class="tp-gp'+on(k)+'"></th><th colspan="3" class="tp-lgh'+on(k)+'"><span>'+LEG[k]+' <em class="tp-lgl">'+lv(m.L[k].settled_level)+'</em></span></th>'; }).join('')
+      + '<th class="tp-gp"></th><th colspan="3" class="tp-lgh tp-lgv"><span>Value</span></th></tr>'
+      + '<tr class="tp-hc"><th>Model</th>'+LV.map(function(k){ var o = on(k); return '<th class="tp-gp tp-w0'+o+'"></th><th class="r tp-w1'+o+'">Settled</th><th class="r tp-w2'+o+'">Signed</th><th class="r tp-w3'+o+'">Share</th>'; }).join('')
+      + '<th class="tp-gp tp-w0"></th><th class="r tp-w1">Signed</th><th class="r tp-w2">Settled</th><th class="r tp-w3">Vs signed</th></tr></thead><tbody>';
+    function val(fx, ix){ return '<td class="tp-gp"></td><td class="r d">'+usd(fx)+'</td><td class="r on">'+usd(ix)+'</td><td class="r on">'+(fx ? chg2((ix/fx-1)*100) : '')+'</td>'; }
+    function mval(x){ var fx = 0, ix = 0;
       D.legs.forEach(function(k){ var r = x.r[k], Lk = m.L[k]; if(!r || !(num(Lk.share) > 0)) return; var f = num(Lk.fixed_usd)*r.share/num(Lk.share); fx += f; ix += f*num(Lk.indexed_usd)/num(Lk.fixed_usd); });
-      h += '<tr class="pick'+(isO ? ' sel' : '')+'" tabindex="0" data-id="'+esc(x.id)+'" aria-expanded="'+isO+'"><td><span class="tp-x" aria-hidden="true">'+(isO ? '&minus;' : '+')+'</span>'+esc(x.name)+(x.dev ? ' <span class="d">'+esc(x.dev)+'</span>' : '')+'</td><td class="r">'+Math.round(x.share*100)+'%</td>'
-        + D.legs.map(function(k){ var r = x.r[k]; return r ? '<td class="r'+(k === leg ? ' w' : '')+'">'+rate(r.signed*num(m.L[k].settled_level)/100)+'</td>' : '<td class="r d">Not covered</td>'; }).join('')
-        + '<td class="r d">'+usd(fx)+'</td><td class="r w">'+usd(ix)+'</td><td class="r">'+(fx ? chg2((ix/fx-1)*100) : '')+'</td></tr>';
-      if(isO){
-        var rows = D.legs.filter(function(k){ return x.r[k]; }).map(function(k){ var r = x.r[k], sv = r.signed*num(m.L[k].settled_level)/100, mk = r.mkt;
-          return '<tr><td>'+LEG[k]+'</td><td>'+rate(r.signed)+'</td><td class="w">'+rate(sv)+'</td><td>'+(mk ? rate(mk.med) : '&mdash;')+'</td><td>'+(mk ? (mk.lo === mk.hi ? 'Single price' : rate(mk.lo)+' to '+rate(mk.hi)) : '&mdash;')+'</td><td>'+(mk ? mk.n : '&mdash;')+'</td><td>'+(mk ? chg2((sv/mk.med-1)*100) : '&mdash;')+'</td></tr>'; }).join('');
-        h += '<tr class="tp-dt"><td colspan="'+(D.legs.length+5)+'"><table class="tp-dtt"><thead><tr><th>Leg</th><th>Signed rate</th><th>Settled rate</th><th>Market median</th><th>Market range</th><th>Vendors</th><th>Settled vs median</th></tr></thead><tbody>'+rows+'</tbody></table>'
-          + (x.vendors >= 2 ? '<button class="tp-link" type="button" style="margin-top:var(--s3)" data-go="'+esc(x.id)+'">Open '+esc(x.name)+' in Models &rarr;</button>' : '')+'</td></tr>';
-      }
-    });
-    $('csRc').innerHTML = h;
+      return [fx, ix]; }
+    function market(x){ var wk = sdate(GATE);
+      return '<tr class="tp-vr"><td><span class="tp-vn">Market median<em>'+esc(wk)+'</em></span></td>'
+        + LV.map(function(k){ var r = x.r[k], o = on(k), mk = r && r.mkt, sv = r ? r.signed*num(m.L[k].settled_level)/100 : null;
+          return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(mk ? esc(rate(mk.med)) : '')+'</td><td class="r'+o+'"><span class="d">'+(mk ? mk.n+' vendor'+(mk.n === 1 ? '' : 's') : r ? 'No market' : '')+'</span></td><td class="r'+o+'">'+(mk ? chg2((sv/mk.med-1)*100) : '')+'</td>'; }).join('')
+        + '<td class="tp-gp"></td><td colspan="3" class="r"><span class="d">Settled rate against the market median</span></td></tr>'
+        + '<tr class="tp-vgo"><td colspan="'+N+'">'+(x.vendors >= 2 ? '<button class="tp-link" type="button" data-go="'+esc(x.id)+'">Open '+esc(x.name)+' in Models &rarr;</button>' : '')+'</td></tr>'; }
+    function row(x){ var o = !!open[x.id], v = mval(x);
+      return '<tr class="pick'+(o ? ' sel' : '')+'" tabindex="0" data-id="'+esc(x.id)+'" aria-expanded="'+o+'"><td><span class="tp-mn"><svg class="tp-chev'+(o ? ' open' : '')+'" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5"></path></svg><b>'+esc(x.name)+'</b>'+(x.dev ? '<em>'+esc(x.dev)+'</em>' : '')+'</span></td>'
+        + LV.map(function(k){ var r = x.r[k], o2 = on(k); if(!r) return '<td class="tp-gp'+o2+'"></td><td class="r d'+o2+'">Not covered</td><td class="'+o2.trim()+'"></td><td class="'+o2.trim()+'"></td>';
+          return '<td class="tp-gp'+o2+'"></td><td class="r'+o2+'">'+esc(rate(r.signed*num(m.L[k].settled_level)/100))+'</td><td class="r'+o2+'"><span class="d">'+esc(rate(r.signed))+'</span></td><td class="r'+o2+'">'+Math.round(r.share*100)+'%</td>'; }).join('')
+        + val(v[0], v[1])+'</tr>'+(o ? market(x) : ''); }
+    if(D.M.length) h += '<tr class="tp-gr"><td colspan="'+N+'"><span class="tp-lbl">Models</span><span class="c">'+D.M.length+'</span><span class="hn">largest share first; a model opens to its market</span></td></tr>' + D.M.map(row).join('');
+    h += '<tr class="tp-ixr"><td>'+(D.M.length ? 'All models' : 'The whole index')+'</td>'
+      + LV.map(function(k){ var o = on(k), Lk = m.L[k]; return '<td class="tp-gp'+o+'"></td><td class="r'+o+'">'+(Lk.limit_applied ? '<span class="tp-flag">'+LIMIT[Lk.limit_applied]+'</span>' : '')+'</td><td class="'+o.trim()+'"></td><td class="r'+o+'">'+Math.round(num(Lk.share)*100)+'%</td>'; }).join('')
+      + val(m.fx, m.ix)+'</tr>';
+    $('csT').className = 'tp-ld n'+(LV.length+1);
+    $('csT').innerHTML = h+'</tbody>';
   }
   function foot(){
-    var m = last();
-    $('csSrc').textContent = 'Source: Attic Standard, index levels published '+ldate(GATE)+'. Figures update with each index publication. Settlement: '+(D.c.reset_months > 1 ? 'the average of the last 12 published weeks, set a quarter in advance' : 'the average of the published weeks in each month')+'; base '+mname(D.c.base_period)+' = 100.';
-    $('csCite').disabled = !m;
+    $('csSrc').textContent = 'Source: Attic Standard, index levels published '+ldate(GATE)+', administered with reference to the IOSCO Principles for Financial Benchmarks. Settlement: '+(D.c.reset_months > 1 ? 'the average of the last 12 published weeks, set a quarter in advance' : 'the average of the published weeks in each month')+'; base '+mname(D.c.base_period)+' = 100.';
+    $('csCite').disabled = !D.months.length;
   }
+  /* The citation is for the month on screen, so any settled month can be quoted exactly. */
+  function cite(b){ if(!D || !D.months.length) return; var m = D.months[K];
+    copy(b, 'Attic Standard, '+D.c.label+' ('+D.c.contract_id+'), '+mname(m.ym)+' settlement against '+D.c.index_code+': '+D.legs.map(function(k){ return LEG[k].toLowerCase()+' '+lv(m.L[k].settled_level); }).join(', ')+' (base '+mname(D.c.base_period)+' = 100). Settled value '+usd(m.ix)+' against '+usd(m.fx)+' at signed rates. Index levels published '+ldate(GATE)+'. atticstandard.com'); }
+
   function start(){
     waiting($('csMsg'));
-    $('csQ').addEventListener('input', rail);
-    $('csList').addEventListener('click', function(e){ var b = e.target.closest('.tp-row'); if(!b) return; L.forEach(function(c){ if(c.contract_id === b.dataset.id && c !== c0) load(c); }); });
-    $('csLegs').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(b) pickLeg(b.dataset.leg); });
-    $('csSeg').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(b) pickLeg(b.dataset.leg); });
-    $('csRc').addEventListener('click', function(e){
-      var g = e.target.closest('[data-go]');
-      if(g){ try{ localStorage.setItem('atMoModel', g.dataset.go); }catch(x){} MO.open(g.dataset.go); show('models', true); return; }
-      var r = e.target.closest('tr[data-id]'); if(!r) return; open = open === r.dataset.id ? null : r.dataset.id; card(); });
-    $('csRc').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var r = e.target.closest('tr[data-id]'); if(!r) return; e.preventDefault(); open = open === r.dataset.id ? null : r.dataset.id; card(); });
-    hover($('csLvW'), $('csLv'), function(p){ var w = p.w, m = D.months.filter(function(s){ return s.ym === w.d.slice(0,7); })[0], isBase = w.d.slice(0,7) === D.c.base_period;
-      return '<div class="t">Week of '+ldate(w.d)+'</div>Index <b>'+lv(w.v)+'</b>'+(m ? '<br>'+MN[+m.ym.slice(5,7)-1]+' settled <b>'+lv(m.L[leg].settled_level)+'</b>' : isBase ? '<br>Base month' : '<br>Month not yet settled'); });
-    $('csCite').addEventListener('click', function(){ if(!D || !D.months.length) return; var m = last();
-      copy(this, 'Attic Standard, '+D.c.label+' ('+D.c.contract_id+'), '+mname(m.ym)+' settlement against '+D.c.index_code+': '+D.legs.map(function(k){ return LEG[k].toLowerCase()+' '+lv(m.L[k].settled_level); }).join(', ')+' (base '+mname(D.c.base_period)+' = 100). Settled value '+usd(m.ix)+' against '+usd(m.fx)+' at signed rates. Data through '+ldate(GATE)+'. atticstandard.com'); });
+    function choose(id){ L.forEach(function(c){ if(c.contract_id === id && c !== c0) load(c); }); }
+    $('csPc').addEventListener('click', function(e){ var c = e.target.closest('[data-c]'); if(c) choose(c.dataset.c); });
+    $('csPc').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var c = e.target.closest('[data-c]'); if(!c) return; e.preventDefault(); choose(c.dataset.c); });
+    $('csCg').addEventListener('click', function(e){ var b = e.target.closest('[data-ix]'); if(!b) return; show('indexes', true); IX.pick(b.dataset.ix); });
+    $('csView').addEventListener('click', function(e){ var b = e.target.closest('[data-v]'); if(!b || b.dataset.v === view || !D) return; view = b.dataset.v; try{ localStorage.setItem('atCsView', view); }catch(x){} controls(); chart(); });
+    $('csTiles').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === leg) return; leg = b.dataset.leg; tiles(); if(view === 'lv') chart(); month(); });
+    $('csPrev').addEventListener('click', function(){ pickMonth(K-1); });
+    $('csNext').addEventListener('click', function(){ pickMonth(K+1); });
+    hover($('csChW'), $('csCh'), function(p){ var w = p.w, m = D.months.filter(function(s){ return s.ym === w.d.slice(0,7); })[0], isBase = w.d.slice(0,7) === D.c.base_period;
+      return '<div class="t">Week of '+ldate(w.d)+'</div>Index <b>'+lv(w.v)+'</b>'+(m ? '<br>'+mon(m.ym)+' settled <b>'+lv(m.L[leg].settled_level)+'</b>' : isBase ? '<br>Base month' : '<br>Month not yet settled'); });
+    /* In the levels chart, a click opens the month it falls in. */
+    $('csChW').addEventListener('click', function(e){ var G = $('csCh')._geo; if(!G || !D) return; var r = $('csCh').getBoundingClientRect(), f = (e.clientX - r.left)/r.width, best = null, bd = 1e9;
+      G.pts.forEach(function(p){ var x = Math.abs(p.f - f); if(x < bd){ bd = x; best = p; } });
+      if(best) D.months.forEach(function(m, i){ if(m.ym === best.w.d.slice(0,7)) pickMonth(i); }); });
+    function toggle(tr){ var id = tr.dataset.id; if(open[id]) delete open[id]; else open[id] = 1; month(); var n = $('csT').querySelector('tr[data-id="'+id+'"]'); if(n) n.focus({ preventScroll:true }); }
+    $('csT').addEventListener('click', function(e){
+      var g = e.target.closest('[data-go]'); if(g){ try{ localStorage.setItem('atMoModel', g.dataset.go); }catch(x){} MO.open(g.dataset.go); show('models', true); return; }
+      var tr = e.target.closest('tr[data-id]'); if(tr) toggle(tr); });
+    $('csT').addEventListener('keydown', function(e){ if(e.key !== 'Enter' && e.key !== ' ') return; var tr = e.target.closest('tr[data-id]'); if(!tr) return; e.preventDefault(); toggle(tr); });
+    $('csCite').addEventListener('click', function(){ cite(this); });
     if(!sb){ message($('csMsg'), 'Contracts load once you are logged in.'); return; }
     q(sb.from('clause_contract').select('*').order('sort_order', { ascending:true }).order('created_at', { ascending:true })).then(function(rows){
       L = rows; if(!L.length){ message($('csMsg'), 'No contracts are on file yet.'); return; }
       var keep = null; try{ keep = localStorage.getItem('atCsContract'); }catch(e){}
-      load(L.filter(function(c){ return c.contract_id === keep; })[0] || L[0]);
+      var c = L.filter(function(x){ return x.contract_id === keep; })[0] || L[0];
+      q(sb.from('v_clause_settlement').select('contract_id,direction,ym,settled_level,fixed_usd,indexed_usd,provisional').in('contract_id', L.map(function(x){ return x.contract_id; })).limit(5000))
+        .then(summarise).catch(function(){}).then(function(){ cards(); });
+      load(c);
     }).catch(function(e){ console.error('[Contracts]', e); message($('csMsg'), 'Contracts could not be loaded. Refresh the page, or log in again if the problem persists.'); });
   }
   return { start:start };
