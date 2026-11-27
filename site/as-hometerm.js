@@ -60,7 +60,7 @@ var NS = 'http://www.w3.org/2000/svg';
 function el(tag, at){ var e = document.createElementNS(NS, tag); for(var k in at) e.setAttribute(k, at[k]); return e; }
 function frames(){
   var s = document.querySelector('svg.as-vx'); if(!s || s.querySelector('.as-fr')) return;
-  var lines = [].slice.call(s.querySelectorAll('polyline')), gold = lines.filter(function(l){ return /gold/.test(l.getAttribute('style') || ''); })[0];
+  var lines = [].slice.call(s.querySelectorAll('polyline')).filter(function(l){ return !l.closest('.as-s-series'); }), gold = lines.filter(function(l){ return /gold/.test(l.getAttribute('style') || ''); })[0];
   var idx = lines.filter(function(l){ return l !== gold; })[0]; if(!idx || !gold) return;
   function xs(l){ return l.getAttribute('points').trim().split(/\s+/).map(function(p){ return +p.split(',')[0]; }); }
   var ix = xs(idx), gx = xs(gold), x0 = Math.min.apply(null, ix), x1 = Math.max.apply(null, ix);
