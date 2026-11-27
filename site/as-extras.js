@@ -35,6 +35,12 @@
     var pr = n && n.querySelector('a[href="/#pricing"]');
     if(pr){ pr.href = '/terminal'; pr.textContent = 'Terminal'; }
     var dp = d && d.querySelector('a[href="/#pricing"]'); if(dp) dp.remove();
+    /* The Terminal comes before the Clause wherever both are listed: the way in first, then the
+       contract it leads to (November 27, 2026). */
+    [n, d, document.querySelector('.atom-footer-group a[href="/clause"]') && document.querySelector('.atom-footer-group a[href="/clause"]').parentNode].forEach(function(box){
+      var t = box && box.querySelector('a[href="/terminal"]'), c = box && box.querySelector('a[href="/clause"]');
+      if(t && c && t.parentNode === c.parentNode && (c.compareDocumentPosition(t) & 4)) c.parentNode.insertBefore(t, c);
+    });
     [['/indexes', /^\/indexes\/?$/], ['/terminal', /^\/terminal\/?$/]].forEach(function(r){
       if(r[1].test(location.pathname)) document.querySelectorAll('.as-nav a[href="' + r[0] + '"], #navDropdown a[href="' + r[0] + '"]').forEach(function(x){ x.setAttribute('aria-current', 'page'); });
     });
@@ -124,7 +130,7 @@
   /* Not on /contact, which holds the full form, nor on a page that still carries the old contact section. */
   if(/^\/contact\/?$/.test(location.pathname) || document.getElementById('asCd') || document.getElementById('atomContact')) return;
   var W3_URL = 'https://api.web3forms.com/submit', W3_KEY = '21f374e5-af06-489a-b3b1-e31e060b5ab4';
-  var TOPICS = ['The Clause','Terminal','Coverage question','Methodology question','Vendor onboarding','Press','Partnerships','Other'];
+  var TOPICS = ['Terminal','The Clause','Coverage question','Methodology question','Vendor onboarding','Press','Partnerships','Other'];
   function f(id, lbl, inner, full){ return '<div class="as-cd-f' + (full ? ' full' : '') + '"><label class="as-cd-l" for="asCd-' + id + '">' + lbl + '</label>' + inner + '<div class="as-cd-e" id="asCd-' + id + '-err">' + ({first:'Enter your first name',last:'Enter your last name',email:'Enter a valid work email',company:'Enter your company',topic:'Select an option',msg:'Enter a message'})[id] + '</div></div>'; }
   function inp(id, type, ac){ return '<input class="as-cd-i" type="' + type + '" id="asCd-' + id + '" name="' + id + '" autocomplete="' + ac + '">'; }
   var html =
@@ -132,7 +138,7 @@
     '<svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 6.4 L6 1.6 L11 6.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
     '<div class="as-cd-b" id="asCdB" role="region" aria-labelledby="asCdT" inert>' +
     '<div class="as-cd-k"><div><h2 class="as-cd-t" id="asCdT">Talk to the team</h2><p class="as-cd-st">A demo, a quote, or a question about coverage. We respond within one business day.</p></div>' +
-    '<ol class="as-cd-steps"><li><b>01</b><span>Tell us what you buy or build, and where.</span></li><li><b>02</b><span>We reply within one business day to set a time.</span></li><li><b>03</b><span>In 30 minutes we compare your models with the benchmark and show how the Clause would have priced your spend.</span></li></ol></div>' +
+    '<ol class="as-cd-steps"><li><b>01</b><span>Tell us what you buy or build, and where.</span></li><li><b>02</b><span>We reply within one business day to set a time.</span></li><li><b>03</b><span>In 30 minutes we compare your models with the benchmark, so you see where your spend sits against the market.</span></li></ol></div>' +
     '<form novalidate><p class="as-cd-n">All fields required.</p>' +
     '<div class="as-cd-row">' + f('first', 'First name', inp('first', 'text', 'given-name')) + f('last', 'Last name', inp('last', 'text', 'family-name')) + '</div>' +
     '<div class="as-cd-row">' + f('email', 'Work email', inp('email', 'email', 'email')) + f('company', 'Company', inp('company', 'text', 'organization')) + '</div>' +

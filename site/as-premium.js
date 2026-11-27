@@ -1040,12 +1040,15 @@ var MO = (function(){
   }
   /* The selected leg by week: the median, the band from the lowest to the highest vendor, the selected week. */
   function chart(){
-    var Cc = CUR, A = Cc.E[S.leg].map(function(e, i){ return e ? { e:e, i:i } : null; }).filter(Boolean), box = $('moCh'), l = A[A.length-1].e;
-    C().legend($('moLg'), [{ k:'line', c:'var(--series)', n:legName(S.leg)+' market median', v:px(l.m) }, { k:'bar', c:'rgba(198,203,211,.3)', n:'Lowest to highest vendor' }, { k:'thin', c:'var(--l1)', n:'Selected week' }]);
+    var Cc = CUR, A = Cc.E[S.leg].map(function(e, i){ return e ? { e:e, i:i } : null; }).filter(Boolean), box = $('moCh'), l = A[A.length-1].e, yp = myRate()[S.leg] || null;
+    var lg = [{ k:'line', c:'var(--series)', n:legName(S.leg)+' market median', v:px(l.m) }, { k:'bar', c:'rgba(198,203,211,.3)', n:'Lowest to highest vendor' }];
+    if(yp) lg.push({ k:'dash', c:'var(--accent)', n:'Your price', v:px(yp) });
+    lg.push({ k:'thin', c:'var(--l1)', n:'Selected week' });
+    C().legend($('moLg'), lg);
     if(A.length < 2){ box._geo = null; box.innerHTML = '<p class="tp-note tp-empty">Priced for one week so far.</p>'; return; }
     mount(box, function(){
       var ch = C(), AX = ch.axis(iso(utc(A[0].e.d) - 14*864e5), A[A.length-1].e.d), vals = [];
-      A.forEach(function(x){ vals.push(x.e.lo, x.e.hi); });
+      A.forEach(function(x){ vals.push(x.e.lo, x.e.hi); }); if(yp) vals.push(yp);
       var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = (hi-lo)*0.12 || hi*0.1; lo = Math.max(0, lo-pad); hi += pad;
       var tk = ticks(lo, hi, 4), Y = ch.y(lo, hi), g = [], st = tk.length > 1 ? tk[1]-tk[0] : hi, dp = Math.max(0, -Math.floor(Math.log10(st)));
       function step(a){ var o = []; a.forEach(function(p, i){ if(i) o.push([p[0], a[i-1][1]]); o.push(p); }); return o; }
@@ -1053,6 +1056,8 @@ var MO = (function(){
       tk.forEach(function(v){ if(v < lo || v > hi) return; g.push(ch.rule(Y(v), { cls:'as-s-grid' })); g.push(T(ch.X0, Y(v)-4, ax$(v, dp))); });
       g.push('<polygon points="'+pts(step(A.map(function(x){ return [x.e.d, x.e.hi]; })))+' '+pts(step(A.map(function(x){ return [x.e.d, x.e.lo]; })).reverse())+'" style="fill:rgba(198,203,211,.12)"></polygon>');
       g.push('<polyline fill="none" class="as-s-series" stroke-width="2" stroke-linejoin="round" points="'+pts(step(A.map(function(x){ return [x.e.d, x.e.m]; })))+'"></polyline>');
+      /* Your price, as entered, across the whole chart. */
+      if(yp) g.push('<line x1="'+AX.x(A[0].e.d).toFixed(1)+'" x2="'+AX.x(A[A.length-1].e.d).toFixed(1)+'" y1="'+Y(yp).toFixed(1)+'" y2="'+Y(yp).toFixed(1)+'" style="stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 4"></line>');
       var s = Cc.E[S.leg][S.K]; if(s){ var sx = AX.x(s.d);
         g.push('<line x1="'+sx.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y1="'+ch.PT+'" y2="'+ch.TA+'" style="stroke:var(--l1)"></line>');
         g.push('<circle cx="'+sx.toFixed(1)+'" cy="'+Y(s.m).toFixed(1)+'" r="5" style="fill:var(--l1);stroke:var(--bg);stroke-width:2"></circle>'); }
@@ -1134,10 +1139,10 @@ var MO = (function(){
     var yT = null;
     /* Each entry is kept as it is typed; the table follows a moment later. */
     $('moYr').addEventListener('input', function(e){ var t = e.target.closest('input[data-leg]'); if(!t || !model) return;
-      putRate(t.dataset.leg, num(t.value)); $('moYc').hidden = !Object.keys(myRate()).length; clearTimeout(yT); yT = setTimeout(week, 200); });
+      putRate(t.dataset.leg, num(t.value)); $('moYc').hidden = !Object.keys(myRate()).length; clearTimeout(yT); yT = setTimeout(function(){ chart(); week(); }, 200); });
     $('moYr').addEventListener('change', function(e){ var t = e.target.closest('input[data-leg]'); if(!t) return; var v = num(t.value); t.value = v ? '$'+fx(v) : ''; });
     $('moYr').addEventListener('keydown', function(e){ if(e.key === 'Enter' && e.target.matches('input[data-leg]')) e.target.blur(); });
-    $('moYr').addEventListener('click', function(e){ if(!e.target.closest('#moYc') || !model) return; CUR.legs.forEach(function(l){ putRate(l, null); }); yours(); week(); });
+    $('moYr').addEventListener('click', function(e){ if(!e.target.closest('#moYc') || !model) return; CUR.legs.forEach(function(l){ putRate(l, null); }); yours(); chart(); week(); });
     $('moCg').addEventListener('click', function(e){ var b = e.target.closest('[data-ix]'); if(!b) return; show('indexes', true); IX.pick(b.dataset.ix); });
     $('moUnits').addEventListener('click', function(e){ var b = e.target.closest('[data-u]'); if(!b || b.dataset.u === S.unit) return; S.unit = b.dataset.u; S.open = {}; S.K = null; render(); });
     $('moTiles').addEventListener('click', function(e){ var b = e.target.closest('[data-leg]'); if(!b || b.dataset.leg === S.leg) return; S.leg = b.dataset.leg; tiles(); chart(); week(); });

@@ -5,6 +5,17 @@
   var MONTH = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   var API = 'https://jonncmzxvxzwyaznokba.supabase.co/rest/v1/rpc/get_coverage_page', KEY = 'sb_publishable_SHTwtIYuHKMP3W5fhrwx2A_Byi9IVtF';
   function $(id){ return document.getElementById(id); }
+  var SRC = (document.currentScript && document.currentScript.src) || '';
+  /* The overview figure showed the ATOM-era dashboard; it now shows the rebuilt Terminal (Models view,
+     November 23, 2026 publication, with an example price entered). Folds into the page image when the
+     Terminal page is next edited (November 27, 2026). */
+  function shot(){
+    var im = document.querySelector('img[src*="terminal-dashboard"]'); if(!im || !SRC) return;
+    im.removeAttribute('srcset'); im.removeAttribute('sizes');
+    im.src = SRC.replace(/\/site\/[^\/]*$/, '/site/img/terminal/terminal-models.jpg');
+    im.width = 2400; im.height = 1350; im.style.height = 'auto';
+    im.alt = 'The Attic Standard Terminal, Models view: pinned models, the model finder with your price, and the market median for each leg';
+  }
   function pub(){
     var b = $('trmPub'), d = window.AS && window.AS.activeDate; if(!b || !d || !d.then) return;
     d.then(function(v){ var p = String(v).slice(0, 10).split('-'); b.textContent = MONTH[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; }).catch(function(){});
@@ -52,7 +63,7 @@
     fetch(STRIP, { method:'POST', headers:{ apikey:KEY, 'Content-Type':'application/json' }, body:'{}' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){ if(d && d.points) draw(d); }).catch(function(){});
   }
   function init(){
-    pub(); counts(); strip();
+    shot(); pub(); counts(); strip();
     var links = [].slice.call(document.querySelectorAll('.tml-toc a, .tml-chips a')), chips = document.querySelector('.tml-chips');
     var ids = links.map(function(a){ return a.getAttribute('href').slice(1); }).filter(function(v, i, s){ return v && s.indexOf(v) === i; });
     var els = ids.map(function(id){ return document.getElementById(id); }).filter(Boolean);

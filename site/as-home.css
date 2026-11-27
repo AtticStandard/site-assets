@@ -242,3 +242,29 @@ body #hpDrivers .as-ds-s{font-size:var(--fs-ui);line-height:var(--lh-ui);color:v
 
 /* Five drivers: the line on top of the selected tab fills in white as the tabs rotate (November 17, 2026). */
 body #hpDrivers .as-ds-fill{background:var(--l1);animation:none !important;transition:none}
+
+/* ── The Terminal section (#hpTerm, November 27, 2026): three points stacked on the left that step
+   like the five drivers, a thin bar beside the current one filling from top to bottom, and the
+   monitor on the right showing that point's screen. Drawn by as-hometerm.js. ── */
+body #hpTerm .as-tm{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center}
+body #hpTerm .as-tm-l .as-sh{margin-bottom:0}
+body #hpTerm .as-tm-pts{display:flex;flex-direction:column;margin-top:var(--s5)}
+body #hpTerm .as-tm-t{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:2px minmax(0,1fr);column-gap:18px;padding:14px 0}
+body #hpTerm .as-tm-t:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:2px}
+body #hpTerm .as-tm-bar{position:relative;background:var(--border);border-radius:1px;overflow:hidden}
+body #hpTerm .as-tm-fill{position:absolute;left:0;top:0;width:2px;height:0;background:var(--l1)}
+body #hpTerm .as-tm-x{min-width:0}
+body #hpTerm .as-tm-n{display:block;font-size:var(--fs-lead);font-weight:600;line-height:var(--lh-ui);color:var(--l3);transition:color .15s}
+body #hpTerm .as-tm-t:hover .as-tm-n,body #hpTerm .as-tm-t[aria-selected="true"] .as-tm-n{color:var(--l1)}
+body #hpTerm .as-tm-d{display:block;margin-top:4px;font-size:var(--fs-ui);line-height:1.55;color:var(--l4)}
+body #hpTerm .as-tm-mon{background:var(--surface-raised);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+body #hpTerm .as-tm-top{display:flex;align-items:center;gap:6px;height:14px;margin:-2px 2px 10px}
+body #hpTerm .as-tm-top i{width:7px;height:7px;border-radius:50%;background:#3A4048}
+body #hpTerm .as-tm-top em{margin-left:10px;font-style:normal;font-size:10px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--l5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body #hpTerm .as-tm-scr{position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid var(--border);border-radius:4px;background:var(--bg)}
+body #hpTerm .as-tm-scr img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;opacity:0;transition:opacity .5s ease}
+body #hpTerm .as-tm-scr img.on{opacity:1}
+body #hpTerm .as-sf{margin-top:var(--s6)}
+@media (prefers-reduced-motion:reduce){body #hpTerm .as-tm-scr img{transition:none}}
+@media (max-width:991px){body #hpTerm .as-tm{grid-template-columns:none;gap:var(--s5)}}
+@media (max-width:767px){body #hpTerm .as-tm-mon{padding:8px;border-radius:8px}body #hpTerm .as-tm-top{margin-bottom:8px}body #hpTerm .as-tm-t{padding:10px 0}}
